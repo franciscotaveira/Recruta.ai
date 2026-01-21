@@ -176,20 +176,20 @@ const LandingPage = () => {
             </div>
 
             <div className="flex items-center gap-3">
-              <button 
-                onClick={() => scrollToSection('b2b-form')}
+              <Link 
+                to="/recruiter"
                 className="hidden lg:flex items-center gap-2 border border-slate-200 text-slate-700 px-4 py-2 rounded-full text-sm font-bold hover:bg-slate-50 transition-all"
               >
                 <Building2 size={16} />
-                Sou Recrutador
-              </button>
-              <Link to="/login" className="text-sm font-medium text-slate-500 hover:text-purple-600 hidden sm:block">Login</Link>
-              <button 
-                onClick={() => initPayment('starter')}
+                Painel do Recrutador
+              </Link>
+              
+              <Link 
+                to="/candidate"
                 className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-110 active:scale-95 flex items-center gap-2"
               >
-                Começar Agora
-              </button>
+                Painel do Candidato
+              </Link>
             </div>
           </div>
         </div>

@@ -1,10 +1,58 @@
-import { Candidate } from './types';
+import { Candidate, Job, Application, RecruiterStats } from './types';
+
+// MOCK FOR LOGGED IN CANDIDATE (Francisco)
+export const CURRENT_USER_CANDIDATE: Candidate = {
+  id: 'user-1',
+  name: 'Francisco Taveira',
+  phone: '+55 49 99999-9999',
+  email: 'francisco@email.com',
+  status: 'completed',
+  score: 72, // SCPD
+  date: '2026-03-12',
+  plan: 'starter',
+  currentCycle: {
+    id: 'c1',
+    status: 'active',
+    startDate: '12/03/2026',
+    targetRole: 'Analista de Marketing'
+  },
+  diagnosis: "Seu perfil é mais forte em Gestão de Projetos, com experiência prática em metodologias ágeis. Há sinais claros de atuação em liderança de times pequenos, porém falta evidência numérica de resultados em projetos anteriores a 2024.",
+  scpdBreakdown: {
+    clarity: true,
+    evidence: false, // Warning
+    focus: true,
+    freshness: false // Warning
+  },
+  attentionPoints: [
+    "Falta detalhamento de resultados em projetos recentes.",
+    "Atualize suas certificações de 2023 para cá."
+  ],
+  pastCycles: [
+    { id: 'c0', status: 'closed', startDate: '10/01/2025', targetRole: 'Assistente Administrativo', result: 'closed_without_hire' }
+  ],
+  interviews: [
+    { id: 'i1', company: 'TechSol', date: '20/03/2026', type: 'active_invite', status: 'pending' },
+    { id: 'i2', company: 'LogiFast', date: '15/03/2026', type: 'application', status: 'completed' }
+  ]
+};
+
+export const MOCK_RECRUITER_STATS: RecruiterStats = {
+  activeJobs: 3,
+  candidatesPipeline: 47,
+  invites: {
+    sent: 150,
+    accepted: 45,
+    ignored: 105
+  }
+};
 
 export const MOCK_CANDIDATES: Candidate[] = [
   {
     id: '1',
     name: 'Ana Silva',
     phone: '+55 11 99999-1234',
+    email: 'ana.silva@email.com',
+    location: 'São Paulo, SP',
     status: 'completed',
     score: 85,
     date: '2026-01-21',
@@ -14,7 +62,7 @@ export const MOCK_CANDIDATES: Candidate[] = [
       seniority: 'Sênior',
       topSkills: ['Liderança', 'CRM', 'Negociação B2B']
     },
-    diagnosis: "Perfil forte para liderança comercial. Comunicação clara, mas currículo original estava muito extenso."
+    scpdBreakdown: { clarity: true, evidence: true, focus: true, freshness: true }
   },
   {
     id: '2',
@@ -38,40 +86,62 @@ export const MOCK_CANDIDATES: Candidate[] = [
       seniority: 'Pleno',
       topSkills: ['React', 'Node.js', 'PostgreSQL']
     },
-    diagnosis: "Excelente perfil técnico. Otimização focou em quantificar resultados de performance."
-  },
-  {
-    id: '4',
-    name: 'João Pereira',
-    phone: '+55 41 96666-8765',
-    status: 'error',
-    score: 45,
-    date: '2026-01-20',
-    plan: 'free',
-  },
-  {
-    id: '5',
-    name: 'Fernanda Oliveira',
-    phone: '+55 51 95555-0987',
-    status: 'completed',
-    score: 78,
-    date: '2026-01-19',
-    plan: 'starter',
-    extractedData: {
-      role: 'Analista de RH',
-      seniority: 'Júnior',
-      topSkills: ['Recrutamento', 'Triagem', 'LinkedIn Recruiter']
-    },
-    diagnosis: "Boas experiências iniciais. Faltava destacar projetos acadêmicos relevantes."
+    scpdBreakdown: { clarity: true, evidence: true, focus: true, freshness: true }
   },
 ];
 
-export const CHART_DATA = [
-  { name: '15/01', diagnoses: 12 },
-  { name: '16/01', diagnoses: 19 },
-  { name: '17/01', diagnoses: 15 },
-  { name: '18/01', diagnoses: 25 },
-  { name: '19/01', diagnoses: 32 },
-  { name: '20/01', diagnoses: 45 },
-  { name: '21/01', diagnoses: 58 },
+export const MOCK_JOBS: Job[] = [
+  {
+    id: '1',
+    title: 'Analista de Marketing Pleno',
+    company: 'TechCorp Brasil',
+    location: 'São Paulo, SP',
+    salaryRange: 'R$ 5k - 7k',
+    type: 'CLT',
+    modality: 'Hybrid',
+    matchScore: 98,
+    status: 'active',
+    applicantsCount: 23,
+    postedDate: '2026-03-15',
+    skills: ['Marketing Digital', 'Growth', 'Analytics'],
+    recommendationReason: "Compatível com seu perfil atual de Analista."
+  },
+  {
+    id: '2',
+    title: 'Coordenador de Projetos',
+    company: 'Startup XYZ',
+    location: 'Remoto',
+    salaryRange: 'R$ 8k - 10k',
+    type: 'PJ',
+    modality: 'Remote',
+    matchScore: 85,
+    status: 'active',
+    applicantsCount: 18,
+    postedDate: '2026-03-18',
+    skills: ['Scrum', 'Leadership', 'Jira'],
+    recommendationReason: "Boa oportunidade para transição de carreira."
+  }
 ];
+
+export const MOCK_APPLICATIONS: Application[] = [
+  {
+    id: '1',
+    jobId: '1',
+    jobTitle: 'Analista de Marketing Pleno',
+    company: 'TechCorp Brasil',
+    status: 'interview',
+    appliedDate: '2026-03-15',
+    lastUpdate: '2026-03-17',
+  },
+  {
+    id: '2',
+    jobId: '2',
+    jobTitle: 'Coordenador de Projetos',
+    company: 'Startup XYZ',
+    status: 'analysis',
+    appliedDate: '2026-03-18',
+    lastUpdate: '2026-03-21',
+  }
+];
+
+export const CHART_DATA = [];
