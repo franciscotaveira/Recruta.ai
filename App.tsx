@@ -4,6 +4,7 @@ import LandingPage from './pages/LandingPage';
 import RecruiterLayout from './components/RecruiterLayout';
 import CandidateLayout from './components/CandidateLayout';
 import RecruiterDashboard from './pages/recruiter/Dashboard';
+import RecruiterJobs from './pages/recruiter/Jobs';
 import Billing from './pages/recruiter/Billing';
 import CandidateDashboard from './pages/candidate/Dashboard';
 import Candidates from './pages/Candidates';
@@ -15,7 +16,7 @@ import Legal from './pages/Legal';
 import ScrollToTop from './components/ScrollToTop';
 import { FileText, User, TrendingUp } from 'lucide-react';
 
-// Placeholder Components for New Features to Ensure Navigation Works
+// Placeholder Components for Candidate Features (To be implemented in future iterations)
 const FeaturePlaceholder = ({ title, desc, icon: Icon }: { title: string, desc: string, icon: any }) => (
   <div className="flex flex-col items-center justify-center h-full min-h-[60vh] text-center p-8 animate-fade-in-up">
     <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center text-purple-600 mb-6 shadow-sm">
@@ -46,7 +47,7 @@ const App = () => {
           <RecruiterLayout>
             <Routes>
               <Route index element={<RecruiterDashboard />} />
-              <Route path="jobs" element={<div className="p-8 text-slate-500 dark:text-slate-400 font-medium">Gestão de Processos Seletivos (Em desenvolvimento)</div>} />
+              <Route path="jobs" element={<RecruiterJobs />} />
               <Route path="candidates" element={<Candidates />} />
               <Route path="reviews" element={<PendingReviews />} />
               <Route path="billing" element={<Billing />} />
@@ -87,7 +88,7 @@ const App = () => {
                     <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 p-4 rounded-xl mb-6">
                       <p className="text-sm text-yellow-800 dark:text-yellow-200 font-bold">Lembrete: Vagas são bônus.</p>
                     </div>
-                    <CandidateDashboard /> {/* Reusing Dashboard for jobs view as it has the list */}
+                    <CandidateDashboard />
                  </div>
               } />
               

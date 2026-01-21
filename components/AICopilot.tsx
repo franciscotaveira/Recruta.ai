@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Bot, X, Send, Sparkles, MessageSquare } from 'lucide-react';
+import { Bot, X, Send, Sparkles } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 
-// Interface for chat messages
 interface Message {
   id: string;
   role: 'user' | 'model';
@@ -13,31 +12,31 @@ interface Message {
 const AICopilot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { id: 'welcome', role: 'model', text: 'Olá! Sou seu Copiloto de Carreira. Como posso ajudar você a melhorar seu posicionamento hoje?' }
+    { id: 'welcome', role: 'model', text: 'Olá! Sou seu Copiloto de Carreira. Em que posso ajudar na sua jornada hoje?' }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
 
-  // Scroll to bottom on new message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isOpen]);
 
-  // Determine context based on current path
   const getContextPrompt = () => {
     const path = location.pathname;
-    let context = "O usuário está na plataforma Recruta.AI.";
+    let context = "O usuário está na plataforma Recruta.AI, focado em Engenharia de Carreira.";
     
     if (path.includes('/candidate/diagnosis')) {
-      context += " Eles estão visualizando o 'Diagnóstico Profissional' e o Score SCPD (Clareza, Evidência, Foco). Ajude-os a entender como melhorar a pontuação.";
+      context += " TELA: Diagnóstico SCPD. O usuário vê seus scores de Clareza, Evidência e Foco. Ajude-o a entender como melhorar esses pilares.";
     } else if (path.includes('/candidate/cv')) {
-      context += " Eles estão no 'Currículo Vivo'. Ajude-os a reescrever experiências e torná-las mais atrativas para recrutadores.";
+      context += " TELA: Currículo Vivo. O usuário está editando experiências. Dê dicas de palavras-chave e verbos de ação para passar em filtros ATS.";
     } else if (path.includes('/candidate/jobs')) {
-      context += " Eles estão vendo 'Vagas Internas' (Bônus). Lembre-os que o foco é o preparo, mas ajude a analisar o match com as vagas.";
+      context += " TELA: Vagas Internas (Bônus). Lembre o usuário que o foco é o preparo, mas ajude a analisar fit cultural com as vagas listadas.";
+    } else if (path.includes('/recruiter')) {
+      context += " TELA: Painel do Recrutador. O usuário é um RH/Headhunter. Ajude com dúvidas sobre créditos, triagem de candidatos ou criação de vagas.";
     } else {
-      context += " Eles estão no Dashboard Principal. Explique o valor do Diagnóstico e da Otimização de Currículo.";
+      context += " TELA: Dashboard Principal. Explique o valor do Ciclo de Posicionamento e como usar a ferramenta de Otimização Externa.";
     }
     return context;
   };
@@ -51,54 +50,46 @@ const AICopilot = () => {
     setIsLoading(true);
 
     try {
-      // Initialize Gemini Client
-      // Note: In a real app, ensure process.env.API_KEY is available. 
-      // If running locally without env, this might fail gracefully or need a mock.
-      const apiKey = process.env.API_KEY || ''; 
+      const apiKey = process.env.API_KEY;
       
       if (!apiKey) {
-        // Fallback simulation if no key is present (for demo purposes)
+        // Fallback elegante para demonstração sem API Key
         setTimeout(() => {
             setMessages(prev => [...prev, { 
                 id: Date.now().toString(), 
                 role: 'model', 
-                text: "Estou em modo de demonstração (sem API Key configurada). Em produção, eu analisaria sua pergunta com o modelo Gemini 3 Flash." 
+                text: "Estou operando em modo offline (Demo). Em produção, eu usaria o Gemini 3 Flash para analisar sua pergunta com base na tela atual." 
             }]);
             setIsLoading(false);
-        }, 1000);
+        }, 800);
         return;
       }
 
       const ai = new GoogleGenAI({ apiKey });
-      
-      const systemInstruction = `Você é um especialista em carreira e UX Writer do Recruta.AI.
-      Seu tom é encorajador, direto e profissional.
-      CONTEXTO ATUAL: ${getContextPrompt()}
-      Responda de forma concisa (máximo 3 frases) focado em ação.`;
+      const systemInstruction = `Você é um especialista em carreira e UX Writer do Recruta.AI. 
+      Seu tom é profissional, encorajador e direto.
+      CONTEXTO: ${getContextPrompt()}
+      Responda em no máximo 3 frases curtas.`;
 
       const chat = ai.chats.create({
         model: 'gemini-3-flash-preview',
-        config: {
-            systemInstruction: systemInstruction,
-        }
+        config: { systemInstruction }
       });
 
-      // Send history + new message
-      // Note: Simplification for this snippet, ideally we pass history to chat initialization
       const result = await chat.sendMessage({ message: userText });
       
       setMessages(prev => [...prev, { 
         id: Date.now().toString(), 
         role: 'model', 
-        text: result.text || "Desculpe, não consegui processar sua resposta." 
+        text: result.text || "Não consegui gerar uma resposta no momento." 
       }]);
 
     } catch (error) {
-      console.error("Erro no Copiloto:", error);
+      console.error("AI Error:", error);
       setMessages(prev => [...prev, { 
         id: Date.now().toString(), 
         role: 'model', 
-        text: "Tive um problema de conexão momentâneo. Tente novamente?" 
+        text: "Houve um erro de conexão com a inteligência. Tente novamente." 
       }]);
     } finally {
       setIsLoading(false);
@@ -110,23 +101,19 @@ const AICopilot = () => {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
-      
-      {/* Chat Window */}
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end font-sans">
       {isOpen && (
-        <div className="bg-white dark:bg-slate-900 w-80 sm:w-96 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 mb-4 overflow-hidden flex flex-col animate-fade-in-up origin-bottom-right transition-all">
-          {/* Header */}
+        <div className="bg-white dark:bg-slate-900 w-80 sm:w-96 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 mb-4 overflow-hidden flex flex-col animate-fade-in-up origin-bottom-right">
           <div className="bg-slate-900 dark:bg-purple-900 p-4 flex justify-between items-center">
             <div className="flex items-center gap-2 text-white">
                 <Sparkles size={18} className="text-purple-400" />
-                <span className="font-bold text-sm">Copiloto Recruta.AI</span>
+                <span className="font-bold text-sm">Copiloto IA</span>
             </div>
-            <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-white transition-colors">
+            <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-white">
                 <X size={18} />
             </button>
           </div>
 
-          {/* Messages Area */}
           <div className="h-80 overflow-y-auto p-4 space-y-3 bg-slate-50 dark:bg-slate-950/50">
             {messages.map((msg) => (
                 <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -153,7 +140,6 @@ const AICopilot = () => {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input Area */}
           <div className="p-3 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
             <div className="relative flex items-center">
                 <input 
@@ -176,7 +162,6 @@ const AICopilot = () => {
         </div>
       )}
 
-      {/* Floating Button */}
       <button 
         onClick={() => setIsOpen(!isOpen)}
         className={`w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 ${
@@ -186,20 +171,8 @@ const AICopilot = () => {
         }`}
       >
         {isOpen ? <X size={24} /> : <Bot size={28} />}
-        
-        {/* Notification Badge (Fake) */}
-        {!isOpen && (
-            <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
-        )}
+        {!isOpen && <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>}
       </button>
-
-      {/* Tooltip hint when closed */}
-      {!isOpen && (
-        <div className="absolute bottom-full mb-2 right-0 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-bold py-1 px-3 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 whitespace-nowrap animate-bounce-slow origin-bottom-right">
-            Dúvidas? Fale com a IA
-            <div className="absolute top-full right-4 border-4 border-transparent border-t-white dark:border-t-slate-800"></div>
-        </div>
-      )}
     </div>
   );
 };
