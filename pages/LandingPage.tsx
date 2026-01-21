@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MessageCircle, Mic, Brain, CheckCircle2, ArrowRight, Sparkles, Building2, UserCircle, HeartHandshake, Zap, BarChart3, Fingerprint, ShieldCheck, X, CreditCard, Lock, Bell, Star, ChevronDown, ChevronUp, Send, Briefcase, Phone, Users, BookOpen } from 'lucide-react';
+import { MessageCircle, Mic, Brain, CheckCircle2, ArrowRight, ArrowDown, Sparkles, Building2, UserCircle, HeartHandshake, Zap, BarChart3, Fingerprint, ShieldCheck, X, CreditCard, Lock, Bell, Star, ChevronDown, ChevronUp, Send, Briefcase, Phone, Users, BookOpen } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const LandingPage = () => {
@@ -186,7 +186,7 @@ const LandingPage = () => {
               <Link to="/login" className="text-sm font-medium text-slate-500 hover:text-purple-600 hidden sm:block">Login</Link>
               <button 
                 onClick={() => initPayment('starter')}
-                className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 flex items-center gap-2"
+                className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-110 active:scale-95 flex items-center gap-2"
               >
                 Começar Agora
               </button>
@@ -247,32 +247,47 @@ const LandingPage = () => {
 
         {/* Visual Loop with ID for navigation */}
         <div id="como-funciona" className="mt-20 max-w-6xl mx-auto px-4 relative scroll-mt-32">
-             <div className="absolute top-1/2 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-slate-200 to-transparent -z-10"></div>
+             {/* Visual Connector Line (Desktop) */}
+             <div className="hidden md:block absolute top-[40%] left-[16%] right-[16%] h-[2px] bg-slate-100 -z-10">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 animate-pulse"></div>
+             </div>
              
-             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-0 items-center text-center relative">
-                <div className="flex flex-col items-center relative group">
-                    <div className="w-20 h-20 bg-white rounded-2xl shadow-xl shadow-blue-100 border border-blue-100 flex items-center justify-center mb-6 relative z-10 group-hover:-translate-y-2 transition-transform duration-500">
+             <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
+                {/* Step 1 */}
+                <div className="flex flex-col items-center group relative">
+                     <div className="w-24 h-24 bg-white rounded-2xl shadow-xl shadow-blue-100 border border-blue-100 flex items-center justify-center mb-6 relative z-10 group-hover:-translate-y-2 transition-transform duration-500">
                         <Mic size={32} className="text-blue-500" />
+                        {/* Badge/Number */}
+                        <div className="absolute -top-3 -right-3 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-sm shadow-lg border-2 border-white">1</div>
                     </div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-2">Expressão</h3>
-                    <p className="text-sm text-slate-500 max-w-[200px]">O candidato grava um áudio contando sua trajetória.</p>
+                    <h3 className="text-xl font-bold text-slate-900 mb-2">Expressão</h3>
+                    <p className="text-slate-500 leading-relaxed text-center">O candidato grava um áudio contando sua trajetória de forma natural.</p>
+                    
+                    {/* Mobile Arrow */}
+                    <div className="md:hidden mt-8 text-slate-300 animate-bounce"><ArrowDown size={32} /></div>
                 </div>
 
-                <div className="flex flex-col items-center relative">
-                    <div className="absolute inset-0 bg-purple-500/20 blur-[60px] rounded-full"></div>
-                    <div className="w-24 h-24 bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl shadow-2xl shadow-purple-200 flex items-center justify-center mb-6 relative z-10 animate-pulse-slow">
-                        <Brain size={40} className="text-white" />
+                {/* Step 2 */}
+                <div className="flex flex-col items-center group relative">
+                     <div className="w-24 h-24 bg-white rounded-2xl shadow-xl shadow-purple-100 border border-purple-100 flex items-center justify-center mb-6 relative z-10 group-hover:-translate-y-2 transition-transform duration-500">
+                        <Brain size={32} className="text-purple-600" />
+                        <div className="absolute -top-3 -right-3 w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold text-sm shadow-lg border-2 border-white">2</div>
                     </div>
-                    <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-2">Tradução IA</h3>
-                    <p className="text-sm text-slate-500 max-w-[240px]">Análise de soft skills, tom de voz e fit cultural em segundos.</p>
+                    <h3 className="text-xl font-bold text-slate-900 mb-2">Tradução IA</h3>
+                    <p className="text-slate-500 leading-relaxed text-center">Nossa IA analisa soft skills, tom de voz e gera um score comportamental.</p>
+
+                    {/* Mobile Arrow */}
+                    <div className="md:hidden mt-8 text-slate-300 animate-bounce"><ArrowDown size={32} /></div>
                 </div>
 
-                <div className="flex flex-col items-center relative group">
-                    <div className="w-20 h-20 bg-white rounded-2xl shadow-xl shadow-pink-100 border border-pink-100 flex items-center justify-center mb-6 relative z-10 group-hover:-translate-y-2 transition-transform duration-500">
-                        <CheckCircle2 size={32} className="text-pink-500" />
+                {/* Step 3 */}
+                <div className="flex flex-col items-center group relative">
+                     <div className="w-24 h-24 bg-white rounded-2xl shadow-xl shadow-pink-100 border border-pink-100 flex items-center justify-center mb-6 relative z-10 group-hover:-translate-y-2 transition-transform duration-500">
+                        <HeartHandshake size={32} className="text-pink-500" />
+                         <div className="absolute -top-3 -right-3 w-8 h-8 bg-pink-500 text-white rounded-full flex items-center justify-center font-bold text-sm shadow-lg border-2 border-white">3</div>
                     </div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-2">Conexão</h3>
-                    <p className="text-sm text-slate-500 max-w-[200px]">Recrutadores recebem perfis completos e validados.</p>
+                    <h3 className="text-xl font-bold text-slate-900 mb-2">Conexão</h3>
+                    <p className="text-slate-500 leading-relaxed text-center">Recrutadores recebem perfis completos e o match acontece.</p>
                 </div>
              </div>
         </div>
