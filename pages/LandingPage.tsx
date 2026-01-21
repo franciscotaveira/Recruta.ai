@@ -100,6 +100,14 @@ const LandingPage = () => {
     window.open(whatsappUrl, '_blank');
   };
 
+  // Função para scroll suave
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   const testimonials = [
     {
       name: "Fernanda Lima",
@@ -149,7 +157,7 @@ const LandingPage = () => {
       <nav className="fixed w-full z-50 bg-white/70 backdrop-blur-lg border-b border-slate-200/50 transition-all duration-300 top-[37px]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
-            <Link to="/" className="flex items-center gap-2 group">
+            <Link to="/" className="flex items-center gap-2 group" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl blur opacity-50 group-hover:opacity-75 transition-opacity"></div>
                 <div className="relative w-10 h-10 bg-white rounded-xl flex items-center justify-center text-slate-900 border border-slate-100">
@@ -160,20 +168,21 @@ const LandingPage = () => {
             </Link>
             
             <div className="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-600">
-              <a href="/#manifesto" className="hover:text-purple-600 transition-colors">Manifesto</a>
-              <a href="/#como-funciona" className="hover:text-purple-600 transition-colors">Como Funciona</a>
+              <button onClick={() => scrollToSection('manifesto')} className="hover:text-purple-600 transition-colors">Manifesto</button>
+              <button onClick={() => scrollToSection('como-funciona')} className="hover:text-purple-600 transition-colors">Como Funciona</button>
               <Link to="/blog" className="hover:text-purple-600 transition-colors flex items-center gap-1"><BookOpen size={14} /> Blog</Link>
-              <a href="/#planos" className="hover:text-purple-600 transition-colors">Planos</a>
+              <button onClick={() => scrollToSection('planos')} className="hover:text-purple-600 transition-colors">Planos</button>
+              <button onClick={() => scrollToSection('depoimentos')} className="hover:text-purple-600 transition-colors">Depoimentos</button>
             </div>
 
             <div className="flex items-center gap-3">
-              <a 
-                href="/#b2b-form" 
+              <button 
+                onClick={() => scrollToSection('b2b-form')}
                 className="hidden lg:flex items-center gap-2 border border-slate-200 text-slate-700 px-4 py-2 rounded-full text-sm font-bold hover:bg-slate-50 transition-all"
               >
                 <Building2 size={16} />
                 Sou Recrutador
-              </a>
+              </button>
               <Link to="/login" className="text-sm font-medium text-slate-500 hover:text-purple-600 hidden sm:block">Login</Link>
               <button 
                 onClick={() => initPayment('starter')}
