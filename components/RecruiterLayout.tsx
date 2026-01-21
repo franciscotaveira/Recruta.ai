@@ -1,59 +1,78 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Briefcase, Users, PieChart, Settings, LogOut, Search, Bell, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Briefcase, Users, PieChart, Settings, LogOut, FileCheck, Bell, Menu, X, Sun, Moon, CreditCard, Zap } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 const RecruiterLayout: React.FC<LayoutProps> = ({ children }) => {
-  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const location = useLocation();
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-  const isActive = (path: string) => location.pathname === path;
+
+  // Improved active logic
+  const isActive = (path: string) => {
+    if (path === '/recruiter') {
+       return location.pathname === '/recruiter';
+    }
+    return location.pathname.startsWith(path);
+  };
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      setIsDarkMode(true);
+      document.documentElement.classList.add('dark');
+    } else {
+      setIsDarkMode(false);
+      document.documentElement.classList.remove('dark');
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = !isDarkMode;
+    setIsDarkMode(newTheme);
+    if (newTheme) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  };
 
   const menuItems = [
     { path: '/recruiter', icon: <LayoutDashboard size={20} />, label: 'Visão Geral' },
-    { path: '/recruiter/jobs', icon: <Briefcase size={20} />, label: 'Vagas' },
+    { path: '/recruiter/jobs', icon: <Briefcase size={20} />, label: 'Vagas Ativas' },
     { path: '/recruiter/candidates', icon: <Users size={20} />, label: 'Banco de Talentos' },
+    { path: '/recruiter/reviews', icon: <FileCheck size={20} />, label: 'Pendências' },
+    { path: '/recruiter/billing', icon: <CreditCard size={20} />, label: 'Carteira de Créditos' },
     { path: '/recruiter/analytics', icon: <PieChart size={20} />, label: 'Analytics' },
     { path: '/recruiter/settings', icon: <Settings size={20} />, label: 'Configurações' },
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 flex font-sans text-slate-900">
-      {/* Mobile Sidebar Overlay */}
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex font-sans text-slate-900 dark:text-slate-100 transition-colors duration-300">
       {isSidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-20 lg:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-        />
+        <div className="fixed inset-0 bg-black/50 z-20 lg:hidden" onClick={() => setIsSidebarOpen(false)} />
       )}
 
-      {/* Sidebar */}
-      <aside 
-        className={`fixed lg:static inset-y-0 left-0 z-30 w-64 bg-white border-r border-slate-200 flex flex-col transform transition-transform duration-200 ease-in-out ${
-          isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        }`}
-      >
-        <div className="h-16 flex items-center px-6 border-b border-slate-100">
-            <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center text-white mr-3">
-                <Briefcase size={16} />
+      <aside className={`fixed lg:static inset-y-0 left-0 z-30 w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col transform transition-transform duration-200 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+        <div className="h-16 flex items-center px-6 border-b border-slate-100 dark:border-slate-800">
+            <div className="w-8 h-8 bg-slate-900 dark:bg-white rounded-lg flex items-center justify-center text-white dark:text-slate-900 mr-3">
+                <Zap size={16} />
             </div>
-            <span className="font-bold text-lg text-slate-900">Recruta.AI <span className="text-purple-600 text-xs">Corp</span></span>
-            <button onClick={toggleSidebar} className="lg:hidden ml-auto text-slate-400">
-                <X size={24} />
-            </button>
+            <span className="font-bold text-lg text-slate-900 dark:text-white">Recruta.AI <span className="text-purple-600 text-xs">Corp</span></span>
         </div>
 
-        <div className="p-4">
-            <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 mb-6 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-xs">
-                    TC
-                </div>
+        <div className="p-4 flex-1">
+            <div className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800 mb-6 flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 flex items-center justify-center font-bold text-xs">TC</div>
                 <div className="overflow-hidden">
-                    <p className="text-sm font-bold text-slate-900 truncate">TechCorp Brasil</p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white truncate">TechCorp Brasil</p>
                     <p className="text-xs text-slate-500 truncate">Plano Enterprise</p>
                 </div>
             </div>
@@ -64,61 +83,44 @@ const RecruiterLayout: React.FC<LayoutProps> = ({ children }) => {
                 key={item.path}
                 to={item.path}
                 onClick={() => setIsSidebarOpen(false)}
-                className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all ${
                     isActive(item.path)
-                    ? 'bg-slate-900 text-white shadow-sm'
-                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                    ? 'bg-slate-900 dark:bg-purple-600 text-white shadow-md'
+                    : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
                 }`}
                 >
-                <span className={`mr-3 ${isActive(item.path) ? 'text-purple-300' : 'text-slate-400'}`}>{item.icon}</span>
+                <span className={`mr-3 ${isActive(item.path) ? 'text-white' : 'text-slate-400'}`}>{item.icon}</span>
                 {item.label}
                 </Link>
             ))}
             </nav>
         </div>
 
-        <div className="mt-auto p-4 border-t border-slate-100">
-          <Link
-            to="/"
-            className="flex items-center px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-          >
-            <span className="mr-3"><LogOut size={20} /></span>
-            Sair
+        <div className="p-4 border-t border-slate-100 dark:border-slate-800">
+          <Link to="/" className="flex items-center px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+            <LogOut size={20} className="mr-3" /> Sair
           </Link>
         </div>
       </aside>
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Header */}
-        <header className="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
+        <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 h-16 flex items-center justify-between px-4 sm:px-8 transition-colors">
             <div className="flex items-center gap-4">
-                <button onClick={toggleSidebar} className="lg:hidden text-slate-500 hover:text-slate-700">
-                    <Menu size={24} />
-                </button>
-                <h2 className="text-lg font-semibold text-slate-800 hidden sm:block">Visão Geral</h2>
+                <button onClick={toggleSidebar} className="lg:hidden text-slate-500"><Menu size={24} /></button>
+                <h2 className="text-lg font-semibold text-slate-800 dark:text-white hidden sm:block">Painel Administrativo</h2>
             </div>
-            
             <div className="flex items-center gap-4">
-                <div className="hidden md:flex relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                    <input 
-                        type="text" 
-                        placeholder="Buscar candidatos, vagas..." 
-                        className="pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 w-64 transition-all"
-                    />
-                </div>
-                <button className="relative p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-full transition-colors">
-                    <Bell size={20} />
-                    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+                <button onClick={toggleTheme} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
+                  {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
                 </button>
-                <div className="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center text-white font-bold text-xs cursor-pointer">
-                    M
-                </div>
+                <button className="relative p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
+                    <Bell size={20} /><span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white dark:border-slate-900"></span>
+                </button>
+                <div className="w-8 h-8 rounded-full bg-slate-900 dark:bg-purple-600 flex items-center justify-center text-white font-bold text-xs cursor-pointer">M</div>
             </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-slate-50">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-8 bg-slate-50 dark:bg-slate-950 transition-colors">
           {children}
         </main>
       </div>

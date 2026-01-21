@@ -1,4 +1,4 @@
-import { Candidate, Job, Application, RecruiterStats } from './types';
+import { Candidate, Job, Application, RecruiterStats, CreditPackage } from './types';
 
 // MOCK FOR LOGGED IN CANDIDATE (Francisco)
 export const CURRENT_USER_CANDIDATE: Candidate = {
@@ -16,7 +16,7 @@ export const CURRENT_USER_CANDIDATE: Candidate = {
     startDate: '12/03/2026',
     targetRole: 'Analista de Marketing'
   },
-  diagnosis: "Seu perfil é mais forte em Gestão de Projetos, com experiência prática em metodologias ágeis. Há sinais claros de atuação em liderança de times pequenos, porém falta evidência numérica de resultados em projetos anteriores a 2024.",
+  diagnosis: "Seu perfil técnico é robusto, mas sua comunicação escrita subestima seus resultados de 2024. A IA detectou padrões de liderança que não constam no seu PDF original.",
   scpdBreakdown: {
     clarity: true,
     evidence: false, // Warning
@@ -24,8 +24,9 @@ export const CURRENT_USER_CANDIDATE: Candidate = {
     freshness: false // Warning
   },
   attentionPoints: [
-    "Falta detalhamento de resultados em projetos recentes.",
-    "Atualize suas certificações de 2023 para cá."
+    "Adicionar métricas de ROI no projeto da TechSol.",
+    "Sua experiência de 2023 precisa de palavras-chave mais atuais.",
+    "Otimize seu resumo para passar em filtros ATS externos."
   ],
   pastCycles: [
     { id: 'c0', status: 'closed', startDate: '10/01/2025', targetRole: 'Assistente Administrativo', result: 'closed_without_hire' }
@@ -36,6 +37,12 @@ export const CURRENT_USER_CANDIDATE: Candidate = {
   ]
 };
 
+export const CREDIT_PACKAGES: CreditPackage[] = [
+  { id: 'pkg_starter', name: 'Pack Decisão Rápida', credits: 50, price: 199, bestValue: false },
+  { id: 'pkg_growth', name: 'Pack Processo Full', credits: 200, price: 699, bestValue: true },
+  { id: 'pkg_scale', name: 'Pack Enterprise', credits: 1000, price: 2990, bestValue: false },
+];
+
 export const MOCK_RECRUITER_STATS: RecruiterStats = {
   activeJobs: 3,
   candidatesPipeline: 47,
@@ -43,6 +50,22 @@ export const MOCK_RECRUITER_STATS: RecruiterStats = {
     sent: 150,
     accepted: 45,
     ignored: 105
+  },
+  wallet: {
+    balance: 124,
+    autoRecharge: true,
+    autoRechargeThreshold: 20,
+    autoRechargeAmount: 200,
+    savedCard: {
+      last4: '4242',
+      brand: 'Mastercard'
+    },
+    transactions: [
+      { id: 'tx_1', date: '15/03/2026', description: 'Compra de Créditos (200 cr)', amount: 200, type: 'credit', status: 'completed' },
+      { id: 'tx_2', date: '16/03/2026', description: 'Diagnóstico Concluído - Vaga Mkt', amount: -15, type: 'debit', status: 'completed' },
+      { id: 'tx_3', date: '17/03/2026', description: 'Reativação Base Legada (50 cvs)', amount: -50, type: 'debit', status: 'completed' },
+      { id: 'tx_4', date: '18/03/2026', description: 'Triagem WhatsApp - João Silva', amount: -1, type: 'debit', status: 'completed' },
+    ]
   }
 };
 
@@ -104,7 +127,7 @@ export const MOCK_JOBS: Job[] = [
     applicantsCount: 23,
     postedDate: '2026-03-15',
     skills: ['Marketing Digital', 'Growth', 'Analytics'],
-    recommendationReason: "Compatível com seu perfil atual de Analista."
+    recommendationReason: "Compatível com seu diagnóstico. Cliente usa Recruta.AI para triagem."
   },
   {
     id: '2',
@@ -119,7 +142,7 @@ export const MOCK_JOBS: Job[] = [
     applicantsCount: 18,
     postedDate: '2026-03-18',
     skills: ['Scrum', 'Leadership', 'Jira'],
-    recommendationReason: "Boa oportunidade para transição de carreira."
+    recommendationReason: "Match comportamental alto para liderança ágil."
   }
 ];
 
@@ -132,6 +155,7 @@ export const MOCK_APPLICATIONS: Application[] = [
     status: 'interview',
     appliedDate: '2026-03-15',
     lastUpdate: '2026-03-17',
+    lastAction: 'Entrevista com Gestor agendada'
   },
   {
     id: '2',
@@ -141,6 +165,7 @@ export const MOCK_APPLICATIONS: Application[] = [
     status: 'analysis',
     appliedDate: '2026-03-18',
     lastUpdate: '2026-03-21',
+    lastAction: 'Aguardando revisão de IA'
   }
 ];
 

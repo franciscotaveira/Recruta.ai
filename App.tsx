@@ -3,8 +3,8 @@ import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import RecruiterLayout from './components/RecruiterLayout';
 import CandidateLayout from './components/CandidateLayout';
-import Dashboard from './pages/Dashboard';
 import RecruiterDashboard from './pages/recruiter/Dashboard';
+import Billing from './pages/recruiter/Billing';
 import CandidateDashboard from './pages/candidate/Dashboard';
 import Candidates from './pages/Candidates';
 import PendingReviews from './pages/PendingReviews';
@@ -13,6 +13,21 @@ import Blog from './pages/Blog';
 import About from './pages/About';
 import Legal from './pages/Legal';
 import ScrollToTop from './components/ScrollToTop';
+import { FileText, User, TrendingUp } from 'lucide-react';
+
+// Placeholder Components for New Features to Ensure Navigation Works
+const FeaturePlaceholder = ({ title, desc, icon: Icon }: { title: string, desc: string, icon: any }) => (
+  <div className="flex flex-col items-center justify-center h-full min-h-[60vh] text-center p-8 animate-fade-in-up">
+    <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center text-purple-600 mb-6 shadow-sm">
+      <Icon size={32} />
+    </div>
+    <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">{title}</h2>
+    <p className="text-slate-500 dark:text-slate-400 max-w-md leading-relaxed">{desc}</p>
+    <button className="mt-8 px-6 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-lg text-sm hover:opacity-90 transition-opacity">
+      Voltar ao Dashboard
+    </button>
+  </div>
+);
 
 const App = () => {
   return (
@@ -26,38 +41,74 @@ const App = () => {
         <Route path="/privacidade" element={<Legal type="privacy" />} />
         <Route path="/termos" element={<Legal type="terms" />} />
         
-        {/* Recruiter / Admin Routes */}
+        {/* Recruiter / Admin Routes (B2B - Decision Intelligence) */}
         <Route path="/recruiter/*" element={
           <RecruiterLayout>
             <Routes>
               <Route index element={<RecruiterDashboard />} />
-              <Route path="jobs" element={<div className="p-4">Módulo de Vagas (Em breve)</div>} />
+              <Route path="jobs" element={<div className="p-8 text-slate-500 dark:text-slate-400 font-medium">Gestão de Processos Seletivos (Em desenvolvimento)</div>} />
               <Route path="candidates" element={<Candidates />} />
-              <Route path="analytics" element={<div className="p-4">Analytics (Em breve)</div>} />
+              <Route path="reviews" element={<PendingReviews />} />
+              <Route path="billing" element={<Billing />} />
+              <Route path="analytics" element={<div className="p-8 text-slate-500 dark:text-slate-400 font-medium">Analytics de Decisão (Em desenvolvimento)</div>} />
               <Route path="settings" element={<Settings />} />
               <Route path="*" element={<Navigate to="/recruiter" replace />} />
             </Routes>
           </RecruiterLayout>
         } />
 
-        {/* Candidate Routes */}
+        {/* Candidate Routes (B2C - Career Engineering) */}
         <Route path="/candidate/*" element={
           <CandidateLayout>
             <Routes>
               <Route index element={<CandidateDashboard />} />
-              <Route path="profile" element={<div className="text-white p-4">Perfil (Em breve)</div>} />
-              <Route path="jobs" element={<div className="text-white p-4">Vagas (Em breve)</div>} />
-              <Route path="applications" element={<div className="text-white p-4">Candidaturas (Em breve)</div>} />
-              <Route path="evolution" element={<div className="text-white p-4">Evolução (Em breve)</div>} />
+              
+              {/* Rota: Meu Diagnóstico (SCPD) */}
+              <Route path="diagnosis" element={
+                <FeaturePlaceholder 
+                  title="Detalhamento do Score SCPD" 
+                  desc="Aqui você visualizará a análise profunda de cada pilar do seu diagnóstico: Clareza, Evidência e Foco. Gráficos de evolução estarão disponíveis na v2."
+                  icon={User}
+                />
+              } />
+              
+              {/* Rota: Currículo Vivo */}
+              <Route path="cv" element={
+                 <FeaturePlaceholder 
+                  title="Editor de Currículo Vivo" 
+                  desc="Seu perfil mestre. Edite suas experiências aqui e a IA propagará as mudanças para todas as futuras versões otimizadas que você gerar."
+                  icon={FileText}
+                />
+              } />
+              
+              {/* Rota: Vagas (Bônus) */}
+              <Route path="jobs" element={
+                 <div className="p-8">
+                    <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 p-4 rounded-xl mb-6">
+                      <p className="text-sm text-yellow-800 dark:text-yellow-200 font-bold">Lembrete: Vagas são bônus.</p>
+                    </div>
+                    <CandidateDashboard /> {/* Reusing Dashboard for jobs view as it has the list */}
+                 </div>
+              } />
+              
+              {/* Rota: Evolução */}
+              <Route path="evolution" element={
+                <FeaturePlaceholder 
+                  title="Linha do Tempo de Carreira" 
+                  desc="Visualize como seu valor de mercado aumentou desde o início do ciclo. Dados baseados em feedbacks reais de triagens."
+                  icon={TrendingUp}
+                />
+              } />
+
               <Route path="*" element={<Navigate to="/candidate" replace />} />
             </Routes>
           </CandidateLayout>
         } />
 
-        {/* Legacy Dashboard Redirect (maintain backward compatibility if needed, or redirect to recruiter) */}
+        {/* Legacy Dashboard Redirect */}
         <Route path="/dashboard/*" element={<Navigate to="/recruiter" replace />} />
 
-        {/* Auth Placeholder - Just for demo, redirects to Candidate Dashboard for now as default login */}
+        {/* Auth Placeholder - Smart Redirect */}
         <Route path="/login" element={<Navigate to="/candidate" />} />
         
         {/* Fallback */}

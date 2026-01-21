@@ -5,14 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Recruta.AI | Inteligência Artificial para Recrutamento e Seleção</title>
     <meta name="description" content="A revolução do RH: Recruta.AI elimina o currículo frio. Use nossa IA para análise de perfil comportamental, otimização de currículos e matching perfeito entre candidatos e empresas.">
-    <meta name="keywords" content="recrutamento ia, análise de currículo, seleção inteligente, vagas de emprego, rh tech, soft skills, análise comportamental, empregabilidade">
-    <meta property="og:title" content="Recruta.AI - Do Currículo Frio à Contratação Perfeita">
-    <meta property="og:description" content="Descubra o potencial humano que o papel ignora. Diagnóstico de carreira e triagem de candidatos via Inteligência Artificial.">
-    <meta property="og:type" content="website">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
+        darkMode: 'class',
         theme: {
           extend: {
             colors: {
@@ -22,6 +19,7 @@
               slate: {
                 850: '#1e293b',
                 900: '#0f172a',
+                950: '#020617'
               }
             },
             fontFamily: {
@@ -30,6 +28,7 @@
             animation: {
               'fade-in-up': 'fadeInUp 0.5s ease-out',
               'bounce-slow': 'bounce 3s infinite',
+              'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
             },
             keyframes: {
               fadeInUp: {
@@ -45,21 +44,32 @@
     <style>
       body {
         font-family: 'Inter', sans-serif;
+        transition: background-color 0.3s ease, color 0.3s ease;
       }
-      /* Custom scrollbar for dashboard */
+      /* Custom scrollbar */
       ::-webkit-scrollbar {
         width: 8px;
         height: 8px;
       }
       ::-webkit-scrollbar-track {
-        background: #f1f1f1; 
+        background: transparent; 
       }
       ::-webkit-scrollbar-thumb {
         background: #cbd5e1; 
-        border-radius: 4px;
+        border-radius: 20px;
+        border: 2px solid transparent;
+        background-clip: content-box;
       }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8; 
+      .dark ::-webkit-scrollbar-thumb {
+        background: #334155; 
+        border: 2px solid transparent;
+        background-clip: content-box;
+      }
+      
+      .glass-card {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
       }
     </style>
   <script type="importmap">
@@ -71,12 +81,13 @@
     "react-dom/": "https://esm.sh/react-dom@18.2.0/",
     "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
     "react-router-dom": "https://esm.sh/react-router-dom@6.22.3?deps=react@18.2.0,react-dom@18.2.0",
-    "lucide-react": "https://esm.sh/lucide-react@0.344.0?deps=react@18.2.0"
+    "lucide-react": "https://esm.sh/lucide-react@0.344.0?deps=react@18.2.0",
+    "@google/genai": "https://esm.sh/@google/genai@^1.38.0"
   }
 }
 </script>
 </head>
-  <body>
+  <body class="bg-slate-50 dark:bg-slate-950">
     <div id="root"></div>
   </body>
 </html>

@@ -4,6 +4,7 @@ export type CandidateStatus = 'new' | 'processing' | 'completed' | 'error';
 export type JobStatus = 'active' | 'paused' | 'closed';
 export type ApplicationStatus = 'analysis' | 'interview' | 'closed';
 
+// --- CANDIDATE TYPES ---
 export interface Cycle {
   id: string;
   status: 'active' | 'closed';
@@ -50,6 +51,7 @@ export interface Candidate {
   attentionPoints?: string[];
 }
 
+// --- RECRUITER TYPES ---
 export interface Job {
   id: string;
   title: string;
@@ -74,6 +76,37 @@ export interface Application {
   status: ApplicationStatus;
   appliedDate: string;
   lastUpdate: string;
+  lastAction?: string;
+}
+
+// --- BILLING & CREDITS ---
+export interface CreditTransaction {
+  id: string;
+  date: string;
+  description: string;
+  amount: number;
+  type: 'credit' | 'debit'; // credit = compra, debit = uso
+  status: 'completed' | 'failed' | 'pending';
+}
+
+export interface CreditPackage {
+  id: string;
+  name: string;
+  credits: number;
+  price: number;
+  bestValue?: boolean;
+}
+
+export interface RecruiterWallet {
+  balance: number;
+  autoRecharge: boolean;
+  autoRechargeThreshold: number; // Recarregar quando chegar em X
+  autoRechargeAmount: number; // Recarregar pacote ID X
+  savedCard?: {
+    last4: string;
+    brand: string;
+  };
+  transactions: CreditTransaction[];
 }
 
 export interface RecruiterStats {
@@ -83,7 +116,8 @@ export interface RecruiterStats {
     sent: number;
     accepted: number;
     ignored: number;
-  }
+  };
+  wallet: RecruiterWallet; // Linked wallet info
 }
 
 export interface StatCardProps {

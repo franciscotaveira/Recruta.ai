@@ -11,7 +11,7 @@ const Blog = () => {
       excerpt: "Descubra como os sistemas ATS (Applicant Tracking Systems) filtram 75% dos candidatos antes mesmo de um humano ler seu nome.",
       readTime: "5 min",
       image: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-      cta: "Não seja filtrado por robôs. Faça seu diagnóstico de áudio agora."
+      cta: "Não seja filtrado por robôs. Ative seu ciclo de posicionamento agora."
     },
     {
       id: 2,
@@ -20,7 +20,7 @@ const Blog = () => {
       excerpt: "Entonação, pausas e clareza. Veja como nossa IA identifica liderança e resiliência apenas ouvindo você contar sua história.",
       readTime: "7 min",
       image: "https://images.unsplash.com/photo-1589254065878-42c9da997008?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-      cta: "Descubra suas Soft Skills ocultas com nosso teste gratuito."
+      cta: "Descubra suas Soft Skills ocultas com nosso diagnóstico."
     },
     {
       id: 3,
@@ -35,7 +35,7 @@ const Blog = () => {
 
   const initPayment = () => {
     const phoneNumber = '554999999999';
-    const message = 'Olá! Li o blog e quero fazer meu diagnóstico Starter (R$ 97)';
+    const message = 'Olá! Li o blog e quero ativar meu Ciclo de Posicionamento (R$ 49)';
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
@@ -108,7 +108,7 @@ const Blog = () => {
                 className="bg-white text-purple-900 px-8 py-4 rounded-full font-bold text-lg shadow-xl hover:bg-slate-100 transition-transform hover:scale-105 flex items-center justify-center gap-3 mx-auto"
             >
                 <MessageCircle size={24} />
-                Quero meu Diagnóstico Agora
+                Ativar Ciclo Profissional
             </button>
         </div>
       </section>
