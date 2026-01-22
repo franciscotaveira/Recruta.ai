@@ -10,6 +10,7 @@ export const CURRENT_USER_CANDIDATE: Candidate = {
   score: 72, // SCPD
   date: '2026-03-12',
   plan: 'starter',
+  isActivated: true,
   currentCycle: {
     id: 'c1',
     status: 'active',
@@ -80,6 +81,7 @@ export const MOCK_CANDIDATES: Candidate[] = [
     score: 85,
     date: '2026-01-21',
     plan: 'starter',
+    isActivated: false,
     extractedData: {
       role: 'Gerente de Vendas',
       seniority: 'Sênior',
@@ -95,6 +97,7 @@ export const MOCK_CANDIDATES: Candidate[] = [
     score: 0,
     date: '2026-01-21',
     plan: 'free',
+    isActivated: false,
   },
   {
     id: '3',
@@ -104,6 +107,7 @@ export const MOCK_CANDIDATES: Candidate[] = [
     score: 92,
     date: '2026-01-20',
     plan: 'pro',
+    isActivated: true,
     extractedData: {
       role: 'Desenvolvedora Fullstack',
       seniority: 'Pleno',
@@ -150,6 +154,9 @@ export const MOCK_APPLICATIONS: Application[] = [
   {
     id: '1',
     jobId: '1',
+    candidateId: 'user-1',
+    candidateName: 'Francisco Taveira',
+    matchScore: 95,
     jobTitle: 'Analista de Marketing Pleno',
     company: 'TechCorp Brasil',
     status: 'interview',
@@ -160,9 +167,12 @@ export const MOCK_APPLICATIONS: Application[] = [
   {
     id: '2',
     jobId: '2',
+    candidateId: 'user-1',
+    candidateName: 'Francisco Taveira',
+    matchScore: 88,
     jobTitle: 'Coordenador de Projetos',
     company: 'Startup XYZ',
-    status: 'analysis',
+    status: 'screening',
     appliedDate: '2026-03-18',
     lastUpdate: '2026-03-21',
     lastAction: 'Aguardando revisão de IA'

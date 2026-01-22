@@ -26,89 +26,89 @@ const CandidateDashboard = () => {
   const subscribeLink = "https://wa.me/554999999999?text=Olá! Quero assinar a Preparação Contínua (R$ 19,90/mês).";
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8 pb-16 animate-fade-in-up relative">
+    <div className="max-w-5xl mx-auto space-y-10 pb-16 animate-fade-in-up relative">
       
-      {/* 1. HEADER: POSICIONAMENTO (Não "Vagas") */}
-      <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 shadow-sm">
-        <div className="space-y-2">
-            <div className="flex flex-wrap items-center gap-3">
-                <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${cycle?.status === 'active' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-slate-100 text-slate-500'}`}>
-                    {cycle?.status === 'active' ? 'Ciclo de Posicionamento Ativo' : 'Ciclo Finalizado'}
-                </span>
-                <span className="text-slate-400 text-xs font-medium">Iniciado em {cycle?.startDate}</span>
+      {/* UX CHANGE: Header is now compact. The Hero is the Optimizer. */}
+      <div className="flex flex-col md:flex-row justify-between items-end gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
+         <div>
+            <div className="flex items-center gap-2 mb-1">
+                <span className={`w-2 h-2 rounded-full ${cycle?.status === 'active' ? 'bg-emerald-500' : 'bg-slate-400'}`}></span>
+                <span className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Ciclo Ativo</span>
             </div>
-            <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            <h1 className="text-2xl font-black text-slate-900 dark:text-white">
                 {cycle?.targetRole}
             </h1>
-            <p className="text-slate-500 text-sm max-w-lg">
-                Seu "Currículo Vivo" está ativo. Use as ferramentas abaixo para adaptar seu perfil a qualquer oportunidade do mercado.
-            </p>
-        </div>
-        <div className="flex gap-3">
+         </div>
+         <div className="flex items-center gap-4 text-right">
+             <div>
+                 <p className="text-[10px] font-bold uppercase text-slate-400">Score SCPD</p>
+                 <p className="text-2xl font-black text-emerald-500">{user.score}<span className="text-sm text-slate-500">/100</span></p>
+             </div>
              <button className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl font-bold text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
                  <History size={16} /> Ver Histórico
              </button>
-        </div>
-      </section>
-
-      {/* 2. CORE VALUE: EXTERNAL OPTIMIZER (THE MOAT) */}
-      <div className="bg-gradient-to-r from-purple-600 to-indigo-700 rounded-2xl p-8 text-white relative overflow-hidden shadow-xl">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2"></div>
-          
-          <div className="relative z-10 grid md:grid-cols-2 gap-8 items-center">
-              <div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 rounded-full backdrop-blur-md border border-white/20 mb-4">
-                      <Wand2 size={14} className="text-yellow-300" />
-                      <span className="text-[10px] font-bold uppercase tracking-wider">Ferramenta Premium</span>
-                  </div>
-                  <h2 className="text-2xl font-black mb-3">Otimizador de Candidatura Externa</h2>
-                  <p className="text-purple-100 text-sm leading-relaxed mb-6">
-                      Vai aplicar para uma vaga no LinkedIn, Gupy ou Indeed? Cole o link ou descrição abaixo. Nossa IA reescreverá seu currículo para dar <strong>Match de 100%</strong> com os requisitos deles.
-                  </p>
-                  <ul className="space-y-2 text-xs text-purple-200 mb-6">
-                      <li className="flex items-center gap-2"><CheckCircle2 size={14} /> Ajuste automático de palavras-chave (SEO)</li>
-                      <li className="flex items-center gap-2"><CheckCircle2 size={14} /> Destaque das experiências relevantes para a vaga</li>
-                  </ul>
-              </div>
-              
-              <div className="bg-white/10 backdrop-blur-md p-6 rounded-xl border border-white/20">
-                  <label className="text-xs font-bold uppercase tracking-widest text-purple-200 mb-3 block">Cole a descrição da vaga aqui</label>
-                  <textarea 
-                    value={externalUrl}
-                    onChange={(e) => setExternalUrl(e.target.value)}
-                    placeholder="Ex: 'Procuramos Analista Sênior com experiência em React...' ou cole a URL."
-                    className="w-full h-24 bg-black/20 border border-white/10 rounded-lg p-3 text-sm text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-yellow-400 resize-none mb-4"
-                  />
-                  <button 
-                    onClick={handleOptimize}
-                    disabled={!externalUrl || isOptimizing}
-                    className="w-full bg-white text-purple-700 font-black py-3 rounded-lg hover:bg-yellow-400 hover:text-purple-900 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-                  >
-                      {isOptimizing ? (
-                          <>Gerando versão otimizada...</>
-                      ) : (
-                          <><Zap size={18} fill="currentColor" /> Gerar Currículo Adaptado</>
-                      )}
-                  </button>
-                  <p className="text-[10px] text-center text-purple-300 mt-2">Gera um PDF pronto para envio.</p>
-              </div>
-          </div>
+         </div>
       </div>
 
-      {/* 3. DIAGNÓSTICO E CURRÍCULO */}
+      {/* 1. CORE VALUE: EXTERNAL OPTIMIZER (THE MOAT) - PRIMARY ACTION */}
+      {/* This is now the "Hero" of the dashboard */}
+      <div className="bg-gradient-to-br from-indigo-900 to-purple-900 rounded-3xl p-1 border border-purple-500/30 shadow-2xl">
+        <div className="bg-slate-900/50 backdrop-blur-xl rounded-[22px] p-6 md:p-8 overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-purple-600 rounded-full blur-[120px] opacity-20 -translate-y-1/2 translate-x-1/3"></div>
+            
+            <div className="relative z-10 grid md:grid-cols-5 gap-8">
+                <div className="md:col-span-2 flex flex-col justify-center">
+                    <div className="inline-flex items-center gap-2 self-start px-3 py-1 bg-yellow-400/10 border border-yellow-400/20 rounded-full mb-4">
+                        <Wand2 size={12} className="text-yellow-400" />
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-yellow-400">Otimizador de Match</span>
+                    </div>
+                    <h2 className="text-3xl font-black text-white mb-4 leading-tight">Vai aplicar para uma vaga externa?</h2>
+                    <p className="text-slate-300 text-sm leading-relaxed mb-6">
+                        Cole a descrição da vaga (LinkedIn, Gupy, etc) ao lado. Nossa IA vai reescrever seu currículo para ter <strong>match semântico</strong> com os robôs de triagem deles.
+                    </p>
+                    <div className="flex items-center gap-4 text-xs font-bold text-purple-300">
+                        <span className="flex items-center gap-1"><CheckCircle2 size={14} /> ATS Friendly</span>
+                        <span className="flex items-center gap-1"><CheckCircle2 size={14} /> Palavras-chave</span>
+                    </div>
+                </div>
+                
+                <div className="md:col-span-3 bg-black/30 rounded-xl border border-white/10 p-1">
+                    <textarea 
+                        value={externalUrl}
+                        onChange={(e) => setExternalUrl(e.target.value)}
+                        placeholder="Cole a descrição completa da vaga aqui..."
+                        className="w-full h-32 bg-transparent border-none text-white placeholder-slate-500 p-4 focus:ring-0 resize-none text-sm"
+                    />
+                    <div className="bg-slate-900/80 p-3 rounded-b-lg flex justify-between items-center border-t border-white/5">
+                        <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Saída: PDF Otimizado</span>
+                        <button 
+                            onClick={handleOptimize}
+                            disabled={!externalUrl || isOptimizing}
+                            className="bg-white text-purple-900 px-6 py-2 rounded-lg font-black text-xs hover:bg-yellow-400 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                        >
+                            {isOptimizing ? (
+                                <><Zap size={14} className="animate-spin" /> Gerando...</>
+                            ) : (
+                                <><Zap size={14} fill="currentColor" /> Gerar Agora</>
+                            )}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </div>
+
+      {/* 2. DIAGNOSTIC & CV (Secondary Info) */}
       <div className="grid lg:grid-cols-3 gap-8">
           <section className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 md:p-8 shadow-sm space-y-6">
-              <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-purple-50 dark:bg-purple-500/10 rounded-lg text-purple-600">
-                        <User size={20} />
-                    </div>
-                    <h2 className="text-lg font-black text-slate-900 dark:text-white">Seu Diagnóstico Base</h2>
-                  </div>
-                  <div className="flex items-center gap-2">
-                      <span className="text-4xl font-black text-slate-900 dark:text-white">{user.score}</span>
-                      <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Score<br/>SCPD</span>
-                  </div>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 bg-purple-50 dark:bg-purple-500/10 rounded-lg text-purple-600">
+                    <User size={20} />
+                </div>
+                <div>
+                    <h2 className="text-lg font-black text-slate-900 dark:text-white">Análise de Perfil (Diagnóstico)</h2>
+                    <p className="text-xs text-slate-500">Baseado no seu currículo mestre.</p>
+                </div>
               </div>
 
               <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-xl border-l-4 border-purple-600">
@@ -119,7 +119,7 @@ const CandidateDashboard = () => {
 
               <div className="grid md:grid-cols-2 gap-8 pt-4">
                   <div className="space-y-4">
-                      <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Pontos Fortes Identificados</h3>
+                      <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Pontos Fortes</h3>
                       <div className="space-y-3">
                         {[
                           { label: 'Clareza de trajetória', val: user.scpdBreakdown?.clarity },
@@ -135,7 +135,7 @@ const CandidateDashboard = () => {
                       </div>
                   </div>
                   <div className="space-y-4">
-                      <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Sugestões de Melhoria</h3>
+                      <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Atenção</h3>
                       <div className="space-y-3">
                         {user.attentionPoints?.map((point, idx) => (
                           <div key={idx} className="flex items-start gap-3 p-3 bg-amber-50 dark:bg-amber-500/5 rounded-lg border border-amber-100 dark:border-amber-500/10">
@@ -153,31 +153,30 @@ const CandidateDashboard = () => {
                   <div className="p-2 bg-blue-50 dark:bg-blue-500/10 rounded-lg text-blue-600">
                     <FileText size={20} />
                   </div>
-                  <h2 className="text-lg font-black text-slate-900 dark:text-white">Currículo Vivo</h2>
+                  <div>
+                    <h2 className="text-lg font-black text-slate-900 dark:text-white">Currículo Mestre</h2>
+                    <p className="text-xs text-slate-500">Este é seu perfil base "Vivo".</p>
+                  </div>
               </div>
               
               <button className="w-full mb-4 flex items-center justify-center gap-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 py-3 rounded-xl font-bold text-sm hover:scale-[1.02] transition-all shadow-lg">
-                  <Download size={18} /> Baixar Versão Base (PDF)
+                  <Download size={18} /> Baixar PDF Original
               </button>
               
-              <p className="text-[10px] text-center text-slate-400 mb-6">
-                  Use o "Otimizador" acima para gerar versões específicas.
-              </p>
-
-              <div className="space-y-4">
+              <div className="space-y-4 mt-6">
                   <div className="p-4 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl">
                       <div className="flex justify-between items-start mb-2">
-                        <p className="font-bold text-slate-900 dark:text-white text-xs">Versões Geradas Hoje</p>
-                        <span className="text-xs font-bold text-purple-600">3</span>
+                        <p className="font-bold text-slate-900 dark:text-white text-xs">Histórico de Otimizações</p>
+                        <span className="text-xs font-bold text-purple-600">3 hoje</span>
                       </div>
                       <div className="space-y-2">
-                          <div className="flex items-center justify-between text-[10px] text-slate-500">
+                          <div className="flex items-center justify-between text-[10px] text-slate-500 group cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 p-1 rounded">
                               <span>p/ Analista Sênior (LinkedIn)</span>
-                              <Download size={12} className="cursor-pointer hover:text-purple-500" />
+                              <Download size={12} className="text-slate-400 group-hover:text-purple-500" />
                           </div>
-                          <div className="flex items-center justify-between text-[10px] text-slate-500">
+                          <div className="flex items-center justify-between text-[10px] text-slate-500 group cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 p-1 rounded">
                               <span>p/ Gerente de Projetos (Gupy)</span>
-                              <Download size={12} className="cursor-pointer hover:text-purple-500" />
+                              <Download size={12} className="text-slate-400 group-hover:text-purple-500" />
                           </div>
                       </div>
                   </div>
@@ -185,54 +184,42 @@ const CandidateDashboard = () => {
           </section>
       </div>
 
-      {/* 4. VAGAS INTERNAS (BÔNUS) - REBAIXADAS VISUALMENTE */}
-      <div id="jobs" className="pt-8 border-t border-slate-200 dark:border-slate-800">
+      {/* 4. VAGAS INTERNAS (BÔNUS) - TERTIARY */}
+      <div id="jobs" className="pt-8 border-t border-slate-200 dark:border-slate-800 opacity-80 hover:opacity-100 transition-opacity">
           <div className="flex items-center gap-3 mb-6">
-            <span className="px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 text-[10px] font-bold uppercase rounded tracking-wide border border-yellow-200 dark:border-yellow-800">Bônus</span>
-            <h2 className="text-xl font-black text-slate-900 dark:text-white">Oportunidades Internas</h2>
-            <p className="text-sm text-slate-400 hidden sm:block">- Empresas usando Recruta.AI para triagem</p>
+            <span className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] font-bold uppercase rounded tracking-wide">Bônus</span>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Oportunidades Internas (Se houver match)</h2>
           </div>
           
           <div className="grid lg:grid-cols-2 gap-8">
             <section className="space-y-4">
                 {MOCK_JOBS.map(job => (
-                    <div key={job.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl hover:border-purple-500 dark:hover:border-purple-500/50 transition-all shadow-sm group opacity-90 hover:opacity-100">
+                    <div key={job.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl hover:border-slate-300 dark:hover:border-slate-600 transition-all shadow-sm group">
                         <div className="flex justify-between items-start mb-3">
                             <div>
-                                <h3 className="text-lg font-black text-slate-900 dark:text-white group-hover:text-purple-600 transition-colors">{job.title}</h3>
-                                <p className="text-sm text-slate-500 font-medium">{job.company} • {job.location}</p>
+                                <h3 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-purple-600 transition-colors">{job.title}</h3>
+                                <p className="text-xs text-slate-500 font-medium">{job.company} • {job.location}</p>
                             </div>
-                            <span className="text-xs font-black text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1 rounded">Match {job.matchScore}%</span>
+                            <span className="text-xs font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">Match {job.matchScore}%</span>
                         </div>
-                        <p className="text-xs text-slate-400 leading-relaxed line-clamp-2">{job.recommendationReason}</p>
-                        <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end">
-                            <button className="text-xs font-bold text-purple-600 hover:text-purple-700 flex items-center gap-1">
-                                Candidatar com 1 clique <ArrowRight size={12} />
+                        <div className="mt-2 flex justify-end">
+                            <button className="text-[10px] font-bold text-slate-400 hover:text-purple-600 flex items-center gap-1">
+                                Ver detalhe <ArrowRight size={10} />
                             </button>
                         </div>
                     </div>
                 ))}
             </section>
 
-            <section className="space-y-6">
-                <div className="bg-slate-50 dark:bg-slate-800/50 border border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-6 text-center">
-                    <p className="text-sm font-bold text-slate-900 dark:text-white mb-2">Não achou vaga interna?</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 max-w-xs mx-auto">
-                        Lembre-se: o Recruta.AI serve para te preparar para o mercado externo. Use o <strong>Otimizador</strong> no topo da página para aplicar em outros sites.
+            <section className="space-y-6 flex items-center">
+                <div className="bg-transparent p-6 text-center w-full">
+                    <p className="text-xs text-slate-400 mb-2">
+                        O foco da plataforma é sua preparação. As vagas acima são apenas consequências de um bom perfil.
                     </p>
-                    <button 
-                        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                        className="text-xs font-bold text-purple-600 dark:text-purple-400 hover:underline"
-                    >
-                        Voltar ao Otimizador
-                    </button>
                 </div>
             </section>
           </div>
       </div>
-      
-      {/* Old Floating Placeholder Removed */}
-
     </div>
   );
 };

@@ -2,7 +2,7 @@ import React from 'react';
 
 export type CandidateStatus = 'new' | 'processing' | 'completed' | 'error';
 export type JobStatus = 'active' | 'paused' | 'closed';
-export type ApplicationStatus = 'analysis' | 'interview' | 'closed';
+export type ApplicationStatus = 'new' | 'screening' | 'interview' | 'shortlist' | 'offer' | 'rejected';
 
 // --- CANDIDATE TYPES ---
 export interface Cycle {
@@ -18,20 +18,28 @@ export interface Interview {
   id: string;
   company: string;
   date: string;
-  type: 'active_invite' | 'application'; // Convocação ativa vs Candidatura própria
+  type: 'active_invite' | 'application';
   status: 'completed' | 'pending';
 }
 
 export interface Candidate {
   id: string;
   name: string;
-  phone: string;
+  // Private fields (hidden until activation)
+  phone?: string; 
   email?: string;
+  linkedin?: string;
+  
   location?: string;
   status: CandidateStatus;
   score: number; // SCPD
   date: string;
   plan: 'free' | 'starter' | 'pro';
+  
+  // Recruiter specific fields
+  isActivated: boolean; // TRUE if recruiter paid 1 credit to view contact/invite
+  activationDate?: string;
+  
   currentCycle?: Cycle;
   pastCycles?: Cycle[];
   interviews?: Interview[];
@@ -43,10 +51,10 @@ export interface Candidate {
   };
   diagnosis?: string;
   scpdBreakdown?: {
-    clarity: boolean; // Clareza de trajetória
-    evidence: boolean; // Evidência de resultados
-    focus: boolean; // Foco em cargo-alvo
-    freshness: boolean; // Atualização recente
+    clarity: boolean;
+    evidence: boolean;
+    focus: boolean;
+    freshness: boolean;
   };
   attentionPoints?: string[];
 }
@@ -66,10 +74,19 @@ export interface Job {
   postedDate: string;
   skills: string[];
   recommendationReason?: string;
+  pipeline?: {
+    new: number;
+    screening: number;
+    interview: number;
+    shortlist: number;
+    offer: number;
+    rejected: number;
+  };
 }
 
 export interface Application {
   id: string;
+  candidateId: string;
   jobId: string;
   jobTitle: string;
   company: string;
@@ -77,6 +94,8 @@ export interface Application {
   appliedDate: string;
   lastUpdate: string;
   lastAction?: string;
+  candidateName: string; // Denormalized for easy access
+  matchScore: number;
 }
 
 // --- BILLING & CREDITS ---
@@ -85,8 +104,9 @@ export interface CreditTransaction {
   date: string;
   description: string;
   amount: number;
-  type: 'credit' | 'debit'; // credit = compra, debit = uso
+  type: 'credit' | 'debit'; // credit = recharge, debit = usage
   status: 'completed' | 'failed' | 'pending';
+  relatedCandidateId?: string;
 }
 
 export interface CreditPackage {
@@ -100,8 +120,8 @@ export interface CreditPackage {
 export interface RecruiterWallet {
   balance: number;
   autoRecharge: boolean;
-  autoRechargeThreshold: number; // Recarregar quando chegar em X
-  autoRechargeAmount: number; // Recarregar pacote ID X
+  autoRechargeThreshold: number;
+  autoRechargeAmount: number;
   savedCard?: {
     last4: string;
     brand: string;
@@ -117,14 +137,5 @@ export interface RecruiterStats {
     accepted: number;
     ignored: number;
   };
-  wallet: RecruiterWallet; // Linked wallet info
-}
-
-export interface StatCardProps {
-  title: string;
-  value: string;
-  change?: string;
-  trend?: 'up' | 'down' | 'neutral';
-  icon: React.ReactNode;
-  colorClass?: string;
+  wallet: RecruiterWallet;
 }

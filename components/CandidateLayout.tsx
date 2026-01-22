@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, User, Briefcase, FileText, TrendingUp, LogOut, Menu, X, Mic, Sun, Moon, Sparkles, BookOpen } from 'lucide-react';
+import { LayoutDashboard, User, Briefcase, FileText, TrendingUp, LogOut, Menu, X, Mic, Sun, Moon, Sparkles, BookOpen, Gift } from 'lucide-react';
 import AICopilot from './AICopilot';
 
 interface LayoutProps {
@@ -40,11 +40,12 @@ const CandidateLayout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   const menuItems = [
-    { path: '/candidate', icon: <LayoutDashboard size={20} />, label: 'Meu Perfil' },
-    { path: '/candidate/diagnosis', icon: <User size={20} />, label: 'Diagnóstico' },
+    { path: '/candidate', icon: <LayoutDashboard size={20} />, label: 'Dashboard & Otimizador' },
+    { path: '/candidate/diagnosis', icon: <User size={20} />, label: 'Meu Diagnóstico (SCPD)' },
     { path: '/candidate/cv', icon: <FileText size={20} />, label: 'Currículo Vivo' },
-    { path: '/candidate/jobs', icon: <Sparkles size={20} className="text-yellow-500" />, label: 'Vagas (Bônus)' },
-    { path: '/candidate/evolution', icon: <TrendingUp size={20} />, label: 'Evolução' },
+    { path: '/candidate/evolution', icon: <TrendingUp size={20} />, label: 'Evolução de Carreira' },
+    // UX DECISION: Moved Bonus Jobs to the bottom and removed "Highlight" color to enforce hierarchy
+    { path: '/candidate/jobs', icon: <Gift size={20} />, label: 'Vagas (Bônus)' },
   ];
 
   return (

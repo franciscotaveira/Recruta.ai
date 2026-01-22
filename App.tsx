@@ -5,6 +5,7 @@ import RecruiterLayout from './components/RecruiterLayout';
 import CandidateLayout from './components/CandidateLayout';
 import RecruiterDashboard from './pages/recruiter/Dashboard';
 import RecruiterJobs from './pages/recruiter/Jobs';
+import JobKanban from './pages/recruiter/JobKanban';
 import Billing from './pages/recruiter/Billing';
 import CandidateDashboard from './pages/candidate/Dashboard';
 import Candidates from './pages/Candidates';
@@ -48,7 +49,11 @@ const App = () => {
             <Routes>
               <Route index element={<RecruiterDashboard />} />
               <Route path="jobs" element={<RecruiterJobs />} />
-              <Route path="candidates" element={<Candidates />} />
+              <Route path="jobs/:id" element={<JobKanban />} />
+              
+              {/* Note: In a real app, 'Candidates' page uses the updated version in /recruiter/Candidates.tsx */}
+              <Route path="candidates" element={<Candidates />} /> 
+              
               <Route path="reviews" element={<PendingReviews />} />
               <Route path="billing" element={<Billing />} />
               <Route path="analytics" element={<div className="p-8 text-slate-500 dark:text-slate-400 font-medium">Analytics de Decisão (Em desenvolvimento)</div>} />
