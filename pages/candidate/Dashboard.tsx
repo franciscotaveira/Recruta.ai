@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { CURRENT_USER_CANDIDATE, MOCK_JOBS, MOCK_APPLICATIONS } from '../../constants';
 import { 
   CheckCircle2, AlertTriangle, Download, FileText, 
-  Briefcase, Calendar, Zap, ArrowRight, Sparkles, User, Star, History, Clock, Bot, Copy, ExternalLink, Wand2
+  Briefcase, Calendar, Zap, ArrowRight, Sparkles, User, Star, History, Clock, Bot, Copy, ExternalLink, Zap, Wand2
 } from 'lucide-react';
 
 const CandidateDashboard = () => {

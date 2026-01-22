@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Mic, CheckCircle2, Sparkles, Building2, UserCircle, Zap, ChevronDown, ChevronUp, Coins, HelpCircle, XCircle, TrendingUp, Target, Shield, Star, Award, ArrowRight, BarChart3, Lock, Wand2, Briefcase, Filter, Database, Brain, Clock, Search } from 'lucide-react';
+import { Mic, CheckCircle2, Sparkles, Building2, UserCircle, Zap, ChevronDown, ChevronUp, Coins, HelpCircle, XCircle, TrendingUp, Target, Shield, Star, Award, ArrowRight, BarChart3, Lock, Wand2, Briefcase, Filter, Database, Brain, Clock, Search, Upload, FileDown, ScanSearch, ListOrdered } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const LandingPage = () => {
@@ -15,15 +15,21 @@ const LandingPage = () => {
         primary: 'purple',
         gradient: 'from-purple-600 to-indigo-600',
         bg: 'bg-purple-50',
+        bgSoft: 'bg-purple-50/50',
         button: 'bg-purple-600 hover:bg-purple-700',
-        text: 'text-purple-600'
+        text: 'text-purple-600',
+        border: 'border-purple-200',
+        iconBg: 'bg-purple-100'
       }
     : {
         primary: 'emerald',
         gradient: 'from-emerald-600 to-teal-600',
         bg: 'bg-emerald-50',
+        bgSoft: 'bg-emerald-50/50',
         button: 'bg-emerald-600 hover:bg-emerald-700',
-        text: 'text-emerald-600'
+        text: 'text-emerald-600',
+        border: 'border-emerald-200',
+        iconBg: 'bg-emerald-100'
       };
 
   // -- DATA: TICKER NOTIFICATIONS --
@@ -212,7 +218,7 @@ const LandingPage = () => {
                 {activeTab === 'candidate' ? (
                     "75% dos currículos são descartados por sistemas automáticos (ATS). Nossa IA reescreve seu perfil para passar pelo filtro e chegar na entrevista."
                 ) : (
-                    "Sua caixa de entrada tem 500 currículos, mas apenas 5 prestam. Nossa IA tria, ranqueia e entrega o shortlist pronto. Pague apenas por candidato qualificado."
+                    "Sua caixa de entrada tem 500 currículos, mas apenas 5 prestam. Nossa IA tria e ranqueia automaticamente. Você escolhe a quantidade de disparos e paga apenas por ativação realizada."
                 )}
             </p>
             
@@ -243,6 +249,73 @@ const LandingPage = () => {
                 <span className="font-bold text-slate-600">Mercado Livre</span>
             </div>
         </div>
+      </div>
+
+      {/* 3.5 HOW IT WORKS (NEW SECTION) */}
+      <div id="como-funciona" className="py-24 bg-white border-b border-slate-100 transition-colors duration-500 relative z-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center mb-16">
+                  <h2 className={`font-bold uppercase tracking-widest text-sm mb-4 ${theme.text}`}>
+                      Passo a Passo
+                  </h2>
+                  <h3 className="text-3xl md:text-4xl font-extrabold text-slate-900">
+                      Como funciona na prática
+                  </h3>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-12 relative">
+                  {/* Connecting Line (Desktop) */}
+                  <div className={`hidden md:block absolute top-12 left-[16%] right-[16%] h-1 bg-gradient-to-r ${theme.gradient} opacity-20 -z-10 rounded-full`}></div>
+
+                  {/* Step 1 */}
+                  <div className="flex flex-col items-center text-center group">
+                      <div className={`w-24 h-24 rounded-3xl flex items-center justify-center mb-6 shadow-xl transition-all duration-300 group-hover:-translate-y-2 group-hover:scale-105 ${theme.iconBg} ${theme.text}`}>
+                          {activeTab === 'candidate' ? <Upload size={40} /> : <Briefcase size={40} />}
+                      </div>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold mb-4 shadow-md ${theme.button}`}>1</div>
+                      <h4 className="text-xl font-bold text-slate-900 mb-2">
+                          {activeTab === 'candidate' ? 'Upload do Currículo' : 'Defina a Vaga'}
+                      </h4>
+                      <p className="text-slate-500 leading-relaxed max-w-xs">
+                          {activeTab === 'candidate' 
+                              ? 'Envie seu PDF atual ou cole o texto do seu perfil. Leva menos de 1 minuto.' 
+                              : 'Descreva os requisitos da vaga ou cole o link do LinkedIn/Gupy.'}
+                      </p>
+                  </div>
+
+                  {/* Step 2 */}
+                  <div className="flex flex-col items-center text-center group">
+                      <div className={`w-24 h-24 rounded-3xl flex items-center justify-center mb-6 shadow-xl transition-all duration-300 group-hover:-translate-y-2 group-hover:scale-105 ${theme.iconBg} ${theme.text}`}>
+                          {activeTab === 'candidate' ? <ScanSearch size={40} /> : <Brain size={40} />}
+                      </div>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold mb-4 shadow-md ${theme.button}`}>2</div>
+                      <h4 className="text-xl font-bold text-slate-900 mb-2">
+                          {activeTab === 'candidate' ? 'Análise Profunda' : 'Triagem Automática'}
+                      </h4>
+                      <p className="text-slate-500 leading-relaxed max-w-xs">
+                          {activeTab === 'candidate' 
+                              ? 'A IA identifica falhas, buracos na experiência e problemas de formatação ATS.' 
+                              : 'A IA lê centenas de currículos em segundos e verifica os pré-requisitos.'}
+                      </p>
+                  </div>
+
+                  {/* Step 3 */}
+                  <div className="flex flex-col items-center text-center group">
+                      <div className={`w-24 h-24 rounded-3xl flex items-center justify-center mb-6 shadow-xl transition-all duration-300 group-hover:-translate-y-2 group-hover:scale-105 ${theme.iconBg} ${theme.text}`}>
+                          {activeTab === 'candidate' ? <FileDown size={40} /> : <ListOrdered size={40} />}
+                      </div>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold mb-4 shadow-md ${theme.button}`}>3</div>
+                      <h4 className="text-xl font-bold text-slate-900 mb-2">
+                          {activeTab === 'candidate' ? 'Versão Otimizada' : 'Ranking de Match'}
+                      </h4>
+                      <p className="text-slate-500 leading-relaxed max-w-xs">
+                          {activeTab === 'candidate' 
+                              ? 'Baixe seu novo currículo reescrito com palavras-chave que os robôs amam.' 
+                              : 'Receba a lista dos Top 10 candidatos ideais para entrevistar.'}
+                      </p>
+                  </div>
+              </div>
+          </div>
       </div>
 
       {/* 4. DUAL PROBLEM SECTION */}

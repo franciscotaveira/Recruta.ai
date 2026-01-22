@@ -51,6 +51,31 @@ export const CandidateService = {
     candidates[index].activationDate = new Date().toISOString();
     localStorage.setItem(STORAGE_KEYS.CANDIDATES, JSON.stringify(candidates));
     return true;
+  },
+
+  // MOCK: Add Batch Candidates from Upload
+  addBatchCandidates: (count: number, jobTitle: string): void => {
+    const candidates = CandidateService.getAll();
+    const newCandidates: Candidate[] = Array.from({ length: count }).map((_, i) => ({
+      id: `batch_${Date.now()}_${i}`,
+      name: `Candidato Importado ${i + 1}`,
+      phone: '+55 11 99999-9999',
+      email: `candidato${i}@exemplo.com`,
+      status: 'processing', // Starts processing immediately upon payment
+      score: 0,
+      date: new Date().toLocaleDateString('pt-BR'),
+      plan: 'pro',
+      isActivated: true, // Auto-activated because user paid
+      activationDate: new Date().toISOString(),
+      extractedData: {
+        role: jobTitle,
+        seniority: 'Pleno',
+        topSkills: ['Skill A', 'Skill B']
+      }
+    }));
+    
+    const updated = [...newCandidates, ...candidates];
+    localStorage.setItem(STORAGE_KEYS.CANDIDATES, JSON.stringify(updated));
   }
 };
 
@@ -69,7 +94,7 @@ export const CreditService = {
     return JSON.parse(localStorage.getItem(STORAGE_KEYS.WALLET) || '{}');
   },
 
-  // CORE LOGIC: Consume Credit
+  // CORE LOGIC: Consume Credit Single
   consumeCredit: (description: string, relatedCandidateId?: string): boolean => {
     const wallet = CreditService.getWallet();
     
@@ -87,6 +112,32 @@ export const CreditService = {
       type: 'debit',
       status: 'completed',
       relatedCandidateId
+    };
+    
+    wallet.transactions.unshift(newTx);
+    
+    // Persist
+    localStorage.setItem(STORAGE_KEYS.WALLET, JSON.stringify(wallet));
+    return true;
+  },
+
+  // CORE LOGIC: Consume Batch Credits
+  consumeBatchCredits: (amount: number, description: string): boolean => {
+    const wallet = CreditService.getWallet();
+    
+    if (wallet.balance < amount) return false;
+
+    // Deduct
+    wallet.balance -= amount;
+    
+    // Log Transaction
+    const newTx: CreditTransaction = {
+      id: `tx_batch_${Date.now()}`,
+      date: new Date().toLocaleDateString('pt-BR'),
+      description,
+      amount: -amount,
+      type: 'debit',
+      status: 'completed'
     };
     
     wallet.transactions.unshift(newTx);
