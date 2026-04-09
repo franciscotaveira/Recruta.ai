@@ -3,7 +3,13 @@ import type { ReactNode } from 'react';
 
 export type CandidateStatus = 'new' | 'processing' | 'completed' | 'error';
 export type JobStatus = 'active' | 'paused' | 'closed';
-export type ApplicationStatus = 'new' | 'screening' | 'interview' | 'shortlist' | 'offer' | 'rejected';
+export type ApplicationStatus =
+  | 'new'
+  | 'screening'
+  | 'interview'
+  | 'shortlist'
+  | 'offer'
+  | 'rejected';
 
 // --- CANDIDATE TYPES ---
 export interface Cycle {
@@ -27,20 +33,20 @@ export interface Candidate {
   id: string;
   name: string;
   // Private fields (hidden until activation)
-  phone?: string; 
+  phone?: string;
   email?: string;
   linkedin?: string;
-  
+
   location?: string;
   status: CandidateStatus;
   score: number; // SCPD
   date: string;
   plan: 'free' | 'starter' | 'pro';
-  
+
   // Recruiter specific fields
   isActivated: boolean; // TRUE if recruiter paid 1 credit to view contact/invite
   activationDate?: string;
-  
+
   currentCycle?: Cycle;
   pastCycles?: Cycle[];
   interviews?: Interview[];

@@ -6,40 +6,6 @@
     <title>Recruta.AI | Inteligência Artificial para Recrutamento e Seleção</title>
     <meta name="description" content="A revolução do RH: Recruta.AI elimina o currículo frio. Use nossa IA para análise de perfil comportamental, otimização de currículos e matching perfeito entre candidatos e empresas.">
     
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        darkMode: 'class',
-        theme: {
-          extend: {
-            colors: {
-              whatsapp: '#25D366',
-              whatsappDark: '#128C7E',
-              navy: '#1E3A8A',
-              slate: {
-                850: '#1e293b',
-                900: '#0f172a',
-                950: '#020617'
-              }
-            },
-            fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-            },
-            animation: {
-              'fade-in-up': 'fadeInUp 0.5s ease-out',
-              'bounce-slow': 'bounce 3s infinite',
-              'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-            },
-            keyframes: {
-              fadeInUp: {
-                '0%': { opacity: '0', transform: 'translateY(10px)' },
-                '100%': { opacity: '1', transform: 'translateY(0)' },
-              }
-            }
-          }
-        }
-      }
-    </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
       body {
@@ -82,13 +48,13 @@
     "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
     "react-router-dom": "https://esm.sh/react-router-dom@6.22.3?deps=react@18.2.0,react-dom@18.2.0",
     "lucide-react": "https://esm.sh/lucide-react@0.344.0?deps=react@18.2.0",
-    "@google/genai": "https://esm.sh/@google/genai@^1.38.0",
-    "@google/generative-ai": "https://esm.sh/@google/generative-ai@^0.24.1"
+    "@google/genai": "https://esm.sh/@google/genai@^1.38.0"
   }
 }
 </script>
 </head>
   <body class="bg-slate-50 dark:bg-slate-950">
     <div id="root"></div>
-  </body>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
 </html>

@@ -15,27 +15,34 @@ export const CURRENT_USER_CANDIDATE: Candidate = {
     id: 'c1',
     status: 'active',
     startDate: '12/03/2026',
-    targetRole: 'Analista de Marketing'
+    targetRole: 'Analista de Marketing',
   },
-  diagnosis: "Seu perfil técnico é robusto, mas sua comunicação escrita subestima seus resultados de 2024. A IA detectou padrões de liderança que não constam no seu PDF original.",
+  diagnosis:
+    'Seu perfil técnico é robusto, mas sua comunicação escrita subestima seus resultados de 2024. A IA detectou padrões de liderança que não constam no seu PDF original.',
   scpdBreakdown: {
     clarity: true,
     evidence: false, // Warning
     focus: true,
-    freshness: false // Warning
+    freshness: false, // Warning
   },
   attentionPoints: [
-    "Adicionar métricas de ROI no projeto da TechSol.",
-    "Sua experiência de 2023 precisa de palavras-chave mais atuais.",
-    "Otimize seu resumo para passar em filtros ATS externos."
+    'Adicionar métricas de ROI no projeto da TechSol.',
+    'Sua experiência de 2023 precisa de palavras-chave mais atuais.',
+    'Otimize seu resumo para passar em filtros ATS externos.',
   ],
   pastCycles: [
-    { id: 'c0', status: 'closed', startDate: '10/01/2025', targetRole: 'Assistente Administrativo', result: 'closed_without_hire' }
+    {
+      id: 'c0',
+      status: 'closed',
+      startDate: '10/01/2025',
+      targetRole: 'Assistente Administrativo',
+      result: 'closed_without_hire',
+    },
   ],
   interviews: [
     { id: 'i1', company: 'TechSol', date: '20/03/2026', type: 'active_invite', status: 'pending' },
-    { id: 'i2', company: 'LogiFast', date: '15/03/2026', type: 'application', status: 'completed' }
-  ]
+    { id: 'i2', company: 'LogiFast', date: '15/03/2026', type: 'application', status: 'completed' },
+  ],
 };
 
 export const CREDIT_PACKAGES: CreditPackage[] = [
@@ -50,7 +57,7 @@ export const MOCK_RECRUITER_STATS: RecruiterStats = {
   invites: {
     sent: 150,
     accepted: 45,
-    ignored: 105
+    ignored: 105,
   },
   wallet: {
     balance: 124,
@@ -59,15 +66,43 @@ export const MOCK_RECRUITER_STATS: RecruiterStats = {
     autoRechargeAmount: 200,
     savedCard: {
       last4: '4242',
-      brand: 'Mastercard'
+      brand: 'Mastercard',
     },
     transactions: [
-      { id: 'tx_1', date: '15/03/2026', description: 'Compra de Créditos (200 cr)', amount: 200, type: 'credit', status: 'completed' },
-      { id: 'tx_2', date: '16/03/2026', description: 'Diagnóstico Concluído - Vaga Mkt', amount: -15, type: 'debit', status: 'completed' },
-      { id: 'tx_3', date: '17/03/2026', description: 'Reativação Base Legada (50 cvs)', amount: -50, type: 'debit', status: 'completed' },
-      { id: 'tx_4', date: '18/03/2026', description: 'Triagem WhatsApp - João Silva', amount: -1, type: 'debit', status: 'completed' },
-    ]
-  }
+      {
+        id: 'tx_1',
+        date: '15/03/2026',
+        description: 'Compra de Créditos (200 cr)',
+        amount: 200,
+        type: 'credit',
+        status: 'completed',
+      },
+      {
+        id: 'tx_2',
+        date: '16/03/2026',
+        description: 'Diagnóstico Concluído - Vaga Mkt',
+        amount: -15,
+        type: 'debit',
+        status: 'completed',
+      },
+      {
+        id: 'tx_3',
+        date: '17/03/2026',
+        description: 'Reativação Base Legada (50 cvs)',
+        amount: -50,
+        type: 'debit',
+        status: 'completed',
+      },
+      {
+        id: 'tx_4',
+        date: '18/03/2026',
+        description: 'Triagem WhatsApp - João Silva',
+        amount: -1,
+        type: 'debit',
+        status: 'completed',
+      },
+    ],
+  },
 };
 
 export const MOCK_CANDIDATES: Candidate[] = [
@@ -85,9 +120,9 @@ export const MOCK_CANDIDATES: Candidate[] = [
     extractedData: {
       role: 'Gerente de Vendas',
       seniority: 'Sênior',
-      topSkills: ['Liderança', 'CRM', 'Negociação B2B']
+      topSkills: ['Liderança', 'CRM', 'Negociação B2B'],
     },
-    scpdBreakdown: { clarity: true, evidence: true, focus: true, freshness: true }
+    scpdBreakdown: { clarity: true, evidence: true, focus: true, freshness: true },
   },
   {
     id: '2',
@@ -111,9 +146,9 @@ export const MOCK_CANDIDATES: Candidate[] = [
     extractedData: {
       role: 'Desenvolvedora Fullstack',
       seniority: 'Pleno',
-      topSkills: ['React', 'Node.js', 'PostgreSQL']
+      topSkills: ['React', 'Node.js', 'PostgreSQL'],
     },
-    scpdBreakdown: { clarity: true, evidence: true, focus: true, freshness: true }
+    scpdBreakdown: { clarity: true, evidence: true, focus: true, freshness: true },
   },
 ];
 
@@ -131,7 +166,7 @@ export const MOCK_JOBS: Job[] = [
     applicantsCount: 23,
     postedDate: '2026-03-15',
     skills: ['Marketing Digital', 'Growth', 'Analytics'],
-    recommendationReason: "Compatível com seu diagnóstico. Cliente usa Recruta.AI para triagem."
+    recommendationReason: 'Compatível com seu diagnóstico. Cliente usa Recruta.AI para triagem.',
   },
   {
     id: '2',
@@ -146,8 +181,8 @@ export const MOCK_JOBS: Job[] = [
     applicantsCount: 18,
     postedDate: '2026-03-18',
     skills: ['Scrum', 'Leadership', 'Jira'],
-    recommendationReason: "Match comportamental alto para liderança ágil."
-  }
+    recommendationReason: 'Match comportamental alto para liderança ágil.',
+  },
 ];
 
 export const MOCK_APPLICATIONS: Application[] = [
@@ -162,7 +197,7 @@ export const MOCK_APPLICATIONS: Application[] = [
     status: 'interview',
     appliedDate: '2026-03-15',
     lastUpdate: '2026-03-17',
-    lastAction: 'Entrevista com Gestor agendada'
+    lastAction: 'Entrevista com Gestor agendada',
   },
   {
     id: '2',
@@ -175,8 +210,8 @@ export const MOCK_APPLICATIONS: Application[] = [
     status: 'screening',
     appliedDate: '2026-03-18',
     lastUpdate: '2026-03-21',
-    lastAction: 'Aguardando revisão de IA'
-  }
+    lastAction: 'Aguardando revisão de IA',
+  },
 ];
 
 export const CHART_DATA = [];

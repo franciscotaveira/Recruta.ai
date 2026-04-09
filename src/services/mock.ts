@@ -6,7 +6,7 @@ const STORAGE_KEYS = {
   CANDIDATES: 'recruta_candidates',
   JOBS: 'recruta_jobs',
   WALLET: 'recruta_wallet',
-  APPLICATIONS: 'recruta_applications'
+  APPLICATIONS: 'recruta_applications',
 };
 
 // --- HELPER: Initialize Data if empty ---
@@ -35,16 +35,16 @@ export const CandidateService = {
   getAll: (): Candidate[] => {
     return JSON.parse(localStorage.getItem(STORAGE_KEYS.CANDIDATES) || '[]');
   },
-  
+
   getById: (id: string): Candidate | undefined => {
     const candidates = CandidateService.getAll();
-    return candidates.find(c => c.id === id);
+    return candidates.find((c) => c.id === id);
   },
 
   // ACTIVATE CANDIDATE (Consumes Credit Logic is in CreditService, this just updates the flag)
   activateCandidate: (id: string): boolean => {
     const candidates = CandidateService.getAll();
-    const index = candidates.findIndex(c => c.id === id);
+    const index = candidates.findIndex((c) => c.id === id);
     if (index === -1) return false;
 
     candidates[index].isActivated = true;
@@ -70,13 +70,13 @@ export const CandidateService = {
       extractedData: {
         role: jobTitle,
         seniority: 'Pleno',
-        topSkills: ['Skill A', 'Skill B']
-      }
+        topSkills: ['Skill A', 'Skill B'],
+      },
     }));
-    
+
     const updated = [...newCandidates, ...candidates];
     localStorage.setItem(STORAGE_KEYS.CANDIDATES, JSON.stringify(updated));
-  }
+  },
 };
 
 export const JobService = {
@@ -85,8 +85,8 @@ export const JobService = {
   },
   getById: (id: string): Job | undefined => {
     const jobs = JobService.getAll();
-    return jobs.find(j => j.id === id);
-  }
+    return jobs.find((j) => j.id === id);
+  },
 };
 
 export const CreditService = {
@@ -97,12 +97,12 @@ export const CreditService = {
   // CORE LOGIC: Consume Credit Single
   consumeCredit: (description: string, relatedCandidateId?: string): boolean => {
     const wallet = CreditService.getWallet();
-    
+
     if (wallet.balance < 1) return false;
 
     // Deduct
     wallet.balance -= 1;
-    
+
     // Log Transaction
     const newTx: CreditTransaction = {
       id: `tx_${Date.now()}`,
@@ -111,11 +111,11 @@ export const CreditService = {
       amount: -1,
       type: 'debit',
       status: 'completed',
-      relatedCandidateId
+      relatedCandidateId,
     };
-    
+
     wallet.transactions.unshift(newTx);
-    
+
     // Persist
     localStorage.setItem(STORAGE_KEYS.WALLET, JSON.stringify(wallet));
     return true;
@@ -124,12 +124,12 @@ export const CreditService = {
   // CORE LOGIC: Consume Batch Credits
   consumeBatchCredits: (amount: number, description: string): boolean => {
     const wallet = CreditService.getWallet();
-    
+
     if (wallet.balance < amount) return false;
 
     // Deduct
     wallet.balance -= amount;
-    
+
     // Log Transaction
     const newTx: CreditTransaction = {
       id: `tx_batch_${Date.now()}`,
@@ -137,11 +137,11 @@ export const CreditService = {
       description,
       amount: -amount,
       type: 'debit',
-      status: 'completed'
+      status: 'completed',
     };
-    
+
     wallet.transactions.unshift(newTx);
-    
+
     // Persist
     localStorage.setItem(STORAGE_KEYS.WALLET, JSON.stringify(wallet));
     return true;
@@ -150,18 +150,18 @@ export const CreditService = {
   addCredits: (amount: number, description: string) => {
     const wallet = CreditService.getWallet();
     wallet.balance += amount;
-    
+
     const newTx: CreditTransaction = {
-        id: `tx_${Date.now()}`,
-        date: new Date().toLocaleDateString('pt-BR'),
-        description,
-        amount: amount,
-        type: 'credit',
-        status: 'completed',
-      };
-      
+      id: `tx_${Date.now()}`,
+      date: new Date().toLocaleDateString('pt-BR'),
+      description,
+      amount: amount,
+      type: 'credit',
+      status: 'completed',
+    };
+
     wallet.transactions.unshift(newTx);
     localStorage.setItem(STORAGE_KEYS.WALLET, JSON.stringify(wallet));
     return wallet;
-  }
+  },
 };
