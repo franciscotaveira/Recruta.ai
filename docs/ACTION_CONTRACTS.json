@@ -1,0 +1,135 @@
+{
+  "version": "1.0.0",
+  "principles": [
+    "No action without a contract",
+    "Risk level determines approval flow",
+    "Inputs must be validated"
+  ],
+  "actions": [
+    {
+      "id": "tenant.create",
+      "description": "Register a new user tenant",
+      "category": "AUTH",
+      "risk_level": "low",
+      "approval_required": false,
+      "rate_limit": "5/hour",
+      "audit_events": ["USER_CREATED", "TENANT_CREATED"],
+      "inputs_schema": {
+        "email": "string|email",
+        "role": "string|enum:candidate,recruiter"
+      }
+    },
+    {
+      "id": "candidate.upload_cv",
+      "description": "Upload resume file for processing",
+      "category": "CANDIDATE",
+      "risk_level": "medium",
+      "approval_required": false,
+      "rate_limit": "10/day",
+      "estimated_cost": 0.00,
+      "audit_events": ["CV_UPLOADED"],
+      "preconditions": ["user_is_authenticated", "file_size_under_5mb"],
+      "inputs_schema": {
+        "file_path": "string",
+        "file_type": "string|enum:pdf,docx"
+      }
+    },
+    {
+      "id": "candidate.analyze_cv",
+      "description": "Run AI analysis on uploaded CV",
+      "category": "AI_JOB",
+      "risk_level": "high",
+      "approval_required": true,
+      "rate_limit": "5/day",
+      "estimated_cost": 0.05,
+      "audit_events": ["CREDIT_DEDUCTED", "ANALYSIS_GENERATED"],
+      "rollback_strategy": "refund_credit",
+      "inputs_schema": {
+        "cv_id": "uuid",
+        "target_role": "string"
+      }
+    },
+    {
+      "id": "recruiter.unlock_candidate",
+      "description": "Reveal contact info of a candidate",
+      "category": "BILLING",
+      "risk_level": "high",
+      "approval_required": true,
+      "estimated_cost": 1.00,
+      "audit_events": ["CREDIT_SPENT", "CONTACT_REVEALED"],
+      "inputs_schema": {
+        "candidate_id": "uuid"
+      }
+    },
+    {
+      "id": "job.create",
+      "description": "Post a new job opening",
+      "category": "RECRUITER",
+      "risk_level": "medium",
+      "approval_required": false,
+      "inputs_schema": {
+        "title": "string",
+        "description": "string"
+      }
+    },
+    {
+      "id": "billing.add_credits",
+      "description": "Purchase credit package",
+      "category": "BILLING",
+      "risk_level": "critical",
+      "approval_required": true,
+      "audit_events": ["PAYMENT_PROCESSED", "BALANCE_UPDATED"],
+      "inputs_schema": {
+        "package_id": "string",
+        "payment_method_id": "string"
+      }
+    },
+    {
+      "id": "terminal.run_safe",
+      "description": "Execute approved maintenance script",
+      "category": "OPS",
+      "risk_level": "high",
+      "allowlist": ["maintenance_scripts_only"],
+      "approval_required": true,
+      "inputs_schema": {
+        "script_name": "string"
+      }
+    },
+    {
+      "id": "observability.create_alert",
+      "description": "Set up a new system alert",
+      "category": "OPS",
+      "risk_level": "low",
+      "approval_required": false
+    },
+    {
+      "id": "audit.export",
+      "description": "Export audit logs for compliance",
+      "category": "COMPLIANCE",
+      "risk_level": "medium",
+      "approval_required": true
+    },
+    {
+      "id": "landing.preview",
+      "description": "Preview landing page changes",
+      "category": "CMS",
+      "risk_level": "low",
+      "approval_required": false
+    },
+    {
+      "id": "landing.deploy_prod",
+      "description": "Deploy landing page to production",
+      "category": "CMS",
+      "risk_level": "critical",
+      "approval_required": true,
+      "preconditions": ["staging_ok"]
+    },
+    {
+      "id": "infra.rotate_keys",
+      "description": "Rotate API keys",
+      "category": "INFRA",
+      "risk_level": "critical",
+      "approval_required": true
+    }
+  ]
+}
