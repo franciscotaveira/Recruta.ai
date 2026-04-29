@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  recruta-app:
+    build: .
+    container_name: recruta_ai_app
+    restart: unless-stopped
+    ports:
+      - "3456:3456"
+    env_file:
+      - .env
+    volumes:
+      - recruta_data:/app/server/storage/data
+    networks:
+      - recruta_net
+
+  evolution-api:
+    image: atendai/evolution-api:v2.2.1
+    container_name: command-tower-evolution
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    env_file:
+      - .env
+    volumes:
+      - evolution_instances:/evolution/instances
+    environment:
+      - DATABASE_ENABLED=false
+      - REDIS_ENABLED=true
+      - REDIS_HOST=command-tower-redis
+      - REDIS_PORT=6379
+      - AUTH_API_KEY=mct_master_key_2026
+    networks:
+      - recruta_net
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:alpine
+    container_name: command-tower-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - recruta_redis:/data
+    networks:
+      - recruta_net
+
+volumes:
+  recruta_data:
+  evolution_instances:
+  recruta_redis:
+
+networks:
+  recruta_net:
+    driver: bridge

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, BookOpen, Clock, Tag, MessageCircle, Mic, Star } from 'lucide-react';
+import { ArrowRight, Clock, Tag, MessageCircle, Mic, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Blog = () => {

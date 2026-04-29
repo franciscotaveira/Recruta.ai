@@ -1,5 +1,5 @@
 import React from 'react';
-import { Save, Bell, Smartphone, Shield, CreditCard, Users } from 'lucide-react';
+import { Save, Bell, Smartphone, Shield, Users } from 'lucide-react';
 
 const Settings = () => {
   return (

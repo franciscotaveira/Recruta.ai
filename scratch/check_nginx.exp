@@ -1,0 +1,9 @@
+#!/usr/bin/expect -f
+set timeout 60
+set vps_root_password "p8D(zq;)HuO-#Va6BOW#"
+set vps_ip "187.127.9.92"
+
+spawn ssh -o StrictHostKeyChecking=no root@$vps_ip "ls /etc/nginx/sites-enabled/ && cat /etc/nginx/sites-enabled/*"
+expect "password:"
+send "$vps_root_password\r"
+expect eof

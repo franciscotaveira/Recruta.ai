@@ -1,53 +1,117 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import {
+  ApiError,
+  getCurrentUser,
+  login as loginRequest,
+  register as registerRequest,
+} from '../services/api';
 
-export type UserRole = 'candidate' | 'recruiter';
+export type UserRole = 'candidate' | 'recruiter' | 'admin';
 
 export interface User {
   id: string;
-  email: string;
-  name: string;
   role: UserRole;
-  profilePicture?: string;
-  bio?: string;
+  email: string;
+  name?: string;
 }
 
 export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  userRole: UserRole | null;
-  login: (email: string, password: string, role: UserRole) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  register: (
+    email: string,
+    password: string,
+    role: Exclude<UserRole, 'admin'>,
+    name?: string
+  ) => Promise<void>;
   logout: () => void;
-  switchRole: (newRole: UserRole) => void;
-  updateProfile: (updates: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [userRole, setUserRole] = useState<UserRole | null>(null);
+function mapAuthErrorMessage(error: ApiError): string {
+  if (error.code === 'API_NON_JSON_RESPONSE' || error.code === 'API_INVALID_JSON') {
+    return 'Falha de conexão com a API. Verifique a configuração de domínio entre app e backend.';
+  }
 
-  // Simulate login - in production, call real backend
-  const login = async (email: string, password: string, role: UserRole) => {
+  if (error.code === 'CORS_ORIGIN_NOT_ALLOWED') {
+    return 'Origem bloqueada pelo backend. Ajuste a lista de CORS para este domínio.';
+  }
+
+  return error.message;
+}
+
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(() => {
+    try {
+      const stored = localStorage.getItem('recruta_user');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Restore & validate session on mount
+  useEffect(() => {
+    const token = localStorage.getItem('recruta_token');
+    if (!token) return;
+    getCurrentUser()
+      .then((data) => {
+        const u: User = { id: data.id, role: data.role, email: data.email, name: data.name };
+        setUser(u);
+        localStorage.setItem('recruta_user', JSON.stringify(u));
+      })
+      .catch(() => {
+        setUser(null);
+        localStorage.removeItem('recruta_token');
+        localStorage.removeItem('recruta_user');
+      });
+  }, []);
+
+  const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      const data = await loginRequest(email, password);
+      localStorage.setItem('recruta_token', data.token);
+      const u: User = { id: data.userId, role: data.role, email: data.email, name: data.name };
+      setUser(u);
+      localStorage.setItem('recruta_user', JSON.stringify(u));
+    } catch (error) {
+      if (error instanceof ApiError) {
+        throw new Error(mapAuthErrorMessage(error));
+      }
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-      const newUser: User = {
-        id: `user_${Date.now()}`,
-        email,
-        name: email.split('@')[0],
-        role,
+  const register = async (
+    email: string,
+    password: string,
+    role: Exclude<UserRole, 'admin'>,
+    name?: string
+  ) => {
+    setIsLoading(true);
+    try {
+      const data = await registerRequest(email, password, role, name);
+      localStorage.setItem('recruta_token', data.token);
+      const u: User = {
+        id: data.userId,
+        role: data.role,
+        email: data.email,
+        name: data.name || name,
       };
-
-      setUser(newUser);
-      setUserRole(role);
-
-      // Save to localStorage for persistence
-      localStorage.setItem('recruta_user', JSON.stringify(newUser));
+      setUser(u);
+      localStorage.setItem('recruta_user', JSON.stringify(u));
+    } catch (error) {
+      if (error instanceof ApiError) {
+        throw new Error(mapAuthErrorMessage(error));
+      }
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -55,45 +119,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const logout = () => {
     setUser(null);
-    setUserRole(null);
+    localStorage.removeItem('recruta_token');
     localStorage.removeItem('recruta_user');
   };
 
-  const switchRole = (newRole: UserRole) => {
-    if (user) {
-      const updatedUser = { ...user, role: newRole };
-      setUser(updatedUser);
-      setUserRole(newRole);
-      localStorage.setItem('recruta_user', JSON.stringify(updatedUser));
-    }
-  };
-
-  const updateProfile = (updates: Partial<User>) => {
-    if (user) {
-      const updatedUser = { ...user, ...updates };
-      setUser(updatedUser);
-      localStorage.setItem('recruta_user', JSON.stringify(updatedUser));
-    }
-  };
-
-  const value: AuthContextType = {
-    user,
-    isAuthenticated: !!user,
-    isLoading,
-    userRole,
-    login,
-    logout,
-    switchRole,
-    updateProfile,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider
+      value={{ user, isAuthenticated: !!user, isLoading, login, register, logout }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
 };

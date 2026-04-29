@@ -12,6 +12,18 @@ dist
 dist-ssr
 *.local
 
+# Secrets — NEVER commit
+server/.env
+.env
+
+# Database
+server/recruta.db
+server/recruta.db-wal
+server/recruta.db-shm
+
+# AI cache
+server/.ai-cache
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

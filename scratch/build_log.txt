@@ -1,0 +1,106 @@
+spawn ssh -o StrictHostKeyChecking=no root@187.127.9.92 cd /srv/recruta-ai && docker compose build
+Could not stat /Users/franciscotaveira.ads/.ssh: Operation not permitted
+Failed to add the host to the list of known hosts (/Users/franciscotaveira.ads/.ssh/known_hosts).
+root@187.127.9.92's password: 
+time="2026-04-21T12:59:16-03:00" level=warning msg="/srv/recruta-ai/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+#1 [internal] load local bake definitions
+ Image recruta-ai-recruta-app Building 
+#1 reading from stdin 508B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 1.40kB done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/node:20-slim
+#3 DONE 0.5s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 2B done
+#4 DONE 0.0s
+
+#5 [builder 1/9] FROM docker.io/library/node:20-slim@sha256:f93745c153377ee2fbbdd6e24efcd03cd2e86d6ab1d8aa9916a3790c40313a55
+#5 resolve docker.io/library/node:20-slim@sha256:f93745c153377ee2fbbdd6e24efcd03cd2e86d6ab1d8aa9916a3790c40313a55 0.0s done
+#5 DONE 0.0s
+
+#6 [internal] load build context
+#6 transferring context: 3.87MB 3.6s done
+#6 DONE 3.7s
+
+#7 [builder 6/9] RUN npm install
+#7 CACHED
+
+#8 [builder 7/9] RUN cd server && npm install
+#8 CACHED
+
+#9 [builder 2/9] WORKDIR /app
+#9 CACHED
+
+#10 [builder 3/9] RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
+#10 CACHED
+
+#11 [builder 4/9] COPY package*.json ./
+#11 CACHED
+
+#12 [builder 5/9] COPY server/package*.json ./server/
+#12 CACHED
+
+#13 [builder 8/9] COPY . .
+#13 CACHED
+
+#14 [builder 9/9] RUN npm run build
+#14 0.422 
+#14 0.422 > recruta.ai---recrutamento-inteligente@0.0.0 build
+#14 0.422 > vite build
+#14 0.422 
+#14 0.929 vite v6.4.2 building for production...
+#14 1.058 transforming...
+#14 1.239 ✓ 6 modules transformed.
+#14 1.243 ✗ Build failed in 271ms
+#14 1.243 error during build:
+#14 1.243 [@tailwindcss/vite:generate:build] Cannot apply unknown utility class `border-border`
+#14 1.243 file: /app/src/index.css
+#14 1.243     at onInvalidCandidate (file:///app/node_modules/tailwindcss/dist/chunk-F4544Y4M.mjs:21:1511)
+#14 1.243     at $e (file:///app/node_modules/tailwindcss/dist/chunk-F4544Y4M.mjs:16:37066)
+#14 1.243     at file:///app/node_modules/tailwindcss/dist/chunk-F4544Y4M.mjs:21:355
+#14 1.243     at Cr (file:///app/node_modules/tailwindcss/dist/chunk-F4544Y4M.mjs:3:1733)
+#14 1.243     at _ (file:///app/node_modules/tailwindcss/dist/chunk-F4544Y4M.mjs:3:1377)
+#14 1.243     at Ce (file:///app/node_modules/tailwindcss/dist/chunk-F4544Y4M.mjs:21:172)
+#14 1.243     at Zi (file:///app/node_modules/tailwindcss/dist/chunk-F4544Y4M.mjs:38:294)
+#14 1.243     at async ua (file:///app/node_modules/tailwindcss/dist/chunk-F4544Y4M.mjs:38:631)
+#14 1.243     at async yf (file:///app/node_modules/tailwindcss/dist/chunk-F4544Y4M.mjs:38:1406)
+#14 1.243     at async uu (file:///app/node_modules/@tailwindcss/node/dist/index.mjs:10:3457)
+#14 ERROR: process "/bin/sh -c npm run build" did not complete successfully: exit code: 1
+------
+ > [builder 9/9] RUN npm run build:
+1.243     at onInvalidCandidate (file:///app/node_modules/tailwindcss/dist/chunk-F4544Y4M.mjs:21:1511)
+1.243     at $e (file:///app/node_modules/tailwindcss/dist/chunk-F4544Y4M.mjs:16:37066)
+1.243     at file:///app/node_modules/tailwindcss/dist/chunk-F4544Y4M.mjs:21:355
+1.243     at Cr (file:///app/node_modules/tailwindcss/dist/chunk-F4544Y4M.mjs:3:1733)
+1.243     at _ (file:///app/node_modules/tailwindcss/dist/chunk-F4544Y4M.mjs:3:1377)
+1.243     at Ce (file:///app/node_modules/tailwindcss/dist/chunk-F4544Y4M.mjs:21:172)
+1.243     at Zi (file:///app/node_modules/tailwindcss/dist/chunk-F4544Y4M.mjs:38:294)
+1.243     at async ua (file:///app/node_modules/tailwindcss/dist/chunk-F4544Y4M.mjs:38:631)
+1.243     at async yf (file:///app/node_modules/tailwindcss/dist/chunk-F4544Y4M.mjs:38:1406)
+1.243     at async uu (file:///app/node_modules/@tailwindcss/node/dist/index.mjs:10:3457)
+------
+WARNING: current commit information was not captured by the build: failed to read current commit information with git rev-parse --is-inside-work-tree
+
+Dockerfile:23
+
+--------------------
+
+  21 |     
+
+  22 |     # Build frontend
+
+  23 | >>> RUN npm run build
+
+  24 |     
+
+  25 |     # Stage 2: Production runner
+
+--------------------
+
+failed to solve: process "/bin/sh -c npm run build" did not complete successfully: exit code: 1
+

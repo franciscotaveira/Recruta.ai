@@ -1,0 +1,33 @@
+# Recrutaria - referência de split entre site institucional e app
+# Ajuste os caminhos de build conforme seu deploy.
+
+recrutaria.com.br, www.recrutaria.com.br {
+	encode zstd gzip
+	root * /var/www/recrutaria-site
+	file_server
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+}
+
+app.recrutaria.com.br {
+	encode zstd gzip
+
+	@api path /api/*
+	reverse_proxy @api localhost:3456
+
+	root * /var/www/recrutaria-app/dist
+	try_files {path} /index.html
+	file_server
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+}

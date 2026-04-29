@@ -1,0 +1,56 @@
+#!/usr/bin/expect -f
+set timeout 120
+spawn ssh -o StrictHostKeyChecking=no root@187.127.9.92 "
+  mkdir -p /srv/recruta-ai/migrations && \
+  cat << 'SQL' > /srv/recruta-ai/migrations/20260421_security_hardening.sql
+-- MCT PRO — Security Hardening v1.0
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE candidate_profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE recruiter_wallets ENABLE ROW LEVEL SECURITY;
+ALTER TABLE job_applications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE whatsapp_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE jobs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE credit_transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS \"Users can see their own data\" ON users;
+CREATE POLICY \"Users can see their own data\" ON users FOR SELECT USING (auth.uid()::text = id);
+
+DROP POLICY IF EXISTS \"Candidates can manage their own profile\" ON candidate_profiles;
+CREATE POLICY \"Candidates can manage their own profile\" ON candidate_profiles FOR ALL USING (auth.uid()::text = id);
+
+DROP POLICY IF EXISTS \"Recruiters can see candidate profiles\" ON candidate_profiles;
+CREATE POLICY \"Recruiters can see candidate profiles\" ON candidate_profiles FOR SELECT USING (EXISTS (SELECT 1 FROM users WHERE id = auth.uid()::text AND role = 'recruiter'));
+
+DROP POLICY IF EXISTS \"Recruiters can see their own wallet\" ON recruiter_wallets;
+CREATE POLICY \"Recruiters can see their own wallet\" ON recruiter_wallets FOR SELECT USING (auth.uid()::text = recruiter_id);
+
+DROP POLICY IF EXISTS \"Public can see active jobs\" ON jobs;
+CREATE POLICY \"Public can see active jobs\" ON jobs FOR SELECT USING (is_active = true);
+
+DROP POLICY IF EXISTS \"Recruiters can manage their own jobs\" ON jobs;
+CREATE POLICY \"Recruiters can manage their own jobs\" ON jobs FOR ALL USING (auth.uid()::text = recruiter_id);
+
+DROP POLICY IF EXISTS \"Candidates can see their applications\" ON job_applications;
+CREATE POLICY \"Candidates can see their applications\" ON job_applications FOR SELECT USING (auth.uid()::text = profile_id);
+
+DROP POLICY IF EXISTS \"Users can see their own payments\" ON payments;
+CREATE POLICY \"Users can see their own payments\" ON payments FOR SELECT USING (auth.uid()::text = user_id);
+SQL
+  cd /srv/recruta-ai/server && \
+  node --input-type=module -e \"
+    import pg from 'pg';
+    import fs from 'fs';
+    const { Client } = pg;
+    const client = new Client('postgresql://postgres:J69i6oE9f7P0X7m6@db.csuxlpodmqmycxfkmuxv.supabase.co:5432/postgres');
+    await client.connect();
+    console.log('Connected!');
+    const sql = fs.readFileSync('/srv/recruta-ai/migrations/20260421_security_hardening.sql', 'utf8');
+    await client.query(sql);
+    console.log('RLS Policies Applied Successfully!');
+    await client.end();
+  \"
+"
+expect "password:"
+send "p8D(zq;)HuO-#Va6BOW#\r"
+expect eof

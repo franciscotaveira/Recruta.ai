@@ -1,297 +1,403 @@
-import React, { useState } from 'react';
-import { CURRENT_USER_CANDIDATE, MOCK_JOBS, MOCK_APPLICATIONS } from '../../constants';
+import React, { useState, useEffect } from 'react';
+import { useCandidateDashboard } from '../../hooks/useCandidateDashboard';
 import {
-  CheckCircle2,
-  AlertTriangle,
-  Download,
-  FileText,
-  Briefcase,
-  Calendar,
-  Zap,
-  ArrowRight,
   Sparkles,
-  User,
-  Star,
-  History,
-  Clock,
-  Bot,
-  Copy,
+  Briefcase,
+  MapPin,
+  CheckCircle2,
+  TrendingUp,
+  Loader2,
+  ArrowRight,
+  FileText,
+  Building2,
+  DollarSign,
   ExternalLink,
-  Wand2,
+  CreditCard,
 } from 'lucide-react';
+import AudioInput from '../../components/AudioInput';
+import { transcribeAudioBlob } from '../../services/api';
+import { IntentButton } from '../../components/governance/IntentButton';
+import { ApprovalWidget } from '../../components/governance/ApprovalWidget';
 
 const CandidateDashboard = () => {
-  const user = CURRENT_USER_CANDIDATE;
-  const cycle = user.currentCycle;
+  const {
+    profile,
+    jobs,
+    analysis,
+    appliedJobs,
+    error,
+    runAnalyzeCV,
+    runApply,
+    runDiagnosticCheckout,
+  } = useCandidateDashboard();
+  const [cvText, setCvText] = useState('');
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analysisError, setAnalysisError] = useState('');
+  const [audioNotice, setAudioNotice] = useState('');
 
-  // New State for External Optimizer Demo
-  const [externalUrl, setExternalUrl] = useState('');
-  const [isOptimizing, setIsOptimizing] = useState(false);
+  // Payment state
+  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
+  const [paying, setPaying] = useState(false);
+  const [billingPhone, setBillingPhone] = useState('');
+  const [billingTaxId, setBillingTaxId] = useState('');
 
-  const handleOptimize = () => {
-    if (!externalUrl) return;
-    setIsOptimizing(true);
-    setTimeout(() => {
-      setIsOptimizing(false);
-      alert('Currículo otimizado gerado! (Simulação)');
-      setExternalUrl('');
-    }, 2000);
+  useEffect(() => {
+    if (profile?.cv_master) setCvText(profile.cv_master);
+    if (profile?.phone && !billingPhone) setBillingPhone(profile.phone);
+  }, [profile?.cv_master, profile?.phone, billingPhone]);
+
+  const handleAnalyzeCV = async () => {
+    if (!cvText.trim() || cvText.length < 100) {
+      setAnalysisError('Cole seu currículo com pelo menos 100 caracteres.');
+      return;
+    }
+    setAnalyzing(true);
+    setAnalysisError('');
+    try {
+      const result = await runAnalyzeCV(cvText);
+      setAnalysisError(result.error?.message || '');
+    } catch (err: unknown) {
+      setAnalysisError(err instanceof Error ? err.message : 'Erro ao analisar currículo');
+    } finally {
+      setAnalyzing(false);
+    }
   };
 
-  const subscribeLink =
-    'https://wa.me/554999999999?text=Olá! Quero assinar a Preparação Contínua (R$ 19,90/mês).';
+  const handleBuyDiagnostic = async () => {
+    if (!billingPhone.trim() || !billingTaxId.trim()) {
+      alert('Por favor, preencha o Telefone e o CPF/CNPJ para gerar o pagamento.');
+      return;
+    }
+
+    setPaying(true);
+    try {
+      const customer = {
+        name: profile?.name || 'Candidate',
+        email: profile?.email || '',
+        phone: billingPhone.trim(),
+        taxId: billingTaxId.trim(),
+      };
+      const result = await runDiagnosticCheckout(customer);
+      setCheckoutUrl(result.checkoutUrl);
+      window.open(result.checkoutUrl, '_blank');
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Erro ao criar pagamento');
+    } finally {
+      setPaying(false);
+    }
+  };
+
+  const handleApply = async (jobId: string) => {
+    try {
+      await runApply(jobId);
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Erro ao se candidatar');
+    }
+  };
+
+  const handleAudioTranscribe = async (audio: Blob) => {
+    const result = await transcribeAudioBlob(audio);
+    const text = result.text?.trim();
+    if (!text) {
+      setAudioNotice('Não foi possível extrair texto do áudio.');
+      return;
+    }
+    setCvText((prev) => {
+      const base = prev.trim();
+      return base ? `${base}\n\n${text}` : text;
+    });
+    setAudioNotice('Transcrição adicionada ao texto do currículo. Revise antes de analisar.');
+  };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-10 pb-16 animate-fade-in-up relative">
-      {/* UX CHANGE: Header is now compact. The Hero is the Optimizer. */}
-      <div className="flex flex-col md:flex-row justify-between items-end gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span
-              className={`w-2 h-2 rounded-full ${cycle?.status === 'active' ? 'bg-emerald-500' : 'bg-slate-400'}`}
-            ></span>
-            <span className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
-              Ciclo Ativo
-            </span>
-          </div>
-          <h1 className="text-2xl font-black text-slate-900 dark:text-white">
-            {cycle?.targetRole}
-          </h1>
-        </div>
-        <div className="flex items-center gap-4 text-right">
-          <div>
-            <p className="text-[10px] font-bold uppercase text-slate-400">Score SCPD</p>
-            <p className="text-2xl font-black text-emerald-500">
-              {user.score}
-              <span className="text-sm text-slate-500">/100</span>
-            </p>
-          </div>
-          <button className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl font-bold text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
-            <History size={16} /> Ver Histórico
-          </button>
-        </div>
-      </div>
+    <div className="max-w-7xl mx-auto space-y-12 pb-16 animate-fade-in-up px-4 md:px-0">
+      <ApprovalWidget />
+      
+      {/* Visual background decor - Advanced Gradient */}
+      <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_20%_20%,rgba(99,102,241,0.08),transparent_40%),radial-gradient(circle_at_80%_80%,rgba(16,185,129,0.05),transparent_40%)]" />
 
-      {/* 1. CORE VALUE: EXTERNAL OPTIMIZER (THE MOAT) - PRIMARY ACTION */}
-      {/* This is now the "Hero" of the dashboard */}
-      <div className="bg-gradient-to-br from-indigo-900 to-purple-900 rounded-3xl p-1 border border-purple-500/30 shadow-2xl">
-        <div className="bg-slate-900/50 backdrop-blur-xl rounded-[22px] p-6 md:p-8 overflow-hidden relative">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-purple-600 rounded-full blur-[120px] opacity-20 -translate-y-1/2 translate-x-1/3"></div>
-
-          <div className="relative z-10 grid md:grid-cols-5 gap-8">
-            <div className="md:col-span-2 flex flex-col justify-center">
-              <div className="inline-flex items-center gap-2 self-start px-3 py-1 bg-yellow-400/10 border border-yellow-400/20 rounded-full mb-4">
-                <Wand2 size={12} className="text-yellow-400" />
-                <span className="text-[10px] font-bold uppercase tracking-wider text-yellow-400">
-                  Otimizador de Match
-                </span>
-              </div>
-              <h2 className="text-3xl font-black text-white mb-4 leading-tight">
-                Vai aplicar para uma vaga externa?
-              </h2>
-              <p className="text-slate-300 text-sm leading-relaxed mb-6">
-                Cole a descrição da vaga (LinkedIn, Gupy, etc) ao lado. Nossa IA vai reescrever seu
-                currículo para ter <strong>match semântico</strong> com os robôs de triagem deles.
+      {/* Checkout URL prompt */}
+      {checkoutUrl && (
+        <div className="s-glass border-emerald-500/30 p-5 flex items-center justify-between shadow-lg shadow-emerald-500/10">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-emerald-500/20 rounded-xl animate-pulse">
+              <ExternalLink size={20} className="text-emerald-500" />
+            </div>
+            <div>
+              <p className="text-sm font-black text-emerald-400 font-heading">
+                Checkout de Diagnóstico Aberto
               </p>
-              <div className="flex items-center gap-4 text-xs font-bold text-purple-300">
-                <span className="flex items-center gap-1">
-                  <CheckCircle2 size={14} /> ATS Friendly
-                </span>
-                <span className="flex items-center gap-1">
-                  <CheckCircle2 size={14} /> Palavras-chave
-                </span>
-              </div>
+              <p className="text-[10px] text-emerald-500/60 uppercase font-black tracking-widest mt-0.5">
+                Pague via PIX para liberar sua análise completa agora.
+              </p>
             </div>
+          </div>
+          <a
+            href={checkoutUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black transition-all hover:scale-105 active:scale-95 shadow-lg shadow-emerald-600/20"
+          >
+            Ir para Pagamento
+          </a>
+        </div>
+      )}
 
-            <div className="md:col-span-3 bg-black/30 rounded-xl border border-white/10 p-1">
-              <textarea
-                value={externalUrl}
-                onChange={(e) => setExternalUrl(e.target.value)}
-                placeholder="Cole a descrição completa da vaga aqui..."
-                className="w-full h-32 bg-transparent border-none text-white placeholder-slate-500 p-4 focus:ring-0 resize-none text-sm"
-              />
-              <div className="bg-slate-900/80 p-3 rounded-b-lg flex justify-between items-center border-t border-white/5">
-                <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">
-                  Saída: PDF Otimizado
-                </span>
-                <button
-                  onClick={handleOptimize}
-                  disabled={!externalUrl || isOptimizing}
-                  className="bg-white text-purple-900 px-6 py-2 rounded-lg font-black text-xs hover:bg-yellow-400 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-                >
-                  {isOptimizing ? (
-                    <>
-                      <Zap size={14} className="animate-spin" /> Gerando...
-                    </>
-                  ) : (
-                    <>
-                      <Zap size={14} fill="currentColor" /> Gerar Agora
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
+      {/* Header / Hero Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 pt-8">
+        <div className="space-y-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 s-glass border-indigo-500/20 text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em] mb-2">
+            <Sparkles size={12} /> Candidate Portal
+          </div>
+          <h1 className="text-4xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white font-heading leading-tight">
+            Seja bem-vindo, <br className="md:hidden" />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-400">
+              {profile?.name || 'Candidato'}
+            </span>
+          </h1>
+          <p className="text-slate-400 text-base max-w-lg font-medium leading-relaxed">
+            Sua carreira impulsionada por inteligência artificial soberana.
+          </p>
+        </div>
+        
+        {/* Quick Stats for Candidate */}
+        <div className="flex gap-4">
+          <div className="s-glass p-5 min-w-[140px] text-center border-white/5">
+            <p className="text-2xl font-black text-white">{appliedJobs.size}</p>
+            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">Candidaturas</p>
+          </div>
+          <div className="s-glass p-5 min-w-[140px] text-center border-white/5">
+            <p className="text-2xl font-black text-emerald-400">{analysis?.score || '--'}</p>
+            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">IA Match Avg</p>
           </div>
         </div>
       </div>
 
-      {/* 2. DIAGNOSTIC & CV (Secondary Info) */}
-      <div className="grid lg:grid-cols-3 gap-8">
-        <section className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 md:p-8 shadow-sm space-y-6">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-purple-50 dark:bg-purple-500/10 rounded-lg text-purple-600">
-              <User size={20} />
-            </div>
-            <div>
-              <h2 className="text-lg font-black text-slate-900 dark:text-white">
-                Análise de Perfil (Diagnóstico)
-              </h2>
-              <p className="text-xs text-slate-500">Baseado no seu currículo mestre.</p>
-            </div>
+      {error && (
+        <div className="p-3 rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/10 text-sm text-red-700 dark:text-red-300">
+          {error}
+        </div>
+      )}
+
+      {/* 1. CV Upload + Analysis */}
+      <div className="s-glass p-8 relative overflow-hidden group">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/10 rounded-full -mr-40 -mt-40 blur-[100px]" />
+        
+        <div className="flex items-center gap-4 mb-8">
+          <div className="p-4 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-xl shadow-indigo-500/20">
+            <FileText size={24} className="text-white" />
           </div>
-
-          <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-xl border-l-4 border-purple-600">
-            <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-sm italic">
-              "{user.diagnosis}"
-            </p>
+          <div>
+            <h2 className="text-2xl font-black text-slate-900 dark:text-white font-heading">Seu Currículo Master</h2>
+            <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest mt-1">Otimização AI-Driven</p>
           </div>
-
-          <div className="grid md:grid-cols-2 gap-8 pt-4">
-            <div className="space-y-4">
-              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">
-                Pontos Fortes
-              </h3>
-              <div className="space-y-3">
-                {[
-                  { label: 'Clareza de trajetória', val: user.scpdBreakdown?.clarity },
-                  { label: 'Evidência de resultados', val: user.scpdBreakdown?.evidence },
-                  { label: 'Foco em cargo-alvo', val: user.scpdBreakdown?.focus },
-                  { label: 'Atualização recente', val: user.scpdBreakdown?.freshness },
-                ].map((item, idx) => (
-                  <div key={idx} className="flex items-center justify-between text-sm">
-                    <span className="text-slate-600 dark:text-slate-400">{item.label}</span>
-                    {item.val ? (
-                      <CheckCircle2 size={18} className="text-emerald-500" />
-                    ) : (
-                      <AlertTriangle size={18} className="text-amber-500" />
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="space-y-4">
-              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">
-                Atenção
-              </h3>
-              <div className="space-y-3">
-                {user.attentionPoints?.map((point, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-start gap-3 p-3 bg-amber-50 dark:bg-amber-500/5 rounded-lg border border-amber-100 dark:border-amber-500/10"
-                  >
-                    <AlertTriangle size={14} className="text-amber-500 mt-0.5 shrink-0" />
-                    <span className="text-xs text-amber-800 dark:text-amber-200 font-medium">
-                      {point}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 md:p-8 shadow-sm h-fit">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-blue-50 dark:bg-blue-500/10 rounded-lg text-blue-600">
-              <FileText size={20} />
-            </div>
-            <div>
-              <h2 className="text-lg font-black text-slate-900 dark:text-white">
-                Currículo Mestre
-              </h2>
-              <p className="text-xs text-slate-500">Este é seu perfil base "Vivo".</p>
-            </div>
-          </div>
-
-          <button className="w-full mb-4 flex items-center justify-center gap-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 py-3 rounded-xl font-bold text-sm hover:scale-[1.02] transition-all shadow-lg">
-            <Download size={18} /> Baixar PDF Original
-          </button>
-
-          <div className="space-y-4 mt-6">
-            <div className="p-4 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl">
-              <div className="flex justify-between items-start mb-2">
-                <p className="font-bold text-slate-900 dark:text-white text-xs">
-                  Histórico de Otimizações
-                </p>
-                <span className="text-xs font-bold text-purple-600">3 hoje</span>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-[10px] text-slate-500 group cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 p-1 rounded">
-                  <span>p/ Analista Sênior (LinkedIn)</span>
-                  <Download size={12} className="text-slate-400 group-hover:text-purple-500" />
-                </div>
-                <div className="flex items-center justify-between text-[10px] text-slate-500 group cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 p-1 rounded">
-                  <span>p/ Gerente de Projetos (Gupy)</span>
-                  <Download size={12} className="text-slate-400 group-hover:text-purple-500" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      {/* 4. VAGAS INTERNAS (BÔNUS) - TERTIARY */}
-      <div
-        id="jobs"
-        className="pt-8 border-t border-slate-200 dark:border-slate-800 opacity-80 hover:opacity-100 transition-opacity"
-      >
-        <div className="flex items-center gap-3 mb-6">
-          <span className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] font-bold uppercase rounded tracking-wide">
-            Bônus
-          </span>
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-            Oportunidades Internas (Se houver match)
-          </h2>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
-          <section className="space-y-4">
-            {MOCK_JOBS.map((job) => (
-              <div
-                key={job.id}
-                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl hover:border-slate-300 dark:hover:border-slate-600 transition-all shadow-sm group"
+        <div className="relative">
+          <textarea
+            value={cvText}
+            onChange={(e) => setCvText(e.target.value)}
+            placeholder="Cole aqui o texto completo do seu currículo..."
+            className="w-full h-64 px-6 py-5 s-glass bg-slate-950/40 border-white/5 text-slate-200 text-sm focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500/30 outline-none resize-none transition-all placeholder:text-slate-600 leading-relaxed"
+          />
+          <div className="absolute bottom-5 right-5 text-[9px] font-black text-slate-500 bg-slate-900/80 px-3 py-1.5 rounded-lg backdrop-blur-md border border-white/5 uppercase tracking-widest">
+            {cvText.length} Characters
+          </div>
+        </div>
+
+        <div className="mt-8 flex flex-col md:flex-row gap-8 md:items-center">
+          <div className="flex-1">
+            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Input de Voz</p>
+            <div className="inline-block">
+              <AudioInput maxDurationSec={120} onTranscribe={handleAudioTranscribe} />
+            </div>
+            {audioNotice && (
+              <p className="mt-4 text-xs font-bold text-emerald-400 animate-fade-in-up flex items-center gap-2">
+                <Sparkles size={14} /> {audioNotice}
+              </p>
+            )}
+          </div>
+
+          <div className="shrink-0">
+            {!profile?.diagnostic_unlocked ? (
+              <button
+                onClick={handleBuyDiagnostic}
+                disabled={paying}
+                className="group relative flex items-center gap-3 px-10 py-5 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-white rounded-2xl font-black text-sm transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl shadow-emerald-500/20"
               >
-                <div className="flex justify-between items-start mb-3">
-                  <div>
-                    <h3 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-purple-600 transition-colors">
-                      {job.title}
-                    </h3>
-                    <p className="text-xs text-slate-500 font-medium">
-                      {job.company} • {job.location}
+                {paying ? <Loader2 size={20} className="animate-spin" /> : <CreditCard size={20} />}
+                Desbloquear Diagnóstico IA
+              </button>
+            ) : (
+              <IntentButton
+                actionId="candidate.analyze_cv"
+                payload={{ 
+                  cv_id: profile?.id || 'default_profile', 
+                  target_role: profile?.target_role || 'Developer' 
+                }}
+                onSuccess={() => refresh()}
+                className="s-btn-primary px-10 py-5 shadow-2xl shadow-indigo-500/20"
+              >
+                <Sparkles size={20} /> Analisar Perfil
+              </IntentButton>
+            )}
+          </div>
+        </div>
+
+        {!profile?.diagnostic_unlocked && (
+          <div className="grid md:grid-cols-2 gap-4 mt-8 p-6 bg-emerald-500/5 rounded-2xl border border-emerald-500/10">
+            <div className="md:col-span-2 mb-2">
+              <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">
+                Dados para Faturamento PIX
+              </p>
+            </div>
+            <input
+              value={billingPhone}
+              onChange={(e) => setBillingPhone(e.target.value)}
+              placeholder="WhatsApp com DDD"
+              className="w-full px-5 py-4 s-glass bg-slate-900/50 border-white/5 text-sm focus:ring-4 focus:ring-emerald-500/10 outline-none"
+            />
+            <input
+              value={billingTaxId}
+              onChange={(e) => setBillingTaxId(e.target.value)}
+              placeholder="CPF ou CNPJ"
+              className="w-full px-5 py-4 s-glass bg-slate-900/50 border-white/5 text-sm focus:ring-4 focus:ring-emerald-500/10 outline-none"
+            />
+          </div>
+        )}
+
+        {/* Analysis Result - Stitch Optimized */}
+        {analysis && (
+          <div className="mt-12 pt-12 border-t border-white/5 animate-fade-in-up">
+            <div className="grid md:grid-cols-3 gap-12">
+              <div className="flex flex-col items-center text-center p-8 s-glass border-white/5">
+                <div className="relative w-32 h-32">
+                  <svg className="w-32 h-32 -rotate-90" viewBox="0 0 36 36">
+                    <circle cx="18" cy="18" r="16" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/5" />
+                    <circle 
+                      cx="18" cy="18" r="16" fill="none" stroke="currentColor" strokeWidth="2" 
+                      strokeDasharray={`${analysis.score}, 100`}
+                      strokeLinecap="round"
+                      className={`transition-all duration-1000 ease-out ${
+                        analysis.score >= 70 ? 'text-emerald-500' : analysis.score >= 40 ? 'text-amber-500' : 'text-red-500'
+                      }`}
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-4xl font-black text-white leading-none">{analysis.score}</span>
+                    <span className="text-[8px] font-black tracking-widest text-slate-500 uppercase mt-2">IA Index</span>
+                  </div>
+                </div>
+                <div className="mt-6">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2">Avaliação</p>
+                  <p className={`text-sm font-black uppercase tracking-wider ${analysis.score >= 70 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                    {analysis.score >= 70 ? 'Elite Tier' : analysis.score >= 40 ? 'Mid Range' : 'Low Match'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="md:col-span-2 space-y-8">
+                <div>
+                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Reasoning Strategy</p>
+                  <div className="p-6 bg-white/5 rounded-3xl border-l-4 border-indigo-500 shadow-inner">
+                    <p className="text-sm text-slate-300 leading-relaxed font-medium">
+                      {analysis.reasoning}
                     </p>
                   </div>
-                  <span className="text-xs font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
-                    Match {job.matchScore}%
-                  </span>
                 </div>
-                <div className="mt-2 flex justify-end">
-                  <button className="text-[10px] font-bold text-slate-400 hover:text-purple-600 flex items-center gap-1">
-                    Ver detalhe <ArrowRight size={10} />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </section>
 
-          <section className="space-y-6 flex items-center">
-            <div className="bg-transparent p-6 text-center w-full">
-              <p className="text-xs text-slate-400 mb-2">
-                O foco da plataforma é sua preparação. As vagas acima são apenas consequências de um
-                bom perfil.
-              </p>
+                {analysis.suggestions?.length > 0 && (
+                  <div>
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Optimization Roadmap</p>
+                    <div className="grid gap-4">
+                      {analysis.suggestions.map((s: string, i: number) => (
+                        <div key={i} className="flex items-center gap-4 p-4 s-glass border-white/5 s-glass-hover">
+                          <div className="w-6 h-6 rounded-lg bg-indigo-500/10 flex items-center justify-center shrink-0">
+                            <span className="text-[10px] font-black text-indigo-400">{i+1}</span>
+                          </div>
+                          <p className="text-xs text-slate-400 font-bold">{s}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-          </section>
+          </div>
+        )}
+      </div>
+
+      {/* 2. Job Board */}
+      <div className="space-y-8">
+        <div className="flex items-center justify-between border-b border-white/5 pb-6">
+          <div className="flex items-center gap-4">
+            <div className="p-4 bg-emerald-500/10 rounded-2xl">
+              <Briefcase size={24} className="text-emerald-500" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-black text-white font-heading">Oportunidades Abertas</h2>
+              <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest mt-1">Soberania em Recrutamento</p>
+            </div>
+          </div>
         </div>
+
+        {jobs.length === 0 ? (
+          <div className="text-center py-24 s-glass border-white/5 opacity-60">
+            <Loader2 size={32} className="mx-auto text-slate-700 animate-spin mb-4" />
+            <p className="text-slate-500 font-bold">Aguardando novas vagas curadas...</p>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 gap-8">
+            {jobs.map((job, idx) => {
+              const isApplied = appliedJobs.has(job.id);
+              return (
+                <div
+                  key={job.id}
+                  className="s-glass p-8 s-glass-hover group/card animate-fade-in-up"
+                  style={{ animationDelay: `${idx * 0.1}s` }}
+                >
+                  <div className="flex flex-col h-full gap-6">
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-start">
+                        <h3 className="text-xl font-black text-white group-hover/card:text-indigo-400 transition-colors leading-tight">
+                          {job.title}
+                        </h3>
+                        <span className={`s-badge ${isApplied ? 's-badge-success' : 's-badge-info'}`}>
+                          {isApplied ? 'Aplicado' : 'Open'}
+                        </span>
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-4 text-[11px] font-black text-slate-500">
+                        <div className="flex items-center gap-1.5"><Building2 size={14} className="text-indigo-500" /> {job.company}</div>
+                        <div className="flex items-center gap-1.5"><MapPin size={14} className="text-emerald-500" /> {job.location}</div>
+                        {job.salary_range && <div className="flex items-center gap-1.5"><DollarSign size={14} className="text-amber-500" /> {job.salary_range}</div>}
+                      </div>
+
+                      <p className="text-sm text-slate-400 line-clamp-3 leading-relaxed">
+                        {job.description}
+                      </p>
+                    </div>
+
+                    <div className="mt-auto pt-6 border-t border-white/5">
+                      {!isApplied ? (
+                        <button
+                          onClick={() => handleApply(job.id)}
+                          className="w-full py-4 s-btn-primary justify-center shadow-lg shadow-indigo-500/10"
+                        >
+                          Aplicar Agora <ArrowRight size={18} />
+                        </button>
+                      ) : (
+                        <div className="w-full py-4 s-glass bg-emerald-500/10 text-emerald-400 font-black text-xs text-center border-emerald-500/20 flex items-center justify-center gap-3">
+                          <CheckCircle2 size={18} /> Candidatura em análise
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

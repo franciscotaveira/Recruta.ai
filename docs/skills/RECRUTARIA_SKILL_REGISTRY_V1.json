@@ -1,0 +1,966 @@
+{
+  "version": "1.0.0",
+  "updated_at": "2026-04-23",
+  "product": "Recrutaria",
+  "principles": [
+    "skill before workflow",
+    "workflow before agent",
+    "no AI feature without skill_id",
+    "every skill needs fallback and metric",
+    "high-risk skills require explicit human review"
+  ],
+  "layers": {
+    "core": "Capacidades estruturais reutilizaveis entre fluxos e projetos.",
+    "domain": "Capacidades especificas do wedge de recrutamento via WhatsApp.",
+    "orchestration": "Capacidades de controle operacional, governanca, billing e handoff."
+  },
+  "execution_order": [
+    "blind_screening_guard",
+    "confidence_and_abstention_engine",
+    "recruiter_review_queue",
+    "scheduler_and_reminder",
+    "candidate_feedback_writer",
+    "channel_attribution_tracker",
+    "semantic_skill_extractor",
+    "audio_evidence_clip_extractor",
+    "deep_dive_followup",
+    "post_hire_learning_loop"
+  ],
+  "skills": [
+    {
+      "id": "job_requirement_structurer",
+      "name": "Estruturador de Requisitos da Vaga",
+      "layer": "core",
+      "status": "live",
+      "priority": "now",
+      "reuse_scope": "shared",
+      "objective": "Normalizar requisitos da vaga em formato canonico com importancia, peso, categoria, knockout e tipo de evidencia.",
+      "business_effect": "Reduz texto solto na criacao da vaga e melhora a qualidade de todas as etapas posteriores.",
+      "inputs": [
+        {
+          "name": "job_title",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "requirements",
+          "type": "array<legacy_requirement|structured_requirement|string>",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "structured_requirements",
+          "type": "array<StructuredRequirement>",
+          "required": true
+        }
+      ],
+      "fallback": "Aceitar payload legado e inferir campos ausentes.",
+      "human_review_required": false,
+      "primary_metrics": [
+        "requirement_normalization_success_rate",
+        "requirements_with_weight_rate"
+      ],
+      "dependencies": [
+        "public_jobs.requirements"
+      ],
+      "current_refs": [
+        "server/conversation/method.ts",
+        "server/index.ts",
+        "docs/API_CONTRACTS_V1.md"
+      ],
+      "next_action": "Extrair contrato tipado reutilizavel entre criacao de vaga, scoring e analytics."
+    },
+    {
+      "id": "screening_question_builder",
+      "name": "Construtor de Perguntas de Triagem",
+      "layer": "core",
+      "status": "live",
+      "priority": "now",
+      "reuse_scope": "shared",
+      "objective": "Transformar contexto da vaga em perguntas estruturadas para triagem por audio.",
+      "business_effect": "Aumenta consistencia da triagem e reduz entrevistas improvisadas.",
+      "inputs": [
+        {
+          "name": "job_title",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "job_description",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "structured_requirements",
+          "type": "array<StructuredRequirement>",
+          "required": false
+        },
+        {
+          "name": "rag_context",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "name": "questions",
+          "type": "array<StructuredSessionQuestion>",
+          "required": true
+        }
+      ],
+      "fallback": "Gerar questionario default quando nao houver estrutura suficiente ou IA indisponivel.",
+      "human_review_required": false,
+      "primary_metrics": [
+        "question_generation_success_rate",
+        "question_relevance_score"
+      ],
+      "dependencies": [
+        "job_requirement_structurer",
+        "AI_RAG settings"
+      ],
+      "current_refs": [
+        "server/conversation/questions.ts",
+        "server/conversation/flow.ts",
+        "server/conversation/method.ts"
+      ],
+      "next_action": "Separar claramente geracao knockout vs BARS como subskills."
+    },
+    {
+      "id": "consent_accessibility_guard",
+      "name": "Guarda de Consentimento e Acessibilidade",
+      "layer": "orchestration",
+      "status": "live",
+      "priority": "now",
+      "reuse_scope": "shared",
+      "objective": "Garantir consentimento explicito, fallback textual e protecao de pessoas com restricao tecnica ou acessibilidade.",
+      "business_effect": "Reduz risco LGPD e abandono por friccao tecnica.",
+      "inputs": [
+        {
+          "name": "candidate_message",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "session_state",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "ai_control",
+          "type": "AIControlSettings",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "decision",
+          "type": "allow|ask_consent|fallback_text|decline|handoff",
+          "required": true
+        }
+      ],
+      "fallback": "Encaminhar para texto ou handoff humano.",
+      "human_review_required": false,
+      "primary_metrics": [
+        "consent_accept_rate",
+        "text_fallback_completion_rate"
+      ],
+      "dependencies": [
+        "AIControlSettings",
+        "AISquadGovernance"
+      ],
+      "current_refs": [
+        "server/conversation/intents.ts",
+        "server/conversation/flow.ts",
+        "server/admin/ai-control.ts",
+        "server/admin/ai-squad.ts"
+      ],
+      "next_action": "Adicionar auditoria por motivo de fallback e acessibilidade."
+    },
+    {
+      "id": "knockout_gate",
+      "name": "Filtro Eliminatorio Inicial",
+      "layer": "domain",
+      "status": "live",
+      "priority": "now",
+      "reuse_scope": "shared",
+      "objective": "Validar requisitos eliminatorios antes de gastar tempo de triagem longa.",
+      "business_effect": "Economiza processamento e acelera corte de candidatos fora do perfil.",
+      "inputs": [
+        {
+          "name": "answer",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "knockout_question",
+          "type": "StructuredSessionQuestion",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "result",
+          "type": "pass|fail|unclear",
+          "required": true
+        }
+      ],
+      "fallback": "Se a resposta nao for clara, pedir confirmacao objetiva ou encaminhar para revisao.",
+      "human_review_required": false,
+      "primary_metrics": [
+        "knockout_precision",
+        "unclear_knockout_rate"
+      ],
+      "dependencies": [
+        "screening_question_builder"
+      ],
+      "current_refs": [
+        "server/conversation/method.ts",
+        "server/conversation/flow.ts"
+      ],
+      "next_action": "Persistir trilha de decisao knockout como entidade separada para auditoria."
+    },
+    {
+      "id": "whatsapp_screening_orchestrator",
+      "name": "Orquestrador da Triagem WhatsApp",
+      "layer": "orchestration",
+      "status": "live",
+      "priority": "now",
+      "reuse_scope": "recrutaria_only",
+      "objective": "Manter a maquina de estados do fluxo principal do wedge.",
+      "business_effect": "Sustenta o caminho vendavel do produto sem depender de operacao manual continua.",
+      "inputs": [
+        {
+          "name": "incoming_event",
+          "type": "whatsapp_webhook_event",
+          "required": true
+        },
+        {
+          "name": "session",
+          "type": "whatsapp_session",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "name": "next_state",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "reply_message",
+          "type": "string|null",
+          "required": false
+        }
+      ],
+      "fallback": "Pausar automacao e mover para handoff humano.",
+      "human_review_required": false,
+      "primary_metrics": [
+        "invite_to_start_rate",
+        "triage_completion_rate"
+      ],
+      "dependencies": [
+        "whatsapp_sessions",
+        "wa_messages",
+        "audio_files"
+      ],
+      "current_refs": [
+        "server/conversation/flow.ts",
+        "server/whatsapp/webhook.ts",
+        "server/storage/db.ts"
+      ],
+      "next_action": "Extrair sub-rotas por skill e remover acoplamento desnecessario ao fluxo unico."
+    },
+    {
+      "id": "candidate_audio_transcriber",
+      "name": "Transcritor de Audio do Candidato",
+      "layer": "core",
+      "status": "live",
+      "priority": "now",
+      "reuse_scope": "shared",
+      "objective": "Converter audio em texto confiavel para scoring e revisao humana.",
+      "business_effect": "Transforma sinal de audio em dado estruturavel e pesquisavel.",
+      "inputs": [
+        {
+          "name": "audio_binary",
+          "type": "binary",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "transcription",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "fallback": "Solicitar novo audio, fallback para texto ou handoff humano.",
+      "human_review_required": false,
+      "primary_metrics": [
+        "transcription_success_rate",
+        "audio_retry_rate"
+      ],
+      "dependencies": [
+        "audio_files"
+      ],
+      "current_refs": [
+        "server/ai/transcribe.ts",
+        "server/index.ts",
+        "server/conversation/flow.ts"
+      ],
+      "next_action": "Adicionar score de qualidade de audio/transcricao como insumo do motor de confianca."
+    },
+    {
+      "id": "candidate_fit_scorer",
+      "name": "Score de Aderencia do Candidato",
+      "layer": "domain",
+      "status": "live",
+      "priority": "now",
+      "reuse_scope": "recrutaria_only",
+      "objective": "Gerar match score, resumo e recomendacao operacional para o recrutador.",
+      "business_effect": "Condensa respostas em diagnostico utilizavel para decisao rapida.",
+      "inputs": [
+        {
+          "name": "job_context",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "questions_and_answers",
+          "type": "array<question_answer>",
+          "required": true
+        },
+        {
+          "name": "rag_context",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "name": "match_score",
+          "type": "integer_0_100",
+          "required": true
+        },
+        {
+          "name": "summary",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "recommendation",
+          "type": "entrevista|rejeitar|mais_info",
+          "required": true
+        }
+      ],
+      "fallback": "Gerar analise deterministica minima e sinalizar revisao humana.",
+      "human_review_required": true,
+      "primary_metrics": [
+        "shortlist_precision",
+        "analysis_error_rate"
+      ],
+      "dependencies": [
+        "candidate_audio_transcriber",
+        "screening_question_builder",
+        "AI provider"
+      ],
+      "current_refs": [
+        "server/ai/analyze.ts",
+        "server/conversation/flow.ts",
+        "server/conversation/summary.ts"
+      ],
+      "next_action": "Separar recomendacao da explicacao e acoplar confidence score."
+    },
+    {
+      "id": "competency_evidence_scorer",
+      "name": "Score de Evidencia por Competencia",
+      "layer": "domain",
+      "status": "live",
+      "priority": "now",
+      "reuse_scope": "recrutaria_only",
+      "objective": "Converter respostas em evidencias por requisito com bandas BARS e rationale.",
+      "business_effect": "Melhora explicabilidade do diagnostico e revisao humana.",
+      "inputs": [
+        {
+          "name": "requirements",
+          "type": "array<StructuredRequirement>",
+          "required": true
+        },
+        {
+          "name": "question_scores",
+          "type": "array<integer_0_100>",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "competency_scores",
+          "type": "array<CompetencyScore>",
+          "required": true
+        }
+      ],
+      "fallback": "Retornar score basico por peso sem rationale semantico.",
+      "human_review_required": true,
+      "primary_metrics": [
+        "evidence_coverage_rate",
+        "bars_distribution_stability"
+      ],
+      "dependencies": [
+        "job_requirement_structurer",
+        "candidate_fit_scorer"
+      ],
+      "current_refs": [
+        "server/conversation/method.ts",
+        "server/conversation/flow.ts",
+        "server/conversation/summary.ts"
+      ],
+      "next_action": "Persistir evidencias em tabela dedicada para analytics e auditoria."
+    },
+    {
+      "id": "human_handoff_router",
+      "name": "Roteador de Handoff Humano",
+      "layer": "orchestration",
+      "status": "live",
+      "priority": "now",
+      "reuse_scope": "shared",
+      "objective": "Enviar a conversa para humano quando houver excecao, risco ou pedido explicito.",
+      "business_effect": "Evita quebra de confianca e protege fluxos de alto risco.",
+      "inputs": [
+        {
+          "name": "candidate_message",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "governance_policy",
+          "type": "AISquadGovernance",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "handoff_required",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "fallback": "Pausar automacao por padrao e manter trilha de auditoria.",
+      "human_review_required": true,
+      "primary_metrics": [
+        "handoff_rate",
+        "handoff_response_sla"
+      ],
+      "dependencies": [
+        "AI Squad settings"
+      ],
+      "current_refs": [
+        "server/conversation/intents.ts",
+        "server/conversation/governance.ts",
+        "server/conversation/flow.ts"
+      ],
+      "next_action": "Classificar motivos de handoff por taxonomia operacional."
+    },
+    {
+      "id": "credit_and_payment_gate",
+      "name": "Gate de Credito e Pagamento",
+      "layer": "orchestration",
+      "status": "live",
+      "priority": "now",
+      "reuse_scope": "shared",
+      "objective": "Controlar cobranca, consumo de credito e idempotencia de pagamento.",
+      "business_effect": "Conecta uso do produto com receita auditavel.",
+      "inputs": [
+        {
+          "name": "payment_event",
+          "type": "payment_request|payment_webhook",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "wallet_update",
+          "type": "credit_transaction",
+          "required": true
+        }
+      ],
+      "fallback": "Rejeitar operacao, nao creditar duplicado e exigir reconciliacao.",
+      "human_review_required": true,
+      "primary_metrics": [
+        "paid_conversion_rate",
+        "webhook_idempotency_fail_rate"
+      ],
+      "dependencies": [
+        "payments",
+        "recruiter_wallet",
+        "credit_transactions"
+      ],
+      "current_refs": [
+        "server/payment/abacate.ts",
+        "server/payment/webhook.ts",
+        "server/index.ts",
+        "database/schema.sql"
+      ],
+      "next_action": "Explicitar consumo por skill premium no ledger."
+    },
+    {
+      "id": "deep_dive_followup",
+      "name": "Aprofundamento Contextual",
+      "layer": "domain",
+      "status": "partial",
+      "priority": "next_90d",
+      "reuse_scope": "recrutaria_only",
+      "objective": "Detectar resposta superficial e disparar uma pergunta adicional controlada para obter evidencia melhor.",
+      "business_effect": "Melhora completude do diagnostico sem alongar demais a entrevista.",
+      "inputs": [
+        {
+          "name": "question_answer",
+          "type": "question_answer",
+          "required": true
+        },
+        {
+          "name": "question_context",
+          "type": "StructuredSessionQuestion",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "followup_question",
+          "type": "string|null",
+          "required": false
+        }
+      ],
+      "fallback": "Aceitar resposta atual e seguir o fluxo se o followup nao for confiavel.",
+      "human_review_required": false,
+      "primary_metrics": [
+        "followup_trigger_rate",
+        "answer_completeness_lift"
+      ],
+      "dependencies": [
+        "candidate_audio_transcriber",
+        "candidate_fit_scorer"
+      ],
+      "current_refs": [
+        "server/conversation/flow.ts",
+        "docs/processes/EXECUTION_BACKLOG_NOTEBOOKLM_90D.md"
+      ],
+      "next_action": "Definir limite de loops, motivo do followup e score minimo para disparo."
+    },
+    {
+      "id": "blind_screening_guard",
+      "name": "Blind Screening Guard",
+      "layer": "orchestration",
+      "status": "partial",
+      "priority": "now",
+      "reuse_scope": "shared",
+      "objective": "Ocultar ou redigir PII antes da analise e da visualizacao inicial do recrutador.",
+      "business_effect": "Reduz risco de vies e melhora postura de compliance.",
+      "inputs": [
+        {
+          "name": "raw_candidate_data",
+          "type": "string|object",
+          "required": true
+        },
+        {
+          "name": "policy_enabled",
+          "type": "boolean",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "sanitized_candidate_data",
+          "type": "string|object",
+          "required": true
+        }
+      ],
+      "fallback": "Se nao for possivel redigir com seguranca, bloquear automacao e exigir revisao humana.",
+      "human_review_required": true,
+      "primary_metrics": [
+        "pii_redaction_success_rate",
+        "early_recruiter_pii_exposure_rate"
+      ],
+      "dependencies": [
+        "candidate profiles",
+        "session payloads"
+      ],
+      "current_refs": [
+        "server/conversation/governance.ts",
+        "server/skills/blind-screening.ts",
+        "server/skills/bulk-analysis.ts",
+        "server/index.ts",
+        "server/review/queue.ts",
+        "src/components/recruiter/WhatsAppSessionsPanel.tsx",
+        "src/pages/Candidates.tsx",
+        "src/pages/recruiter/Dashboard.tsx",
+        "src/pages/recruiter/BulkAnalysis.tsx",
+        "src/pages/recruiter/JobKanban.tsx",
+        "src/pages/PendingReviews.tsx",
+        "docs/processes/09-AI_SQUAD_OPERACAO.md"
+      ],
+      "next_action": "Expandir blind screening para exportacoes adjacentes (ex.: bulk results) e outras superficies recruiter fora do funnel principal."
+    },
+    {
+      "id": "recruiter_review_queue",
+      "name": "Fila de Revisao do Recrutador",
+      "layer": "orchestration",
+      "status": "live",
+      "priority": "now",
+      "reuse_scope": "recrutaria_only",
+      "objective": "Concentrar sessoes que exigem decisao humana com prioridade, SLA e justificativa.",
+      "business_effect": "Evita que a automacao entregue diagnostico sem fechamento operacional.",
+      "inputs": [
+        {
+          "name": "session_analysis",
+          "type": "whatsapp_session",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "review_task",
+          "type": "review_queue_item",
+          "required": true
+        }
+      ],
+      "fallback": "Fallback para lista simples de sessoes pendentes.",
+      "human_review_required": true,
+      "primary_metrics": [
+        "review_turnaround_minutes",
+        "review_backlog_size"
+      ],
+      "dependencies": [
+        "whatsapp_sessions",
+        "audio_files"
+      ],
+      "current_refs": [
+        "server/review/queue.ts",
+        "src/pages/PendingReviews.tsx",
+        "server/index.ts"
+      ],
+      "next_action": "Adicionar SLA visivel e analytics operacional de backlog por prioridade."
+    },
+    {
+      "id": "confidence_and_abstention_engine",
+      "name": "Motor de Confianca e Abstencao",
+      "layer": "orchestration",
+      "status": "live",
+      "priority": "now",
+      "reuse_scope": "shared",
+      "objective": "Calcular confianca da analise e impedir recomendacao automatica quando o sinal for insuficiente.",
+      "business_effect": "Reduz erro operacional, excesso de automacao e perda de confianca do cliente.",
+      "inputs": [
+        {
+          "name": "transcription_quality",
+          "type": "number_0_1",
+          "required": true
+        },
+        {
+          "name": "question_coverage",
+          "type": "number_0_1",
+          "required": true
+        },
+        {
+          "name": "analysis_consistency",
+          "type": "number_0_1",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "confidence_score",
+          "type": "integer_0_100",
+          "required": true
+        },
+        {
+          "name": "auto_recommendation_allowed",
+          "type": "boolean",
+          "required": true
+        }
+      ],
+      "fallback": "Bloquear recomendacao e mover para revisao humana.",
+      "human_review_required": true,
+      "primary_metrics": [
+        "low_confidence_review_rate",
+        "false_positive_recommendation_rate"
+      ],
+      "dependencies": [
+        "candidate_audio_transcriber",
+        "candidate_fit_scorer",
+        "recruiter_review_queue"
+      ],
+      "current_refs": [
+        "server/skills/confidence-engine.ts",
+        "server/review/queue.ts",
+        "server/conversation/flow.ts",
+        "docs/processes/EXECUTION_BACKLOG_NOTEBOOKLM_90D.md"
+      ],
+      "next_action": "Levar os thresholds de confianca para analytics operacional e regras de automacao adjacentes."
+    },
+    {
+      "id": "semantic_skill_extractor",
+      "name": "Extrator Semantico de Skills",
+      "layer": "domain",
+      "status": "missing",
+      "priority": "next_90d",
+      "reuse_scope": "shared",
+      "objective": "Inferir competencias implicitas a partir do relato do candidato, sem depender apenas de keyword matching.",
+      "business_effect": "Melhora precisao do matching e reduz falsos negativos.",
+      "inputs": [
+        {
+          "name": "transcript_bundle",
+          "type": "array<string>",
+          "required": true
+        },
+        {
+          "name": "job_requirements",
+          "type": "array<StructuredRequirement>",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "extracted_skills",
+          "type": "array<semantic_skill>",
+          "required": true
+        }
+      ],
+      "fallback": "Usar apenas requisitos explicitamente citados e scoring tradicional.",
+      "human_review_required": true,
+      "primary_metrics": [
+        "semantic_skill_precision",
+        "match_precision_lift"
+      ],
+      "dependencies": [
+        "candidate_audio_transcriber",
+        "candidate_fit_scorer"
+      ],
+      "current_refs": [
+        "docs/processes/EXECUTION_BACKLOG_NOTEBOOKLM_90D.md"
+      ],
+      "next_action": "Definir taxonomia de skills implicitas e formato de evidencia."
+    },
+    {
+      "id": "candidate_feedback_writer",
+      "name": "Gerador de Feedback ao Candidato",
+      "layer": "domain",
+      "status": "missing",
+      "priority": "next_90d",
+      "reuse_scope": "recrutaria_only",
+      "objective": "Gerar feedback educativo, humanizado e juridicamente seguro, separado da decisao final da vaga.",
+      "business_effect": "Melhora experiencia do candidato e protege employer branding.",
+      "inputs": [
+        {
+          "name": "analysis_summary",
+          "type": "CandidateAnalysis",
+          "required": true
+        },
+        {
+          "name": "feedback_policy",
+          "type": "object",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "candidate_feedback",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "fallback": "Enviar mensagem padrao neutra e sem justificativa automatizada detalhada.",
+      "human_review_required": true,
+      "primary_metrics": [
+        "feedback_delivery_rate",
+        "candidate_nps"
+      ],
+      "dependencies": [
+        "candidate_fit_scorer",
+        "human_handoff_router"
+      ],
+      "current_refs": [
+        "docs/processes/EXECUTION_BACKLOG_NOTEBOOKLM_90D.md",
+        "docs/research/notebooklm/latest/04_competitive_90d_priorities.answer.md"
+      ],
+      "next_action": "Definir policy de linguagem, exclusoes legais e aprovacao humana por faixa de risco."
+    },
+    {
+      "id": "scheduler_and_reminder",
+      "name": "Agendamento e Lembretes",
+      "layer": "orchestration",
+      "status": "missing",
+      "priority": "next_90d",
+      "reuse_scope": "recrutaria_only",
+      "objective": "Oferecer horarios de entrevista e enviar lembretes automáticos apos aprovacao da triagem.",
+      "business_effect": "Reduz no-show e acelera conversao do diagnostico para entrevista.",
+      "inputs": [
+        {
+          "name": "candidate_contact",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "recruiter_slots",
+          "type": "array<datetime_slot>",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "scheduled_interview",
+          "type": "object",
+          "required": true
+        }
+      ],
+      "fallback": "Criar tarefa manual para o recrutador fazer contato direto.",
+      "human_review_required": true,
+      "primary_metrics": [
+        "interview_show_rate",
+        "time_to_schedule_minutes"
+      ],
+      "dependencies": [
+        "human_handoff_router",
+        "WhatsApp delivery"
+      ],
+      "current_refs": [
+        "docs/processes/EXECUTION_BACKLOG_NOTEBOOKLM_90D.md"
+      ],
+      "next_action": "Definir fonte de slots, politica de remarcar e idempotencia de lembretes."
+    },
+    {
+      "id": "audio_evidence_clip_extractor",
+      "name": "Extrator de Clipes de Evidencia",
+      "layer": "domain",
+      "status": "missing",
+      "priority": "next_90d",
+      "reuse_scope": "recrutaria_only",
+      "objective": "Selecionar trechos curtos do audio original que comprovem competencia ou sinal forte.",
+      "business_effect": "Cria living profiles e reduz tempo de avaliacao do recrutador.",
+      "inputs": [
+        {
+          "name": "audio_files",
+          "type": "array<audio_file>",
+          "required": true
+        },
+        {
+          "name": "competency_scores",
+          "type": "array<CompetencyScore>",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "evidence_clips",
+          "type": "array<audio_clip_reference>",
+          "required": true
+        }
+      ],
+      "fallback": "Exibir apenas transcricao e link para audio inteiro.",
+      "human_review_required": true,
+      "primary_metrics": [
+        "clip_open_rate",
+        "recruiter_time_to_decision"
+      ],
+      "dependencies": [
+        "audio_files",
+        "competency_evidence_scorer"
+      ],
+      "current_refs": [
+        "server/index.ts",
+        "docs/processes/EXECUTION_BACKLOG_NOTEBOOKLM_90D.md"
+      ],
+      "next_action": "Definir formato de referencia de clip e UX no painel RH."
+    },
+    {
+      "id": "channel_attribution_tracker",
+      "name": "Rastreador de Atribuicao de Canal",
+      "layer": "orchestration",
+      "status": "missing",
+      "priority": "next_90d",
+      "reuse_scope": "shared",
+      "objective": "Registrar origem do candidato e campanha para medir CAC, conversao e qualidade por canal.",
+      "business_effect": "Conecta growth com receita e qualidade de pipeline.",
+      "inputs": [
+        {
+          "name": "source_params",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "candidate_event",
+          "type": "application|invite|session_start",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "attribution_record",
+          "type": "object",
+          "required": true
+        }
+      ],
+      "fallback": "Marcar como canal desconhecido e nao quebrar o fluxo principal.",
+      "human_review_required": false,
+      "primary_metrics": [
+        "known_source_rate",
+        "cac_visibility_rate"
+      ],
+      "dependencies": [
+        "public apply flow",
+        "invite flow"
+      ],
+      "current_refs": [
+        "docs/processes/EXECUTION_BACKLOG_NOTEBOOKLM_90D.md"
+      ],
+      "next_action": "Definir modelo de eventos entre landing, WhatsApp e aplicacao."
+    },
+    {
+      "id": "post_hire_learning_loop",
+      "name": "Learning Loop Pos-Contratacao",
+      "layer": "domain",
+      "status": "missing",
+      "priority": "later",
+      "reuse_scope": "recrutaria_only",
+      "objective": "Coletar sinal de desempenho apos contratacao e retroalimentar criterio de triagem.",
+      "business_effect": "Transforma o produto em sistema de aprendizado e melhora quality of hire ao longo do tempo.",
+      "inputs": [
+        {
+          "name": "hire_event",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "manager_feedback",
+          "type": "object",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "learning_signal",
+          "type": "object",
+          "required": true
+        }
+      ],
+      "fallback": "Operar sem retroalimentacao automatica e manter ajustes manuais de roteiro.",
+      "human_review_required": true,
+      "primary_metrics": [
+        "quality_of_hire_signal_rate",
+        "ninety_day_retention_signal_rate"
+      ],
+      "dependencies": [
+        "candidate_fit_scorer",
+        "CRM/ATS outcomes"
+      ],
+      "current_refs": [
+        "docs/processes/EXECUTION_BACKLOG_NOTEBOOKLM_90D.md"
+      ],
+      "next_action": "Definir evento de contratacao, taxonomia de sucesso e governanca do dataset."
+    }
+  ]
+}

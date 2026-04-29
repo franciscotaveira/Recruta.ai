@@ -1,0 +1,99 @@
+/**
+ * Recruta.AI - Sovereign Design System (Stitch Inspired)
+ * Based on Google Stitch Design Tokens specification.
+ */
+
+:root {
+  /* Core Palette (Indigo / Slate / Emerald) */
+  --s-brand-primary: #6366f1; /* Indigo 500 */
+  --s-brand-primary-light: #818cf8;
+  --s-brand-secondary: #10b981; /* Emerald 500 */
+  
+  /* Neutral Palette */
+  --s-bg-main: #020617; /* Slate 950 */
+  --s-bg-card: rgba(15, 23, 42, 0.7); /* Slate 900 with transparency */
+  --s-bg-surface: rgba(30, 41, 59, 0.4);
+  
+  /* Text */
+  --s-text-primary: #f8fafc;
+  --s-text-secondary: #94a3b8;
+  --s-text-muted: #64748b;
+  
+  /* Semantic */
+  --s-status-success: #10b981;
+  --s-status-warning: #f59e0b;
+  --s-status-error: #ef4444;
+  --s-status-info: #3b82f6;
+  
+  /* Elevation & Glassmorphism */
+  --s-glass-border: rgba(255, 255, 255, 0.08);
+  --s-glass-blur: blur(12px);
+  --s-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --s-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --s-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --s-shadow-glow: 0 0 20px rgba(99, 102, 241, 0.3);
+  
+  /* Radii */
+  --s-radius-sm: 0.375rem;
+  --s-radius-md: 0.75rem;
+  --s-radius-lg: 1.25rem;
+  --s-radius-full: 9999px;
+  
+  /* Transitions */
+  --s-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --s-transition-smooth: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Base Classes */
+.s-glass {
+  background: var(--s-bg-card);
+  backdrop-filter: var(--s-glass-blur);
+  border: 1px solid var(--s-glass-border);
+  border-radius: var(--s-radius-lg);
+  box-shadow: var(--s-shadow-md);
+}
+
+.s-glass-hover:hover {
+  background: rgba(30, 41, 59, 0.8);
+  border-color: rgba(99, 102, 241, 0.3);
+  box-shadow: var(--s-shadow-glow);
+  transform: translateY(-2px);
+  transition: var(--s-transition-smooth);
+}
+
+.s-btn-primary {
+  background: var(--s-brand-primary);
+  color: white;
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--s-radius-md);
+  font-weight: 500;
+  transition: var(--s-transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.s-btn-primary:hover {
+  background: var(--s-brand-primary-light);
+  box-shadow: var(--s-shadow-glow);
+}
+
+.s-card-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--s-text-primary);
+  letter-spacing: -0.025em;
+}
+
+.s-badge {
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--s-radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.s-badge-success { background: rgba(16, 185, 129, 0.1); color: var(--s-status-success); border: 1px solid rgba(16, 185, 129, 0.2); }
+.s-badge-warning { background: rgba(245, 158, 11, 0.1); color: var(--s-status-warning); border: 1px solid rgba(245, 158, 11, 0.2); }
+.s-badge-info { background: rgba(59, 130, 246, 0.1); color: var(--s-status-info); border: 1px solid rgba(59, 130, 246, 0.2); }

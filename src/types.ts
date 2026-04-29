@@ -1,6 +1,3 @@
-import React from 'react';
-import type { ReactNode } from 'react';
-
 export type CandidateStatus = 'new' | 'processing' | 'completed' | 'error';
 export type JobStatus = 'active' | 'paused' | 'closed';
 export type ApplicationStatus =

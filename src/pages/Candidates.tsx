@@ -1,259 +1,214 @@
-import React, { useState } from 'react';
-import {
-  Search,
-  Filter,
-  Download,
-  X,
-  CheckCircle,
-  XCircle,
-  User,
-  FileText,
-  Zap,
-  MessageCircle,
-  AlertTriangle,
-} from 'lucide-react';
-import { MOCK_CANDIDATES } from '../constants';
-import { Candidate } from '../types';
+import React, { useState, useEffect } from 'react';
+import { Search, User, MapPin, Loader2 } from 'lucide-react';
+import { getRecruiterCandidates } from '../services/api';
+import type { CandidateProfile } from '../contracts/api';
+import { resolveBlindCandidateDisplay } from '../utils/blindCandidate';
 
 const Candidates = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [candidates, setCandidates] = useState<CandidateProfile[]>([]);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const filteredCandidates = MOCK_CANDIDATES.filter(
-    (c) =>
-      c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.extractedData?.role?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  useEffect(() => {
+    loadCandidates();
+  }, []);
 
-  // Simulação de Feedback (Spec 2.5)
-  const handleDecision = (decision: 'hire' | 'reject') => {
-    alert(
-      decision === 'hire'
-        ? "Candidato Contratado! Feedback enviado: 'Diagnóstico ajudou na decisão.'"
-        : 'Candidato dispensado.'
-    );
-    setSelectedCandidate(null);
+  const loadCandidates = async () => {
+    try {
+      const data = await getRecruiterCandidates();
+      setCandidates(data || []);
+    } catch {
+      setCandidates([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  const filtered = candidates.filter(
+    (c) => {
+      const candidate = resolveBlindCandidateDisplay({
+        candidateName: c.name,
+        candidatePhone: c.phone,
+        blindCandidate: c.blind_candidate,
+      });
+      const query = searchTerm.toLowerCase();
+
+      return (
+        candidate.label.toLowerCase().includes(query) ||
+        c.target_role?.toLowerCase().includes(query) ||
+        c.location?.toLowerCase().includes(query)
+      );
+    }
+  );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 size={32} className="animate-spin text-slate-400" />
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6 relative h-full">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="max-w-6xl mx-auto space-y-6 pb-16 animate-fade-in">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Banco de Talentos</h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm">
-            Visualize diagnósticos e tome decisões rápidas.
+          <h1 className="text-2xl font-black text-slate-900 dark:text-white">Banco de Talentos</h1>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+            {candidates.length} candidatos analisados
           </p>
         </div>
-        <div className="flex gap-2">
-          <button className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-            <Download size={16} /> Exportar CSV
-          </button>
-        </div>
       </div>
 
-      {/* 2.2 PIPELINE LIST */}
-      <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden transition-colors">
-        {/* Toolbar */}
-        <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 flex gap-4">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-            <input
-              type="text"
-              placeholder="Buscar por nome ou cargo..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 dark:text-white dark:placeholder-slate-400"
-            />
-          </div>
-          <button className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm hover:bg-slate-100 dark:hover:bg-slate-600">
-            <Filter size={16} /> Filtros
-          </button>
-        </div>
+      {/* Search */}
+      <div className="relative">
+        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+        <input
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Buscar por perfil, cargo ou localização..."
+          className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+        />
+      </div>
 
-        {/* Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-700">
-              <tr>
-                <th className="px-6 py-4">Nome / Contato</th>
-                <th className="px-6 py-4">SCPD</th>
-                <th className="px-6 py-4">Perfil Indicado</th>
-                <th className="px-6 py-4">Origem</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-              {filteredCandidates.map((candidate) => (
-                <tr
-                  key={candidate.id}
-                  onClick={() => setSelectedCandidate(candidate)}
-                  className={`cursor-pointer transition-colors hover:bg-purple-50 dark:hover:bg-purple-900/10 ${selectedCandidate?.id === candidate.id ? 'bg-purple-50 dark:bg-purple-900/20' : ''}`}
+      {/* Results */}
+      {filtered.length === 0 ? (
+        <div className="text-center py-16 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl">
+          <User size={48} className="mx-auto text-slate-300 dark:text-slate-600 mb-4" />
+          <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300 mb-2">
+            {candidates.length === 0 ? 'Nenhum candidato ainda' : 'Nenhum resultado encontrado'}
+          </h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            {candidates.length === 0
+              ? 'Use a Triagem Inteligente para analisar currículos e populate o banco.'
+              : 'Tente ajustar sua busca.'}
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {filtered.map((c) => {
+            const candidate = resolveBlindCandidateDisplay({
+              candidateName: c.name,
+              candidatePhone: c.phone,
+              blindCandidate: c.blind_candidate,
+              fallbackLabel: 'Perfil',
+            });
+
+            return (
+              <div
+                key={c.id}
+                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden hover:border-emerald-300 dark:hover:border-emerald-600 transition-colors shadow-sm"
+              >
+                <div
+                  className="flex items-center gap-4 p-4 cursor-pointer"
+                  onClick={() => setExpandedId(expandedId === c.id ? null : c.id)}
                 >
-                  <td className="px-6 py-4">
-                    <div className="font-bold text-slate-900 dark:text-white">{candidate.name}</div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400">
-                      {candidate.phone}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    {candidate.score > 0 ? (
-                      <span
-                        className={`font-bold ${candidate.score >= 80 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}
-                      >
-                        {candidate.score}/100
-                      </span>
-                    ) : (
-                      <span className="text-slate-400">-</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-slate-700 dark:text-slate-300">
-                    {candidate.extractedData?.role || 'Em análise'}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="inline-flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">
-                      {candidate.plan === 'pro' ? (
-                        <Zap size={12} className="text-purple-500" />
-                      ) : (
-                        <User size={12} />
+                  <div className="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400 font-bold text-lg shrink-0">
+                    {candidate.initial}
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="font-bold text-slate-900 dark:text-white truncate">
+                        {candidate.label}
+                      </p>
+                      {c.blind_candidate?.enabled && (
+                        <span className="text-[10px] px-2 py-0.5 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 rounded-full shrink-0 font-bold uppercase tracking-wide">
+                          Blind
+                        </span>
                       )}
-                      {candidate.plan === 'pro' ? 'Base Ativa' : 'Candidatura'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium capitalize ${
-                        candidate.status === 'completed'
-                          ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
-                          : candidate.status === 'processing'
-                            ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
-                            : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
+                      {c.target_role && (
+                        <span className="text-xs px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-full shrink-0">
+                          {c.target_role}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3 mt-1 text-xs text-slate-500 dark:text-slate-400">
+                      {c.location && (
+                        <span className="flex items-center gap-1">
+                          <MapPin size={10} />
+                          {c.location}
+                        </span>
+                      )}
+                      {c.seniority && <span>{c.seniority}</span>}
+                    </div>
+                  </div>
+
+                  <div className="text-right shrink-0">
+                    <p
+                      className={`text-xl font-black ${
+                        (c.scp_score || 0) >= 70
+                          ? 'text-emerald-500'
+                          : (c.scp_score || 0) >= 40
+                            ? 'text-amber-500'
+                            : 'text-red-500'
                       }`}
                     >
-                      {candidate.status === 'completed' ? 'Pronto' : 'Processando'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right text-blue-600 dark:text-blue-400 font-bold text-xs hover:underline">
-                    Ver Análise
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* 2.3 VISÃO DO CANDIDATO (Drawer) */}
-      {selectedCandidate && (
-        <div className="fixed inset-y-0 right-0 w-full md:w-[480px] bg-white dark:bg-slate-900 shadow-2xl border-l border-slate-200 dark:border-slate-700 transform transition-transform duration-300 overflow-y-auto z-50">
-          <div className="p-6">
-            {/* Header */}
-            <div className="flex justify-between items-start mb-6">
-              <div>
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-                  {selectedCandidate.name}
-                </h2>
-                <p className="text-slate-500 dark:text-slate-400 text-sm flex items-center gap-2 mt-1">
-                  <User size={14} /> {selectedCandidate.extractedData?.role || 'Perfil em análise'}
-                </p>
-              </div>
-              <button
-                onClick={() => setSelectedCandidate(null)}
-                className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-              >
-                <X size={24} />
-              </button>
-            </div>
-
-            {/* 2.3.1 Resumo do Diagnóstico */}
-            <div className="bg-purple-50 dark:bg-purple-900/10 border border-purple-100 dark:border-purple-800/30 p-4 rounded-xl mb-6">
-              <h3 className="text-xs font-bold text-purple-700 dark:text-purple-400 uppercase mb-2 flex items-center gap-2">
-                <Zap size={14} /> Diagnóstico da IA
-              </h3>
-              <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-                {selectedCandidate.diagnosis ||
-                  'Análise comportamental pendente. O candidato mostra fortes indícios técnicos no currículo, mas a avaliação de soft skills via áudio ainda não foi concluída.'}
-              </p>
-            </div>
-
-            {/* 2.3.2 SCPD Breakdown */}
-            <div className="mb-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-bold text-slate-900 dark:text-white">
-                  Score de Clareza (SCPD)
-                </h3>
-                <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-                  {selectedCandidate.score}/100
-                </span>
-              </div>
-              <div className="space-y-3 bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-600 dark:text-slate-400">Clareza de trajetória</span>
-                  {selectedCandidate.scpdBreakdown?.clarity ? (
-                    <CheckCircle size={18} className="text-emerald-500" />
-                  ) : (
-                    <AlertTriangle size={18} className="text-amber-500" />
-                  )}
+                      {c.scp_score || 0}
+                    </p>
+                    <p className="text-[10px] text-slate-400">score</p>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-600 dark:text-slate-400">
-                    Evidência de resultados
-                  </span>
-                  {selectedCandidate.scpdBreakdown?.evidence ? (
-                    <CheckCircle size={18} className="text-emerald-500" />
-                  ) : (
-                    <AlertTriangle size={18} className="text-amber-500" />
-                  )}
-                </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-600 dark:text-slate-400">Foco em cargo-alvo</span>
-                  {selectedCandidate.scpdBreakdown?.focus ? (
-                    <CheckCircle size={18} className="text-emerald-500" />
-                  ) : (
-                    <AlertTriangle size={18} className="text-amber-500" />
-                  )}
-                </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-600 dark:text-slate-400">Atualização recente</span>
-                  {selectedCandidate.scpdBreakdown?.freshness ? (
-                    <CheckCircle size={18} className="text-emerald-500" />
-                  ) : (
-                    <XCircle size={18} className="text-red-500" />
-                  )}
-                </div>
-              </div>
-            </div>
 
-            {/* 2.3.3 Currículo & Ações */}
-            <div className="flex gap-3 mb-8">
-              <button className="flex-1 py-3 border border-slate-300 dark:border-slate-600 rounded-lg font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-center gap-2 transition-colors">
-                <FileText size={18} /> Ver CV Original
-              </button>
-              <button className="flex-1 py-3 border border-whatsapp border-opacity-50 text-whatsapp hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg font-bold flex items-center justify-center gap-2 transition-colors">
-                <MessageCircle size={18} /> WhatsApp
-              </button>
-            </div>
+                {expandedId === c.id && (
+                  <div className="px-4 pb-4 pt-0 border-t border-slate-100 dark:border-slate-700">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="mt-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                          Diagnóstico
+                        </p>
+                        <p className="text-sm text-slate-600 dark:text-slate-300 italic min-h-[4rem]">
+                          {c.diagnosis || 'Sem diagnóstico disponível.'}
+                        </p>
+                      </div>
 
-            {/* 2.5 Feedback Simples (Decisão) */}
-            <div className="border-t border-slate-100 dark:border-slate-700 pt-6">
-              <h3 className="font-bold text-slate-900 dark:text-white mb-4">Decisão Rápida</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <button
-                  onClick={() => handleDecision('reject')}
-                  className="py-3 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg font-bold text-sm transition-colors"
-                >
-                  Dispensar
-                </button>
-                <button
-                  onClick={() => handleDecision('hire')}
-                  className="py-3 bg-slate-900 dark:bg-purple-600 text-white hover:bg-slate-800 dark:hover:bg-purple-500 rounded-lg font-bold text-sm transition-colors shadow-lg"
-                >
-                  Aprovar / Contratar
-                </button>
+                      <div className="mt-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                          Histórico de Vagas
+                        </p>
+                        <div className="space-y-2 max-h-40 overflow-y-auto pr-2">
+                          {c.history && c.history.length > 0 ? (
+                            c.history.map((h) => (
+                              <div key={h.id} className="flex justify-between items-center text-xs p-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700">
+                                <div className="font-bold text-slate-700 dark:text-slate-200">
+                                  {h.public_jobs?.title || 'Vaga desconhecida'}
+                                </div>
+                                <div className="flex gap-2 items-center">
+                                  <span className="text-emerald-600 font-black">{h.match_score}%</span>
+                                  <span className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase ${
+                                    h.status === 'approved' ? 'bg-green-100 text-green-700' :
+                                    h.status === 'rejected' ? 'bg-rose-100 text-rose-700' :
+                                    'bg-blue-100 text-blue-700'
+                                  }`}>
+                                    {h.status || 'novo'}
+                                  </span>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-xs text-slate-400">Nenhuma candidatura registrada.</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+                      <div className="flex justify-between items-center mb-2">
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                          Currículo {c.blind_candidate?.enabled ? 'Anonimizado' : 'Completo'}
+                        </p>
+                        <button className="text-[10px] font-black text-purple-600 uppercase">Copiar Texto</button>
+                      </div>
+                      <pre className="text-xs text-slate-600 dark:text-slate-300 whitespace-pre-wrap font-sans max-h-40 overflow-y-auto">
+                        {c.cv_master ? c.cv_master.substring(0, 5000) : 'Currículo não disponível.'}
+                      </pre>
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          </div>
+            );
+          })}
         </div>
       )}
     </div>

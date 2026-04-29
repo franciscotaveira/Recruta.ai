@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, Target, ShieldCheck, HeartHandshake, Mic } from 'lucide-react';
+import { Target, ShieldCheck, HeartHandshake, Mic } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const About = () => {

@@ -15,15 +15,29 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({
   requiredRole,
   redirectTo = '/login',
 }) => {
-  const { isAuthenticated, userRole } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   if (!isAuthenticated) {
     return <Navigate to={redirectTo} replace />;
   }
 
-  if (requiredRole && userRole !== requiredRole) {
+  if (requiredRole && user?.role !== requiredRole) {
+    if (user?.role === 'admin') {
+      return <>{children}</>;
+    }
     // Wrong role — send to their own dashboard
-    return <Navigate to={userRole === 'recruiter' ? '/recruiter' : '/candidate'} replace />;
+    return (
+      <Navigate
+        to={
+          user?.role === 'recruiter'
+            ? '/recruiter'
+            : user?.role === 'admin'
+              ? '/admin'
+              : '/candidate'
+        }
+        replace
+      />
+    );
   }
 
   return <>{children}</>;

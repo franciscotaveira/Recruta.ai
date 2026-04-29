@@ -41,7 +41,7 @@
       "risk_level": "high",
       "approval_required": true,
       "rate_limit": "5/day",
-      "estimated_cost": 0.05,
+      "estimated_cost": 5,
       "audit_events": ["CREDIT_DEDUCTED", "ANALYSIS_GENERATED"],
       "rollback_strategy": "refund_credit",
       "inputs_schema": {
@@ -55,21 +55,10 @@
       "category": "BILLING",
       "risk_level": "high",
       "approval_required": true,
-      "estimated_cost": 1.00,
+      "estimated_cost": 10,
       "audit_events": ["CREDIT_SPENT", "CONTACT_REVEALED"],
       "inputs_schema": {
         "candidate_id": "uuid"
-      }
-    },
-    {
-      "id": "job.create",
-      "description": "Post a new job opening",
-      "category": "RECRUITER",
-      "risk_level": "medium",
-      "approval_required": false,
-      "inputs_schema": {
-        "title": "string",
-        "description": "string"
       }
     },
     {
@@ -123,6 +112,43 @@
       "risk_level": "critical",
       "approval_required": true,
       "preconditions": ["staging_ok"]
+    },
+    {
+      "id": "recruiter.post_job",
+      "description": "Post a new job opening",
+      "category": "RECRUITER",
+      "risk_level": "medium",
+      "approval_required": false,
+      "inputs_schema": {
+        "title": "string",
+        "description": "string"
+      }
+    },
+    {
+      "id": "recruiter.invite_candidate",
+      "description": "Send WhatsApp invitation to candidate",
+      "category": "RECRUITER",
+      "risk_level": "medium",
+      "approval_required": false,
+      "estimated_cost": 1,
+      "audit_events": ["WHATSAPP_SENT"]
+    },
+    {
+      "id": "recruiter.bulk_analyze",
+      "description": "Bulk analyze CVs with AI",
+      "category": "RECRUITER",
+      "risk_level": "high",
+      "approval_required": true,
+      "estimated_cost": 5,
+      "audit_events": ["BULK_ANALYSIS_RUN"]
+    }
+,
+    {
+      "id": "recruiter.update_review_status",
+      "description": "Update candidate review status",
+      "category": "RECRUITER",
+      "risk_level": "low",
+      "approval_required": false
     },
     {
       "id": "infra.rotate_keys",

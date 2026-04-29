@@ -1,0 +1,99 @@
+# Recrutaria - Nginx split-domain reference (site + app + optional api)
+# Adjust paths/certs before applying.
+
+# --- HTTP -> HTTPS redirects ---
+server {
+  listen 80;
+  server_name recrutaria.com.br www.recrutaria.com.br;
+  return 301 https://recrutaria.com.br$request_uri;
+}
+
+server {
+  listen 80;
+  server_name app.recrutaria.com.br;
+  return 301 https://app.recrutaria.com.br$request_uri;
+}
+
+# Optional api subdomain. Keep disabled if cert is not issued for api.
+server {
+  listen 80;
+  server_name api.recrutaria.com.br;
+  return 301 https://api.recrutaria.com.br$request_uri;
+}
+
+# --- Institutional site ---
+server {
+  listen 443 ssl http2;
+  server_name recrutaria.com.br www.recrutaria.com.br;
+
+  ssl_certificate /etc/letsencrypt/live/recrutaria.com.br/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/recrutaria.com.br/privkey.pem;
+
+  root /var/www/recrutaria-site;
+  index index.html;
+
+  location / {
+    try_files $uri $uri/ /index.html;
+  }
+
+  add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+  add_header X-Content-Type-Options nosniff always;
+  add_header X-Frame-Options SAMEORIGIN always;
+  add_header Referrer-Policy strict-origin-when-cross-origin always;
+}
+
+# --- Product app ---
+server {
+  listen 443 ssl http2;
+  server_name app.recrutaria.com.br;
+
+  ssl_certificate /etc/letsencrypt/live/app.recrutaria.com.br/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/app.recrutaria.com.br/privkey.pem;
+
+  root /var/www/recrutaria-app/dist;
+  index index.html;
+
+  # SPA routes
+  location / {
+    try_files $uri $uri/ /index.html;
+    add_header X-Robots-Tag "noindex, nofollow, noarchive" always;
+    add_header Cache-Control "no-store, no-cache, must-revalidate" always;
+  }
+
+  # API same-origin for frontend
+  location /api/ {
+    proxy_pass http://127.0.0.1:3456;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Real-IP $remote_addr;
+  }
+
+  add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+  add_header X-Content-Type-Options nosniff always;
+  add_header X-Frame-Options SAMEORIGIN always;
+  add_header Referrer-Policy strict-origin-when-cross-origin always;
+}
+
+# --- Optional API subdomain ---
+# Enable only after issuing certificate that includes api.recrutaria.com.br.
+server {
+  listen 443 ssl http2;
+  server_name api.recrutaria.com.br;
+
+  ssl_certificate /etc/letsencrypt/live/api.recrutaria.com.br/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/api.recrutaria.com.br/privkey.pem;
+
+  location /api/ {
+    proxy_pass http://127.0.0.1:3456;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Real-IP $remote_addr;
+  }
+
+  add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+  add_header X-Content-Type-Options nosniff always;
+}

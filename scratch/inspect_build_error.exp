@@ -1,0 +1,6 @@
+#!/usr/bin/expect -f
+set timeout 60
+spawn ssh -o StrictHostKeyChecking=no root@187.127.9.92 "cd /srv/recruta-ai && docker compose build"
+expect "password:"
+send "p8D(zq;)HuO-#Va6BOW#\r"
+expect eof

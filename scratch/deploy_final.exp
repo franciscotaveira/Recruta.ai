@@ -1,0 +1,41 @@
+#!/usr/bin/expect -f
+set timeout 300
+set vps_root_password "p8D(zq;)HuO-#Va6BOW#"
+set vps_ip "187.127.9.92"
+
+# 1. Sincronizar Server (Governance & Storage)
+spawn rsync -avz -e "ssh -o StrictHostKeyChecking=no" \
+  server/ \
+  --exclude node_modules/ \
+  root@$vps_ip:/srv/recruta-ai/server/
+expect "password:"
+send "$vps_root_password\r"
+expect eof
+
+# 2. Sincronizar Frontend Completo (incluindo Governance UI)
+spawn rsync -avz -e "ssh -o StrictHostKeyChecking=no" \
+  src/ \
+  root@$vps_ip:/srv/recruta-ai/src/
+expect "password:"
+send "$vps_root_password\r"
+expect eof
+
+# 3. Sincronizar Root files (package.json, etc)
+spawn rsync -avz -e "ssh -o StrictHostKeyChecking=no" \
+  package.json \
+  vite.config.ts \
+  tsconfig.json \
+  Dockerfile \
+  docker-compose.yml \
+  root@$vps_ip:/srv/recruta-ai/
+expect "password:"
+send "$vps_root_password\r"
+expect eof
+
+# 4. Reiniciar containers na VPS
+spawn ssh -o StrictHostKeyChecking=no root@$vps_ip "cd /srv/recruta-ai && docker compose up -d --build"
+expect "password:"
+send "$vps_root_password\r"
+expect eof
+
+puts "\n✨ Deploy FULL Soberano Concluído!"

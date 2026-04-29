@@ -10,21 +10,29 @@ import {
   FileCheck,
   Bell,
   Menu,
-  X,
   Sun,
   Moon,
   CreditCard,
   Zap,
+  Activity,
 } from 'lucide-react';
+import { JobQueue } from '../lib/JobQueue';
+
+import { useAuth } from '../contexts/AuthContext';
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 const RecruiterLayout: React.FC<LayoutProps> = ({ children }) => {
+  const { logout } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const location = useLocation();
+
+  useEffect(() => {
+    JobQueue.initRealtime();
+  }, []);
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
@@ -61,6 +69,8 @@ const RecruiterLayout: React.FC<LayoutProps> = ({ children }) => {
 
   const menuItems = [
     { path: '/recruiter', icon: <LayoutDashboard size={20} />, label: 'Visão Geral' },
+    { path: '/recruiter/triagem', icon: <Zap size={20} />, label: 'Triagem Inteligente' },
+    { path: '/recruiter/live', icon: <Activity size={20} />, label: 'Feed em Tempo Real' },
     { path: '/recruiter/jobs', icon: <Briefcase size={20} />, label: 'Vagas Ativas' },
     { path: '/recruiter/candidates', icon: <Users size={20} />, label: 'Banco de Talentos' },
     { path: '/recruiter/reviews', icon: <FileCheck size={20} />, label: 'Pendências' },
@@ -125,12 +135,12 @@ const RecruiterLayout: React.FC<LayoutProps> = ({ children }) => {
         </div>
 
         <div className="p-4 border-t border-slate-100 dark:border-slate-800">
-          <Link
-            to="/"
-            className="flex items-center px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+          <button
+            onClick={logout}
+            className="w-full flex items-center px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
           >
             <LogOut size={20} className="mr-3" /> Sair
-          </Link>
+          </button>
         </div>
       </aside>
 

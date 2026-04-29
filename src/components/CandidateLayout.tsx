@@ -3,7 +3,6 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   User,
-  Briefcase,
   FileText,
   TrendingUp,
   LogOut,
@@ -12,23 +11,31 @@ import {
   Mic,
   Sun,
   Moon,
-  Sparkles,
-  BookOpen,
   Gift,
+  MessageSquare,
 } from 'lucide-react';
 import AICopilot from './AICopilot';
+import { JobQueue } from '../lib/JobQueue';
+
+import { useAuth } from '../contexts/AuthContext';
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 const CandidateLayout: React.FC<LayoutProps> = ({ children }) => {
+  const { logout } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true); // Default to true for candidate
   const location = useLocation();
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const isActive = (path: string) => location.pathname === path;
+
+  // Initialize Governance Realtime
+  useEffect(() => {
+    JobQueue.initRealtime();
+  }, []);
 
   // Theme Toggle Logic
   useEffect(() => {
@@ -56,6 +63,7 @@ const CandidateLayout: React.FC<LayoutProps> = ({ children }) => {
 
   const menuItems = [
     { path: '/candidate', icon: <LayoutDashboard size={20} />, label: 'Dashboard & Otimizador' },
+    { path: '/candidate/chat', icon: <MessageSquare size={20} />, label: 'Centro de Comando IA' },
     { path: '/candidate/diagnosis', icon: <User size={20} />, label: 'Meu Diagnóstico (SCPD)' },
     { path: '/candidate/cv', icon: <FileText size={20} />, label: 'Currículo Vivo' },
     { path: '/candidate/evolution', icon: <TrendingUp size={20} />, label: 'Evolução de Carreira' },
@@ -147,15 +155,15 @@ const CandidateLayout: React.FC<LayoutProps> = ({ children }) => {
 
         {/* Logout */}
         <div className="p-4 border-t border-slate-200 dark:border-[#1F1F35]">
-          <Link
-            to="/"
-            className="flex items-center px-3 py-2.5 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-white/5 rounded-lg transition-colors"
+          <button
+            onClick={logout}
+            className="w-full flex items-center px-3 py-2.5 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-white/5 rounded-lg transition-colors"
           >
             <span className="mr-3">
               <LogOut size={20} />
             </span>
             Sair
-          </Link>
+          </button>
         </div>
       </aside>
 

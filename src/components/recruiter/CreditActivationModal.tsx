@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, AlertCircle, CheckCircle, Lock, Coins } from 'lucide-react';
+import { X, AlertCircle, Lock, Coins } from 'lucide-react';
 
 interface Props {
   isOpen: boolean;
