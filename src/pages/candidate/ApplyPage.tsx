@@ -16,7 +16,7 @@ const ApplyPage = () => {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  const [cvText, setCvText] = useState('');
+  const [file, setFile] = useState<File | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -30,21 +30,35 @@ const ApplyPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!id || submitting) return;
+    if (!file) {
+      setError('Por favor, selecione seu currículo (PDF ou Imagem).');
+      return;
+    }
 
     setError(null);
     setSubmitting(true);
 
     try {
-      await publicApply({
-        name,
-        phone,
-        email: email || undefined,
-        jobId: id,
-        cvText,
+      const response = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/public/apply-file`, {
+        method: 'POST',
+        headers: {
+          'x-job-id': id,
+          'x-candidate-name': name,
+          'x-candidate-phone': phone,
+          'x-candidate-email': email || '',
+          'Content-Type': file.type,
+        },
+        body: await file.arrayBuffer(),
       });
+
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || 'Falha ao processar currículo');
+      }
+
       setSuccess(true);
     } catch (err: any) {
-      setError(err.message || 'Falha ao enviar candidatura. Verifique os dados e tente novamente.');
+      setError(err.message || 'Falha ao enviar candidatura. Tente novamente.');
     } finally {
       setSubmitting(false);
     }
@@ -68,11 +82,25 @@ const ApplyPage = () => {
           <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-3 tracking-tight">
             Candidatura Enviada!
           </h2>
-          <p className="text-slate-500 dark:text-slate-400 mb-8 font-medium">
-            Obrigado, <span className="font-bold text-slate-700 dark:text-slate-200">{name}</span>!
-            Recebemos seus dados. Fique atento ao seu WhatsApp, nosso assistente entrará em contato
-            em breve para a próxima etapa.
-          </p>
+          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-6 text-left mb-8 border border-slate-100 dark:border-slate-800">
+            <p className="text-slate-700 dark:text-slate-300 font-medium mb-4">
+              Obrigado, <span className="font-bold">{name}</span>! O que acontece agora?
+            </p>
+            <ul className="space-y-4">
+              <li className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">1</div>
+                <p className="text-sm text-slate-600 dark:text-slate-400"> Nossa Inteligência Artificial está lendo seu currículo neste exato momento e comparando com os requisitos da vaga.</p>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">2</div>
+                <p className="text-sm text-slate-600 dark:text-slate-400"> Se o seu perfil for compatível, o recrutador responsável será notificado imediatamente com a sua pontuação de aderência.</p>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">3</div>
+                <p className="text-sm text-slate-600 dark:text-slate-400"> Fique de olho no seu <strong>WhatsApp</strong>! Caso avance, você receberá um convite por lá para a próxima etapa.</p>
+              </li>
+            </ul>
+          </div>
           <Link
             to="/landing"
             className="block w-full py-3 bg-slate-900 dark:bg-purple-600 text-white rounded-xl font-bold transition-all hover:opacity-90"
@@ -220,16 +248,28 @@ const ApplyPage = () => {
 
                 <div className="space-y-1">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
-                    Resumo Professional / CV
+                    Seu Currículo (PDF ou Imagem)
                   </label>
-                  <textarea
-                    required
-                    rows={6}
-                    value={cvText}
-                    onChange={(e) => setCvText(e.target.value)}
-                    placeholder="Conte um pouco sobre sua experiência..."
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-purple-500 outline-none transition-all resize-none dark:text-white"
-                  ></textarea>
+                  <div className="relative group">
+                    <input
+                      required
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={(e) => setFile(e.target.files?.[0] || null)}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                    />
+                    <div className={`w-full px-4 py-6 rounded-xl border-2 border-dashed transition-all flex flex-col items-center justify-center gap-2 ${file ? 'bg-emerald-50/50 border-emerald-200 dark:bg-emerald-500/5 dark:border-emerald-800' : 'bg-slate-50 border-slate-200 dark:bg-slate-800 dark:border-slate-700 group-hover:border-purple-300 dark:group-hover:border-purple-800'}`}>
+                      <div className={`p-2 rounded-lg ${file ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-white dark:bg-slate-700 text-slate-400'}`}>
+                        {file ? <Check size={20} /> : <Sparkles size={20} />}
+                      </div>
+                      <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
+                        {file ? file.name : 'Clique para selecionar seu currículo'}
+                      </span>
+                      <p className="text-[10px] text-slate-400 font-medium">
+                        PDF, JPG ou PNG de até 10MB
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 {error && (

@@ -34,17 +34,25 @@ const LoginPage: React.FC = () => {
     e.preventDefault();
     setError('');
 
-    if (!email.trim()) {
-      setError('Digite seu e-mail.');
+    let loginIdentifier = email.trim().toLowerCase();
+
+    if (!loginIdentifier) {
+      setError('Digite seu e-mail ou WhatsApp.');
       return;
     }
     if (!password) {
-      setError('Digite sua senha.');
+      setError('Digite sua senha ou protocolo.');
       return;
     }
 
+    // Zero-Friction: Convert phone numbers directly into ghost emails
+    if (/^\d{10,14}$/.test(loginIdentifier.replace(/\D/g, ''))) {
+      const numericPhone = loginIdentifier.replace(/\D/g, '');
+      loginIdentifier = `${numericPhone}@recruta.ai`;
+    }
+
     try {
-      await login(email.trim().toLowerCase(), password);
+      await login(loginIdentifier, password);
       const persisted = localStorage.getItem('recruta_user');
       const authRole = persisted ? JSON.parse(persisted).role : 'candidate';
 
@@ -99,10 +107,10 @@ const LoginPage: React.FC = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Email */}
+            {/* Email / Phone */}
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                E-mail
+                E-mail ou WhatsApp
               </label>
               <div className="relative">
                 <Mail
@@ -111,10 +119,10 @@ const LoginPage: React.FC = () => {
                 />
                 <input
                   id="login-email"
-                  type="email"
+                  type="text"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="voce@email.com"
+                  placeholder={segment === 'candidate' ? 'voce@email.com ou (11) 99999-9999' : 'voce@email.com'}
                   autoComplete="email"
                   className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-purple-500 outline-none"
                 />
@@ -124,7 +132,7 @@ const LoginPage: React.FC = () => {
             {/* Password */}
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                Senha
+                Senha ou Protocolo
               </label>
               <div className="relative">
                 <Lock

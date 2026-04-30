@@ -101,6 +101,13 @@ export interface WhatsAppMediaMeta {
 // ── Send a text message ─────────────────────────────────────
 export async function sendTextMessage(to: string, text: string): Promise<string> {
   const recipient = formatRecipient(to);
+  if (PROVIDER === 'evolution') {
+    const data = await evolutionFetch('sendText', {
+      number: recipient,
+      text,
+    });
+    return data?.key?.id || '';
+  }
   if (PROVIDER === 'automatik') {
     const data = await gatewayFetch({
       action: 'sendMessage',
@@ -123,6 +130,24 @@ export async function sendTextMessage(to: string, text: string): Promise<string>
   return data.messages?.[0]?.id ?? '';
 }
 
+// Evolution API helper
+async function evolutionFetch(endpoint: string, body: any) {
+  const url = `${process.env.EVOLUTION_API_URL}/message/${endpoint}/${process.env.EVOLUTION_INSTANCE_NAME}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'apikey': process.env.EVOLUTION_API_KEY || '',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Evolution API ${res.status}: ${text}`);
+  }
+  return res.json();
+}
+
 // ── Send a template message (for first contact / invitations) ──
 // Template must be pre-approved in Meta Business Suite
 export async function sendTemplate(
@@ -132,6 +157,19 @@ export async function sendTemplate(
   components: Record<string, unknown>[] = []
 ): Promise<string> {
   const recipient = formatRecipient(to);
+  
+  if (PROVIDER === 'evolution') {
+    // For Evolution, we often send a text if the template isn't pre-configured 
+    // or use their specific template endpoint.
+    // For simplicity and immediate reliability, let's use sendTextMessage as fallback
+    // if it's a dynamic invite.
+    const data = await evolutionFetch('sendText', {
+      number: recipient,
+      text: `Olá! Você foi convidado para a triagem da vaga. Responda com "OK" para começar.`,
+    });
+    return data?.key?.id || '';
+  }
+
   if (PROVIDER === 'automatik') {
     const payload: Record<string, unknown> = {
       action: 'sendMessage',
@@ -192,7 +230,7 @@ export async function sendListMessage(
     throw new Error('sendListMessage requires at least one valid row.');
   }
 
-  if (PROVIDER === 'automatik') {
+  if (PROVIDER === 'evolution' || PROVIDER === 'automatik') {
     const fallback = [
       bodyText,
       '',
@@ -241,6 +279,13 @@ export async function sendListMessage(
 // ── Send an audio message (from a local file or URL) ────────
 export async function sendAudio(to: string, audioUrl: string): Promise<string> {
   const recipient = formatRecipient(to);
+  if (PROVIDER === 'evolution') {
+    const data = await evolutionFetch('sendWhatsAppAudio', {
+      number: recipient,
+      audio: audioUrl,
+    });
+    return data?.key?.id || '';
+  }
   if (PROVIDER === 'automatik') {
     const data = await gatewayFetch({
       action: 'sendMessage',

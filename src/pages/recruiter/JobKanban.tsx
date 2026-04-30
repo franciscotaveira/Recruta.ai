@@ -119,10 +119,13 @@ const JobKanban = () => {
   ];
 
   const getStageApps = (stageId: string) => {
-    return (Array.isArray(apps) ? apps : []).filter((a) => {
+    const filtered = (Array.isArray(apps) ? apps : []).filter((a) => {
       if (stageId === 'new') return !a?.status || a?.status === 'new' || a?.status === 'screening';
       return a?.status === stageId;
     });
+
+    // Sort by match_score descending
+    return [...filtered].sort((a, b) => (b.match_score || 0) - (a.match_score || 0));
   };
 
   if (loading) {
@@ -251,17 +254,37 @@ const JobKanban = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 mb-4">
+                      <div className="flex flex-col gap-1.5 mb-4">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                            Análise da IA
+                          </span>
+                        </div>
                         <div
-                          className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black tracking-tight ${
+                          className={`flex items-center justify-between px-3 py-1.5 rounded-lg border ${
                             (app.match_score || 0) >= 80
-                              ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+                              ? 'bg-emerald-50 border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-800'
                               : (app.match_score || 0) >= 50
-                                ? 'bg-amber-50 text-amber-600 border border-amber-100'
-                                : 'bg-slate-50 text-slate-500 border border-slate-100'
+                                ? 'bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800'
+                                : 'bg-rose-50 border-rose-200 dark:bg-rose-900/20 dark:border-rose-800'
                           }`}
                         >
-                          Match: {app.match_score}%
+                          <span className={`text-xs font-black ${
+                            (app.match_score || 0) >= 80 ? 'text-emerald-700 dark:text-emerald-400' :
+                            (app.match_score || 0) >= 50 ? 'text-amber-700 dark:text-amber-400' :
+                            'text-rose-700 dark:text-rose-400'
+                          }`}>
+                            {(app.match_score || 0) >= 80 ? '🎯 Alto Potencial' :
+                             (app.match_score || 0) >= 50 ? '⚖️ Potencial Médio' :
+                             '⚠️ Baixo Alinhamento'}
+                          </span>
+                          <span className={`text-sm font-black ${
+                            (app.match_score || 0) >= 80 ? 'text-emerald-600 dark:text-emerald-500' :
+                            (app.match_score || 0) >= 50 ? 'text-amber-600 dark:text-amber-500' :
+                            'text-rose-600 dark:text-rose-500'
+                          }`}>
+                            {app.match_score}%
+                          </span>
                         </div>
                       </div>
 

@@ -13,6 +13,7 @@ import {
   Moon,
   Gift,
   MessageSquare,
+  Sparkles,
 } from 'lucide-react';
 import AICopilot from './AICopilot';
 import { JobQueue } from '../lib/JobQueue';
@@ -67,6 +68,7 @@ const CandidateLayout: React.FC<LayoutProps> = ({ children }) => {
     { path: '/candidate/diagnosis', icon: <User size={20} />, label: 'Meu Diagnóstico (SCPD)' },
     { path: '/candidate/cv', icon: <FileText size={20} />, label: 'Currículo Vivo' },
     { path: '/candidate/evolution', icon: <TrendingUp size={20} />, label: 'Evolução de Carreira' },
+    { path: '/candidate/premium-cv', icon: <Sparkles size={20} />, label: 'Currículo Premium' },
     // UX DECISION: Moved Bonus Jobs to the bottom and removed "Highlight" color to enforce hierarchy
     { path: '/candidate/jobs', icon: <Gift size={20} />, label: 'Vagas (Bônus)' },
   ];

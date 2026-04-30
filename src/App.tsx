@@ -36,6 +36,7 @@ const DiagnosisPage = lazy(() => import('./pages/candidate/Diagnosis'));
 const CVEditorPage = lazy(() => import('./pages/candidate/CVEditor'));
 const EvolutionPage = lazy(() => import('./pages/candidate/Evolution'));
 const CareerChatPage = lazy(() => import('./pages/candidate/CareerChat'));
+const PremiumTailor = lazy(() => import('./pages/candidate/PremiumTailor'));
 const AdminDashboard = lazy(() => import('./pages/admin/Dashboard'));
 const SDRSimulator = lazy(() => import('./pages/admin/SDRSimulator'));
 
@@ -111,6 +112,7 @@ const App = () => {
                         <Route path="chat" element={<CareerChatPage />} />
                         <Route path="diagnosis" element={<DiagnosisPage />} />
                         <Route path="cv" element={<CVEditorPage />} />
+                        <Route path="premium-cv" element={<PremiumTailor />} />
                         <Route
                           path="jobs"
                           element={

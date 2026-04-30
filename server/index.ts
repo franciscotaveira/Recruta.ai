@@ -12,6 +12,7 @@ import { decodeSessionAnalysis, updateSessionAnalysisMetadata } from './conversa
 import { wa, dual, users } from './storage/db';
 import { supabase } from './storage/supabase';
 import { analyzeCVSafe } from './ai/analyze-cv';
+import { tailorCandidateCV } from './ai/tailor-cv';
 import { transcribeAudio } from './ai/transcribe';
 import { requireAuth, generateToken, hashPassword, verifyPassword } from './middleware/auth';
 import { ensureBootstrapAdmin, ensureBootstrapSquad } from './admin/bootstrap';
@@ -509,6 +510,11 @@ const paymentJsonParser = express.json({
 const transcribeRawParser = express.raw({
   type: ['audio/*', 'application/octet-stream'],
   limit: '12mb',
+});
+
+const cvRawParser = express.raw({
+  type: ['application/pdf', 'image/jpeg', 'image/png'],
+  limit: '10mb',
 });
 
 app.get('/api/whatsapp/webhook', handleVerification);
@@ -1304,22 +1310,42 @@ app.get('/api/candidate/cv/versions', requireAuth('candidate'), async (req, res)
   }
 });
 
-app.post('/api/public/apply', async (req, res) => {
+app.post('/api/public/apply-file', cvRawParser, async (req, res) => {
   try {
-    const { name, phone, email, jobId, cvText } = req.body;
-    if (!name || !phone || !jobId || !cvText) {
+    const jobId = req.header('x-job-id');
+    const name = req.header('x-candidate-name');
+    const phone = req.header('x-candidate-phone');
+    const email = req.header('x-candidate-email');
+
+    if (!jobId || !name || !phone) {
       return fail(
         res,
         400,
-        'Campos obrigatórios: name, phone, jobId, cvText',
-        'PUBLIC_APPLY_REQUIRED_FIELDS'
+        'Headers obrigatórios: x-job-id, x-candidate-name, x-candidate-phone',
+        'APPLY_FILE_HEADERS_REQUIRED'
       );
+    }
+
+    const body = req.body;
+    if (!Buffer.isBuffer(body) || body.length === 0) {
+      return fail(res, 400, 'Arquivo de currículo (PDF/IMG) obrigatório', 'APPLY_FILE_REQUIRED');
     }
 
     const job = (await dual.getJobById(jobId)) as any;
     if (!job) return fail(res, 404, 'Vaga não encontrada', 'JOB_NOT_FOUND');
 
-    // Link or create profile by phone
+    // 1. Multimodal Parsing (Gemini)
+    const mimeType = req.headers['content-type'] || 'application/pdf';
+    console.log(`[apply-file] Parsing resume for ${name} (${mimeType})...`);
+    const parsedData = await parseResume(body, mimeType);
+
+    // 2. Matching Analysis against Job Requirements
+    console.log(`[apply-file] Analyzing match for ${job.title}...`);
+    const analysis = await analyzeCVSafe(parsedData.markdown, job.requirements);
+
+    const matchScore = analysis.data?.score || 50;
+
+    // 3. Link or create profile
     const normalizedPhone = toCanonicalDigits ? toCanonicalDigits(phone) : phone.replace(/\D/g, '');
     let profile = (await dual.getProfileByPhone(normalizedPhone)) as any;
 
@@ -1329,7 +1355,7 @@ app.post('/api/public/apply', async (req, res) => {
         id,
         null,
         name,
-        email || `${normalizedPhone}@whatsapp.com`,
+        email || parsedData.email || `${normalizedPhone}@whatsapp.com`,
         normalizedPhone,
         null,
         null,
@@ -1338,30 +1364,55 @@ app.post('/api/public/apply', async (req, res) => {
       profile = (await dual.getProfileByPhone(normalizedPhone)) as any;
     }
 
+    // 4. Record application
     const appId = `app_${randomUUID()}`;
+    await dual.applyToJob(profile.id, jobId, 'public_file', matchScore, appId);
 
-    // 1. Intelligent CV Analysis for initial score
-    let matchScore = 50;
-    try {
-      const analysis = await analyzeCVSafe(cvText);
-      if (analysis.data) {
-        matchScore = analysis.data.score;
+    // 5. Notify Recruiter if it's a high match
+    if (matchScore >= 80) {
+      try {
+        const recruiter = (await users.findById(job.recruiter_id)) as any;
+        if (recruiter && recruiter.phone) {
+          const recruiterMsg = `🚀 *Candidato Elite Detectado!*\n\nOlá ${recruiter.name || 'Recrutador'},\n\nUm novo candidato acaba de se aplicar para a vaga *${job.title}* com um match de *${matchScore}%*.\n\n👤 Nome: ${name}\n✨ Destaque: Candidato altamente qualificado.\n\nVeja os detalhes agora no seu painel: https://recruta.ai/recruiter/jobs/${jobId}`;
+          await sendTextMessage(recruiter.phone, recruiterMsg);
+          console.log(`[apply-file] Recruiter ${recruiter.phone} notified of high match.`);
+        }
+      } catch (notifyErr) {
+        console.error('[apply-file] Failed to notify recruiter:', notifyErr);
       }
-    } catch (err) {
-      console.error('[public-apply] AI Analysis failed, defaulting to 50:', err);
     }
 
-    // 2. Record application with real/fallback score
-    await dual.applyToJob(profile.id, jobId, 'public_cv', matchScore, appId);
+    // 5. Update profile with extracted data if empty
+    if (!profile.cv_master) {
+      await dual.updateProfile(
+        profile.name || parsedData.name,
+        profile.email || parsedData.email,
+        profile.phone || parsedData.phone,
+        profile.location || parsedData.location,
+        null,
+        null,
+        profile.user_id
+      );
+      await dual.setCV(
+        parsedData.markdown,
+        matchScore,
+        JSON.stringify(analysis.data?.breakdown || {}),
+        analysis.data?.reasoning || '',
+        JSON.stringify(analysis.data?.suggestions || []),
+        JSON.stringify(analysis.data?.attention_points || []),
+        profile.user_id
+      );
+    }
 
     res.json({
       success: true,
       appId,
-      profileId: profile.id,
       matchScore,
+      analysis: analysis.data,
     });
   } catch (err: any) {
-    fail(res, 500, err.message || 'Erro interno', 'PUBLIC_APPLY_FAILED');
+    console.error('[apply-file] Error:', err);
+    fail(res, 500, err.message || 'Erro ao processar currículo', 'APPLY_FILE_FAILED');
   }
 });
 
@@ -1399,6 +1450,72 @@ app.get('/api/candidate/applications', requireAuth('candidate'), async (req, res
     fail(res, 500, 'Erro interno', 'APPLICATIONS_LIST_FAILED');
   }
 });
+
+// --- B2C Monetization: Candidate Wallet & Premium CV ---
+app.get('/api/candidate/wallet', requireAuth('candidate'), async (req, res) => {
+  try {
+    const userId = req.user!.id;
+    const { data: profile } = await supabase.from('candidate_profiles').select('id').eq('user_id', userId).maybeSingle();
+    if (!profile) return res.status(404).json({ error: 'Profile not found' });
+    
+    await dual.initCandidateWallet(profile.id);
+    const wallet = await dual.getCandidateWallet(profile.id);
+    res.json({ balance: wallet?.balance || 0 });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/candidate/tailor-cv', requireAuth('candidate'), async (req, res) => {
+  try {
+    const userId = req.user!.id;
+    const { targetJobDescription } = req.body;
+    
+    const { data: profile } = await supabase.from('candidate_profiles').select('*').eq('user_id', userId).maybeSingle();
+    if (!profile) return res.status(404).json({ error: 'Profile not found' });
+    
+    await dual.initCandidateWallet(profile.id);
+    const success = await dual.deductCandidateCredit(profile.id, 1);
+    
+    if (!success) {
+      return res.status(402).json({ error: 'Saldo insuficiente. Compre mais créditos para continuar.' });
+    }
+    
+    const { data: sessions } = await supabase.from('whatsapp_sessions').select('responses').eq('candidate_phone', profile.phone).order('created_at', { ascending: false });
+    
+    const transcripts: string[] = [];
+    if (sessions) {
+      for (const session of sessions) {
+        if (session.responses && Array.isArray(session.responses)) {
+          session.responses.forEach((r: any) => {
+            if (r.transcription) transcripts.push(r.transcription);
+          });
+        }
+      }
+    }
+    
+    const tailoredMarkdown = await tailorCandidateCV(
+      profile.name || 'Candidato', 
+      profile.parsed_cv || profile.raw_cv || 'Sem currículo base.', 
+      transcripts, 
+      targetJobDescription
+    );
+    
+    const updatedWallet = await dual.getCandidateWallet(profile.id);
+    res.json({ markdown: tailoredMarkdown, balanceAfter: updatedWallet?.balance || 0 });
+  } catch (err: any) {
+    console.error('Tailor CV Error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/candidate/buy-credits', requireAuth('candidate'), async (req, res) => {
+  // Placeholder for Stripe/Asaas integration to purchase B2C credits
+  // Returns a checkout URL
+  res.json({ checkoutUrl: 'https://pay.asaas.com/checkout/recruta-premium' });
+});
+// --------------------------------------------------------
+
 
 app.post('/api/candidate/chat', requireAuth('candidate'), async (req, res) => {
   try {

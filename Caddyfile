@@ -1,4 +1,4 @@
-recrutaria.com.br, www.recrutaria.com.br {
+recruta.ai, www.recruta.ai {
 	encode zstd gzip
 	reverse_proxy localhost:3456
 
@@ -10,7 +10,7 @@ recrutaria.com.br, www.recrutaria.com.br {
 	}
 }
 
-app.recrutaria.com.br {
+iaparavendas.tech, www.iaparavendas.tech {
 	encode zstd gzip
 	reverse_proxy localhost:3456
 

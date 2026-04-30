@@ -712,7 +712,7 @@ export const dual = {
     return !!data;
   },
 
-  // Wallet
+  // Recruiter Wallet
   getWallet: async (recruiter_id: string) => {
     const { data } = await supabase
       .from('recruiter_wallet')
@@ -800,6 +800,46 @@ export const dual = {
         })
         .eq('recruiter_id', recruiter_id);
     }
+  },
+
+  // Candidate Wallet (B2C)
+  getCandidateWallet: async (candidate_id: string) => {
+    const { data } = await supabase
+      .from('candidate_wallet')
+      .select('*')
+      .eq('candidate_id', candidate_id)
+      .single();
+    return data;
+  },
+  initCandidateWallet: async (candidate_id: string) => {
+    const { data: existing } = await supabase
+      .from('candidate_wallet')
+      .select('candidate_id')
+      .eq('candidate_id', candidate_id)
+      .maybeSingle();
+    if (!existing) {
+      await supabase.from('candidate_wallet').insert([{ candidate_id, balance: 3 }]);
+    }
+  },
+  deductCandidateCredit: async (candidate_id: string, amount: number = 1): Promise<boolean> => {
+    const { data: wallet } = await supabase
+      .from('candidate_wallet')
+      .select('balance, total_spent')
+      .eq('candidate_id', candidate_id)
+      .single();
+    
+    if (wallet && wallet.balance >= amount) {
+      await supabase
+        .from('candidate_wallet')
+        .update({
+          balance: wallet.balance - amount,
+          total_spent: wallet.total_spent + amount,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('candidate_id', candidate_id);
+      return true;
+    }
+    return false;
   },
 
   // Recruiter Profiles

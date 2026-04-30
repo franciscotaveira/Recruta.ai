@@ -9,15 +9,11 @@
 
 import { randomUUID } from 'node:crypto';
 import { wa, dual } from '../storage/db.js';
-import {
-  sendTextMessage,
-  sendTemplate,
-  downloadMediaWithMeta,
-  sendListMessage,
-  type InteractiveListRow,
-} from '../whatsapp/client.js';
+import { sendTextMessage, sendTemplate, downloadMediaWithMeta, sendListMessage, type InteractiveListRow } from '../whatsapp/client.js';
 import { TEMPLATES, TEXT_MESSAGES } from '../whatsapp/templates.js';
 import { toCanonicalDigits } from '../whatsapp/phone.js';
+import { hashPassword } from '../middleware/auth.js';
+import { users } from '../storage/db.js';
 import { transcribeAudio } from '../ai/transcribe.js';
 import { analyzeCandidate, type CandidateAnalysis } from '../ai/analyze.js';
 import { getAIControl, type AIControlSettings } from '../admin/ai-control.js';
@@ -699,8 +695,29 @@ async function finalizeSession(
     session.id
   );
 
-  const candidateMsg =
-    'Perfeito! Encerramos sua etapa de áudio. O time de RH vai avaliar seu diagnóstico e te atualizar pelos próximos canais.';
+  // Auto-Registration & Zero-Friction Onboarding
+  const canonicalPhone = toCanonicalDigits(session.candidate_phone) || session.candidate_phone;
+  const candidateEmail = `${canonicalPhone}@recruta.ai`;
+  let existingUser = await users.findByEmail(candidateEmail);
+  
+  let pin = '';
+  if (!existingUser) {
+    pin = Math.floor(100000 + Math.random() * 900000).toString(); // 6 digits protocol
+    const hashedPin = await hashPassword(pin);
+    const newUserId = `usr_${randomUUID()}`;
+    await users.create(newUserId, candidateEmail, hashedPin, 'candidate', session.candidate_name);
+    
+    // Link existing profile if found by phone
+    const { data: profile } = await dual.supabase.from('candidate_profiles').select('id').eq('phone', canonicalPhone).maybeSingle();
+    if (profile) {
+      await dual.supabase.from('candidate_profiles').update({ user_id: newUserId }).eq('id', profile.id);
+    }
+  }
+
+  const candidateMsg = pin
+    ? `Perfeito! Encerramos sua etapa de áudio. O time de RH vai avaliar seu diagnóstico e te atualizar.\n\n*Seu Painel Exclusivo Recruta.AI:*\nAcesse: https://recruta.ai/login\nLogin: ${canonicalPhone}\nSenha Temporária: ${pin}\n\nAcesse para completar seu perfil e acompanhar sua evolução!`
+    : `Perfeito! Encerramos sua etapa de áudio. O time de RH vai avaliar seu diagnóstico e te atualizar pelos próximos canais. Acompanhe pelo seu painel em https://recruta.ai/login.`;
+
   await wa.logMessage(uid(), session.id, 'outbound', 'text', candidateMsg, '', 'sent');
   await sendTextMessage(session.candidate_phone, candidateMsg);
 
