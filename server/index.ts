@@ -23,6 +23,8 @@ import { bulkAnalyzeCVs } from './ai/bulk-analyze';
 import { getRAGDiagnostics } from './ai/rag';
 import { createBilling, CREDIT_PACKAGES, DIAGNOSTIC_PRODUCT } from './payment/abacate';
 import { handlePaymentWebhook } from './payment/webhook';
+import { handleAsaasWebhook } from './payment/asaas_webhook';
+import { createAsaasCustomer, createAsaasPayment } from './lib/asaas';
 import { aiCache } from './ai/cache';
 import { autoSeed } from './seed-auto';
 import { downloadMediaWithMeta } from './whatsapp/client';
@@ -520,6 +522,7 @@ const cvRawParser = express.raw({
 app.get('/api/whatsapp/webhook', handleVerification);
 app.post('/api/whatsapp/webhook', webhookJsonParser, handleEvent);
 app.post('/api/payment/webhook', paymentJsonParser, handlePaymentWebhook);
+app.post('/api/payment/asaas-webhook', paymentJsonParser, handleAsaasWebhook);
 
 const transcribeLimiter = rateLimit({
   windowMs: 60 * 60_000,
@@ -1510,9 +1513,47 @@ app.post('/api/candidate/tailor-cv', requireAuth('candidate'), async (req, res) 
 });
 
 app.post('/api/candidate/buy-credits', requireAuth('candidate'), async (req, res) => {
-  // Placeholder for Stripe/Asaas integration to purchase B2C credits
-  // Returns a checkout URL
-  res.json({ checkoutUrl: 'https://pay.asaas.com/checkout/recruta-premium' });
+  try {
+    const userId = req.user!.id;
+    const profile = await dual.getProfileByUser(userId);
+    
+    if (!profile || !profile.email) {
+      return res.status(400).json({ error: 'Perfil incompleto' });
+    }
+
+    // Pack: 10 credits for R$ 10
+    const amount = 10;
+    
+    // 1. Create or use customer in Asaas (Simplified for MVP, assuming name/email/phone exist)
+    // In a real scenario, we'd store asaas_id in profile.
+    let asaasCustomerId = (profile as any).asaas_id;
+    
+    if (!asaasCustomerId) {
+      const customer = await createAsaasCustomer({
+        name: profile.name || 'Candidato Recrutaria',
+        email: profile.email,
+        cpfCnpj: '', // Asaas might require this for some payment methods, but PIX usually works with empty if configured
+        phone: profile.phone
+      });
+      asaasCustomerId = customer.id;
+      await dual.updateAsaasId(userId, asaasCustomerId);
+    }
+
+    // 2. Create Payment
+    const payment = await createAsaasPayment({
+      customer: asaasCustomerId,
+      billingType: 'UNDEFINED', // Let user choose
+      value: amount,
+      dueDate: new Date(Date.now() + 86400000).toISOString().split('T')[0], // Tomorrow
+      description: 'Compra de 10 créditos - Recruta.AI',
+      externalReference: `b2c_credits_${userId}`
+    });
+
+    res.json({ checkoutUrl: payment.invoiceUrl });
+  } catch (err: any) {
+    console.error('Error in buy-credits:', err.message);
+    res.status(500).json({ error: 'Erro ao gerar cobrança' });
+  }
 });
 // --------------------------------------------------------
 

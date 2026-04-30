@@ -428,6 +428,9 @@ export const dual = {
       })
       .eq('user_id', user_id);
   },
+  updateAsaasId: async (user_id: string, asaas_id: string) => {
+    await supabase.from('candidate_profiles').update({ asaas_id }).eq('user_id', user_id);
+  },
   setCV: async (
     cv_master: string,
     scp_score: number,
@@ -820,6 +823,19 @@ export const dual = {
     if (!existing) {
       await supabase.from('candidate_wallet').insert([{ candidate_id, balance: 3 }]);
     }
+  },
+  addCandidateCredit: async (candidate_id: string, amount: number) => {
+    const { data: wallet } = await supabase
+      .from('candidate_wallet')
+      .select('balance')
+      .eq('candidate_id', candidate_id)
+      .single();
+    
+    const newBalance = (wallet?.balance || 0) + amount;
+    await supabase
+      .from('candidate_wallet')
+      .update({ balance: newBalance, updated_at: new Date().toISOString() })
+      .eq('candidate_id', candidate_id);
   },
   deductCandidateCredit: async (candidate_id: string, amount: number = 1): Promise<boolean> => {
     const { data: wallet } = await supabase
