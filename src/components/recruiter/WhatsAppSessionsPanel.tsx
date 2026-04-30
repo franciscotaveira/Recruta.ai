@@ -260,24 +260,38 @@ const WhatsAppSessionsPanel: React.FC<Props> = ({ sessions, onSelectSession }) =
                   Competências (BARS)
                 </p>
                 <div className="space-y-2">
-                  {competencyScores.slice(0, 4).map((c) => (
+                  {competencyScores.slice(0, 5).map((c) => (
                     <div
                       key={`${s.id}-${c.requirement_id}`}
-                      className="flex items-center justify-between gap-2 rounded-lg bg-white px-2.5 py-2 text-xs dark:bg-slate-800"
+                      className="group flex flex-col gap-1 rounded-lg bg-white px-3 py-2.5 text-xs dark:bg-slate-800 border border-slate-100 dark:border-slate-700/50"
                     >
-                      <div className="min-w-0">
-                        <p className="truncate font-semibold text-slate-700 dark:text-slate-200">
-                          {c.requirement_text}
-                        </p>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                          Score {c.score}% • Peso {c.weight}
-                        </p>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <p className="truncate font-bold text-slate-700 dark:text-slate-200">
+                              {c.requirement_text}
+                            </p>
+                            {c.methodology && (
+                              <span className="shrink-0 rounded bg-slate-100 px-1 py-0.5 text-[9px] font-black text-slate-500 dark:bg-slate-700 dark:text-slate-400">
+                                {c.methodology}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[10px] text-slate-400">
+                            Score {c.score}% • Peso {c.weight}
+                          </p>
+                        </div>
+                        <span
+                          className={`shrink-0 rounded-md border px-2 py-1 font-black ${barsTone(c.bars_level)}`}
+                        >
+                          {c.bars_level}
+                        </span>
                       </div>
-                      <span
-                        className={`shrink-0 rounded-md border px-2 py-1 font-bold ${barsTone(c.bars_level)}`}
-                      >
-                        BARS {c.bars_level}
-                      </span>
+                      {c.rationale && (
+                        <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400 italic leading-snug border-t border-slate-50 dark:border-slate-700/30 pt-1">
+                          "{c.rationale}"
+                        </p>
+                      )}
                     </div>
                   ))}
                 </div>

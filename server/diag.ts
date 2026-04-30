@@ -3,7 +3,7 @@ import { smartAI } from './ai/provider.js';
 import { dual } from './storage/db.js';
 
 async function diag() {
-  console.log('🚀 [DIAG] Iniciando Diagnóstico de Produção (Recruta.AI)\n');
+  console.log('🚀 [DIAG] Iniciando Diagnóstico de Produção (Recrutaria)\n');
 
   // 1. Variáveis de Ambiente
   const envVars = [

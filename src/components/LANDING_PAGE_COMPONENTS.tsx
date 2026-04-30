@@ -194,7 +194,7 @@ export const SocialProofSection = () => {
       name: 'João Silva',
       role: 'Engenheiro de Software',
       content:
-        'Meu currículo passava em 20% dos filtros. Depois de usar Recruta.AI, passei em 85%. Consegui 3 entrevistas em 1 semana!',
+        'Meu currículo passava em 20% dos filtros. Depois de usar Recrutaria, passei em 85%. Consegui 3 entrevistas em 1 semana!',
       avatar: '👨‍💻',
     },
     {
@@ -276,7 +276,7 @@ export const PricingSection = ({ onSelect }: { onSelect: (plan: string) => void 
           <h3 className="text-2xl font-bold mb-2">Básico</h3>
           <p className="text-gray-400 mb-6">Para quem quer começar</p>
           <p className="text-4xl font-bold mb-6">
-            R$ 49<span className="text-lg text-gray-400">/mês</span>
+            R$ 29,90<span className="text-lg text-gray-400">/mês</span>
           </p>
 
           <ul className="space-y-4 mb-8">

@@ -16,7 +16,7 @@ const Legal: React.FC<LegalProps> = ({ type }) => {
           <section>
             <h3 className="font-bold text-slate-900 text-lg mb-2">1. Natureza do Serviço</h3>
             <p className="text-slate-600">
-              O Recruta.AI opera como uma camada de inteligência Neural. O processamento de áudio e
+              O Recrutaria opera como uma camada de inteligência Neural. O processamento de áudio e
               texto visa a redução de viés cognitivo e a automação de triagens. O usuário compreende
               que a IA auxilia, mas a decisão final de contratação é exclusiva do Recrutador.
             </p>
@@ -32,7 +32,7 @@ const Legal: React.FC<LegalProps> = ({ type }) => {
           <section>
             <h3 className="font-bold text-slate-900 text-lg mb-2">3. Uso de IA e Algoritmos</h3>
             <p className="text-slate-600">
-              A plataforma utiliza modelos de linguagem de larga escala (LLM). O Recruta.AI garante a
+              A plataforma utiliza modelos de linguagem de larga escala (LLM). O Recrutaria garante a
               auditabilidade dos critérios de triagem (Neural Moat), permitindo que recrutadores
               entendam os fundamentos de cada score gerado.
             </p>
@@ -80,7 +80,7 @@ const Legal: React.FC<LegalProps> = ({ type }) => {
       <nav className="bg-white border-b border-slate-200 py-4">
         <div className="max-w-4xl mx-auto px-4 flex justify-between items-center">
           <Link to="/" className="font-bold text-xl tracking-tight text-slate-900">
-            Recruta.AI
+            Recrutaria
           </Link>
           <Link to="/" className="text-sm font-medium text-slate-600 hover:text-purple-600">
             Voltar

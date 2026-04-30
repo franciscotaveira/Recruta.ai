@@ -39,7 +39,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       >
         <div className="p-6 border-b border-slate-700 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Recruta.AI</h1>
+            <h1 className="text-2xl font-bold tracking-tight">Recrutaria</h1>
             <p className="text-xs text-slate-400">Admin Console</p>
           </div>
           <button onClick={toggleSidebar} className="lg:hidden text-slate-400 hover:text-white">
@@ -85,7 +85,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <button onClick={toggleSidebar} className="text-slate-500 hover:text-slate-700">
             <Menu size={24} />
           </button>
-          <span className="ml-4 font-semibold text-lg">Recruta.AI</span>
+          <span className="ml-4 font-semibold text-lg">Recrutaria</span>
         </header>
 
         <main className="flex-1 overflow-y-auto p-4 md:p-8">{children}</main>

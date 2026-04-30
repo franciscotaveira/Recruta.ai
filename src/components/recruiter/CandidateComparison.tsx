@@ -237,7 +237,7 @@ const CandidateComparison: React.FC<Props> = ({ sessions, onClose }) => {
       {/* Footer */}
       <div className="p-4 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 text-center">
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-          Recruta.AI • Inteligência de Áudio • Iris Index v2.0
+          Recrutaria • Inteligência de Áudio • Iris Index v2.0
         </p>
       </div>
     </div>

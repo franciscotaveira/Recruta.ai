@@ -622,6 +622,7 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
       });
     } else {
       await dual.initWallet(userId);
+      await dual.initRecruiterProfile(userId, name || 'Empresa');
       logEvent('info', 'auth.register.recruiter', {
         userId,
         email: cleanEmail,
@@ -1227,11 +1228,11 @@ app.post(
       const result = await analyzeCVSafe(cvText);
 
       const score = result.data?.score || 50;
-      const breakdown = {
-        clarity: score > 60,
-        evidence: score > 70,
-        focus: score > 50,
-        freshness: score > 40,
+      const breakdown = result.data?.breakdown || {
+        clarity: 50,
+        evidence: 50,
+        focus: 50,
+        freshness: 50,
       };
 
       await dual.setCV(
@@ -1240,6 +1241,7 @@ app.post(
         JSON.stringify(breakdown),
         result.data?.reasoning || result.error?.message || '',
         JSON.stringify(result.data?.suggestions || []),
+        JSON.stringify(result.data?.attention_points || []),
         req.user!.id
       );
 
@@ -1352,6 +1354,37 @@ app.get('/api/candidate/applications', requireAuth('candidate'), async (req, res
   }
 });
 
+app.post('/api/candidate/chat', requireAuth('candidate'), async (req, res) => {
+  try {
+    const { message, history } = req.body;
+    const profile = (await dual.getProfileByUser(req.user!.id)) as any;
+    
+    const context = `
+      Candidato: ${profile?.name || 'Não informado'}
+      Cargo Pretendido: ${profile?.target_role || 'Não informado'}
+      Senioridade: ${profile?.seniority || 'Não informado'}
+      Score SCP: ${profile?.scp_score || 'N/A'}
+      Diagnóstico: ${profile?.diagnosis || 'Sem diagnóstico ainda'}
+      Currículo: ${profile?.cv_master ? 'Presente (analisado)' : 'Ausente'}
+    `;
+
+    const systemPrompt = `Você é o Recruta.AI Career Advisor, um mentor de carreira de elite.
+    Seu objetivo é ajudar o candidato a conseguir sua próxima vaga de alto nível.
+    Use o contexto fornecido para dar respostas extremamente personalizadas e acionáveis.
+    Não seja genérico. Se o candidato não tiver diagnóstico, recomende que ele faça.
+    Seja motivador, mas realista. Mantenha um tom profissional e sofisticado.
+    
+    Contexto do Candidato:
+    ${context}
+    `;
+
+    const response = await smartAI('chat', systemPrompt, JSON.stringify({ message, history }), false);
+    res.json({ response });
+  } catch (err: any) {
+    fail(res, 500, err.message || 'Erro no chat', 'CHAT_FAILED');
+  }
+});
+
 // Payments
 function normalizePhone(phone: string): string {
   return phone.replace(/\D+/g, '');
@@ -1361,6 +1394,84 @@ function isValidTaxId(taxId: string): boolean {
   const digits = taxId.replace(/\D+/g, '');
   return digits.length === 11 || digits.length === 14;
 }
+
+app.post('/api/payment/subscription', requireAuth('recruiter'), async (req, res) => {
+  try {
+    const { planId, customer } = req.body as any;
+    const { SUBSCRIPTION_PLANS } = await import('./payment/abacate.js');
+    const plan = (SUBSCRIPTION_PLANS as any)[planId];
+    if (!plan) return fail(res, 400, 'Plano inválido', 'PAYMENT_INVALID_PLAN');
+
+    const authUser = (await users.findById(req.user!.id)) as any;
+    const resolvedCustomer =
+      customer ||
+      (IS_PROD
+        ? null
+        : {
+            name: authUser?.name || 'Recruiter',
+            email: authUser?.email || `${req.user!.id}@recruta.ai`,
+            phone: authUser?.phone || '11999990000',
+            taxId: '00000000000',
+          });
+
+    if (
+      !resolvedCustomer?.name ||
+      !resolvedCustomer?.email ||
+      !resolvedCustomer?.phone ||
+      !resolvedCustomer?.taxId
+    ) {
+      return fail(
+        res,
+        400,
+        'customer.name, customer.email, customer.phone, customer.taxId são obrigatórios',
+        'PAYMENT_CUSTOMER_REQUIRED'
+      );
+    }
+
+    const cleanPhone = normalizePhone(resolvedCustomer.phone);
+    const paymentId = `sub_${Date.now()}`;
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:4050';
+
+    const billing = await createBilling({
+      frequency: 'ONE_TIME', // Simple MVP subscription (re-billing handled manually or via Abacate recurrency later)
+      methods: ['PIX', 'CARD'],
+      products: [
+        {
+          externalId: plan.externalId,
+          name: plan.name,
+          description: `Assinatura Recruta.AI - Plano ${planId}`,
+          quantity: 1,
+          price: plan.priceCents,
+        },
+      ],
+      returnUrl: `${frontendUrl}/recruiter/billing`,
+      completionUrl: `${frontendUrl}/recruiter/billing?payment=success`,
+      customer: {
+        name: resolvedCustomer.name,
+        cellphone: cleanPhone,
+        email: resolvedCustomer.email,
+        taxId: resolvedCustomer.taxId,
+      },
+    });
+
+    await dual.createPayment(
+      paymentId,
+      billing.id,
+      req.user!.id,
+      'recruiter',
+      'subscription',
+      0,
+      plan.priceCents,
+      `${frontendUrl}/recruiter/billing`,
+      billing.url,
+      JSON.stringify({ planId, phone: cleanPhone, taxId: resolvedCustomer.taxId })
+    );
+
+    res.json({ paymentId, checkoutUrl: billing.url, amount: plan.priceCents });
+  } catch (err: any) {
+    fail(res, 500, 'Erro ao criar assinatura', 'PAYMENT_SUBSCRIPTION_FAILED');
+  }
+});
 
 app.post('/api/payment/credits', requireAuth('recruiter'), async (req, res) => {
   try {
@@ -1533,10 +1644,12 @@ app.post('/api/payment/diagnostic', requireAuth('candidate'), async (req, res) =
 app.get('/api/recruiter/wallet', requireAuth('recruiter'), async (req, res) => {
   try {
     await dual.initWallet(req.user!.id);
+    await dual.initRecruiterProfile(req.user!.id, 'Empresa');
     const wallet = await dual.getWallet(req.user!.id);
+    const profile = await dual.getRecruiterProfile(req.user!.id);
     const transactions = await dual.getTransactions(req.user!.id);
     const payments = await dual.getPaymentsByUser(req.user!.id, 'recruiter');
-    res.json({ wallet, transactions, payments });
+    res.json({ wallet, profile, transactions, payments });
   } catch {
     fail(res, 500, 'Erro interno', 'WALLET_FETCH_FAILED');
   }
@@ -1577,21 +1690,13 @@ app.post(
       const squadPromise = getAISquad();
 
       await dual.initWallet(req.user!.id);
-      const wallet = (await dual.getWallet(req.user!.id)) as any;
-      const creditsNeeded = candidates.length;
-
-      if (!wallet || wallet.balance < creditsNeeded) {
-        return res.status(402).json({
-          error: `Créditos insuficientes. Necessário: ${creditsNeeded}, disponível: ${wallet?.balance || 0}`,
-          code: 'BILLING_INSUFFICIENT_CREDITS',
-          details: {
-            creditsNeeded,
-            creditsAvailable: wallet?.balance || 0,
-          },
-        });
+      const profile = await dual.getRecruiterProfile(req.user!.id);
+      
+      // If not Pro, we might want to limit or block, but for now let's just log
+      if (!profile || profile.subscription_status !== 'active') {
+        console.log(`[bulk-analyze] Recruiter ${req.user!.id} is not active, but allowing for now.`);
       }
 
-      await dual.spendCredits(creditsNeeded, req.user!.id);
       const reqText = (job.requirements || []).map((r: any) => r.text).join(', ');
 
       const result = await bulkAnalyzeCVs(candidates, job.title, job.description, reqText, jobId);
@@ -1630,9 +1735,7 @@ app.post(
         );
       }
 
-      if (result.errors.length > 0) {
-        await dual.addCredits(result.errors.length, 0, req.user!.id);
-      }
+      // No more refunds needed since it's free for subscribers
 
       const updatedWallet = (await dual.getWallet(req.user!.id)) as any;
 
@@ -1651,9 +1754,9 @@ app.post(
         errors: result.errors.map((error) =>
           shapeBulkAnalysisErrorForApi(error, { jobId, blindScreeningEnabled })
         ),
-        creditsSpent: creditsNeeded - result.errors.length,
-        creditsRefunded: result.errors.length,
-        creditsRemaining: updatedWallet?.balance || 0,
+        creditsSpent: 0,
+        creditsRefunded: 0,
+        creditsRemaining: 0, // Placeholder as it's included in subscription
       });
     } catch (err: any) {
       console.error('[bulk-analyze] error:', err);
@@ -1789,9 +1892,22 @@ app.post('/api/whatsapp/invite', requireAuth('recruiter'), inviteLimiter, async 
       );
     }
 
+    // Credit Check
+    const wallet = (await dual.getWallet(req.user!.id)) as any;
+    if (!wallet || (wallet.trigger_balance || 0) < 1) {
+      return res.status(402).json({
+        error: 'Créditos de disparo insuficientes.',
+        code: 'INSUFFICIENT_TRIGGER_CREDITS'
+      });
+    }
+
     const resolvedCandidateName =
       String(candidateName || '').trim() || String(profile?.name || '').trim() || 'Candidato';
     const canonicalPhone = toCanonicalDigits(resolvedCandidatePhone);
+    
+    // Deduct Credit
+    await dual.spendTriggerCredits(1, req.user!.id);
+
     const sessionId = await createSession(
       canonicalPhone || resolvedCandidatePhone,
       resolvedCandidateName,
@@ -1802,7 +1918,16 @@ app.post('/api/whatsapp/invite', requireAuth('recruiter'), inviteLimiter, async 
       scenario === 'talent_bank' ? 'talent_bank' : 'direct'
     );
 
-    res.json({ sessionId, status: 'invited' });
+    // Observability: Log the invite event
+    logEvent('info', 'whatsapp.invite.sent', {
+      recruiterId: req.user!.id,
+      candidatePhone: canonicalPhone || resolvedCandidatePhone,
+      candidateName: resolvedCandidateName,
+      jobId,
+      sessionId
+    }, req.user!.id);
+
+    res.json({ sessionId, status: 'invited', creditsRemaining: (wallet.trigger_balance || 0) - 1 });
   } catch (err: any) {
     fail(res, 500, err.message || 'Erro interno', 'WHATSAPP_INVITE_FAILED');
   }
@@ -1905,6 +2030,17 @@ app.post(
 
       const squad = await getAISquad();
       const blindScreeningEnabled = Boolean(squad.governance.blindScreeningEnabled);
+
+      // Credit Check
+      const wallet = (await dual.getWallet(req.user!.id)) as any;
+      const creditsNeeded = candidates.length;
+      if (!wallet || (wallet.trigger_balance || 0) < creditsNeeded) {
+        return res.status(402).json({
+          error: `Créditos insuficientes para o lote. Necessário: ${creditsNeeded}, disponível: ${wallet?.trigger_balance || 0}`,
+          code: 'INSUFFICIENT_TRIGGER_CREDITS'
+        });
+      }
+
       const results: Array<{
         profile_id: string | null;
         name: string | null;
@@ -1913,6 +2049,9 @@ app.post(
         error?: string;
         blind_candidate: ReturnType<typeof projectBlindCandidateIdentity>['blindCandidate'];
       }> = [];
+
+      // Deduct upfront for the whole batch
+      await dual.spendTriggerCredits(creditsNeeded, req.user!.id);
 
       for (const rawCandidate of candidates) {
         const candidate =

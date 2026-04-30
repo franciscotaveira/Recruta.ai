@@ -83,9 +83,9 @@ export async function handlePaymentWebhook(req: Request, res: Response) {
 
     // Deliver product
     if (payment.user_type === 'recruiter' && payment.product_type === 'credits') {
-      // Add credits to recruiter wallet
+      // Add trigger credits to recruiter wallet
       await dual.initWallet(payment.user_id);
-      await dual.addCredits(payment.credits_amount, payment.credits_amount, payment.user_id);
+      await dual.addTriggerCredits(payment.credits_amount, payment.user_id);
 
       // Record transaction
       const wallet = (await dual.getWallet(payment.user_id)) as any;
@@ -96,21 +96,46 @@ export async function handlePaymentWebhook(req: Request, res: Response) {
         payment.id,
         'purchase',
         payment.credits_amount,
-        wallet?.balance || payment.credits_amount,
-        `Compra de ${payment.credits_amount} créditos via AbacatePay`
+        wallet?.trigger_balance || payment.credits_amount,
+        `Compra de ${payment.credits_amount} créditos de disparo via AbacatePay`
       );
 
       console.log(
-        `[webhook] ✅ ${payment.credits_amount} credits added to recruiter ${payment.user_id}`
+        `[webhook] ✅ ${payment.credits_amount} trigger credits added to recruiter ${payment.user_id}`
       );
 
       // Notify recruiter
-      // Note: A "real" app stores the exact phone. Here, we'll try to find it via metadata or just skip.
       if (payment.metadata && payment.metadata.phone) {
         try {
           await sendTextMessage(
             payment.metadata.phone,
-            'Seu pacote de Créditos Recruta.AI foi liberado com sucesso!'
+            'Seu pacote de Créditos de Disparo Recrutaria foi liberado com sucesso!'
+          );
+        } catch (notifyError) {
+          console.warn('[webhook] Falha ao notificar recrutador por WhatsApp:', notifyError);
+        }
+      }
+    } else if (payment.user_type === 'recruiter' && payment.product_type === 'subscription') {
+      // Activate subscription
+      const planId = payment.metadata?.planId || 'monthly';
+      const expiresAt = new Date();
+      if (planId === 'annual') {
+        expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+      } else {
+        expiresAt.setMonth(expiresAt.getMonth() + 1);
+      }
+
+      await dual.initRecruiterProfile(payment.user_id, 'Empresa');
+      await dual.updateSubscription(payment.user_id, planId, 'active', expiresAt.toISOString());
+
+      console.log(`[webhook] ✅ Subscription ${planId} activated for recruiter ${payment.user_id}`);
+
+      // Notify recruiter
+      if (payment.metadata && payment.metadata.phone) {
+        try {
+          await sendTextMessage(
+            payment.metadata.phone,
+            `Sua assinatura Recrutaria (Plano ${planId.toUpperCase()}) foi ativada com sucesso! Aproveite todos os recursos ilimitados de triagem.`
           );
         } catch (notifyError) {
           console.warn('[webhook] Falha ao notificar recrutador por WhatsApp:', notifyError);
@@ -122,7 +147,7 @@ export async function handlePaymentWebhook(req: Request, res: Response) {
         try {
           await sendTextMessage(
             profileInfo.phone,
-            'Pagamento confirmado! O seu Diagnóstico Profundo de Carreira já está desbloqueado no Painel Oficial do Recruta.AI. Acesse e confira seu SCPD detalhado.'
+            'Pagamento confirmado! O seu Diagnóstico Profundo de Carreira já está desbloqueado no Painel Oficial do Recrutaria. Acesse e confira seu SCPD detalhado.'
           );
         } catch (notifyError) {
           console.warn('[webhook] Falha ao notificar candidato por WhatsApp:', notifyError);

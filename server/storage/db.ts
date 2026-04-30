@@ -433,6 +433,7 @@ export const dual = {
     scp_score: number,
     scp_breakdown: string,
     diagnosis: string,
+    suggestions: string,
     attention_points: string,
     user_id: string
   ) => {
@@ -443,6 +444,7 @@ export const dual = {
         scp_score,
         scp_breakdown: JSON.parse(scp_breakdown || 'null'),
         diagnosis,
+        ai_suggestions: JSON.parse(suggestions || '[]'),
         attention_points: JSON.parse(attention_points || '[]'),
         updated_at: new Date().toISOString(),
       })
@@ -764,6 +766,73 @@ export const dual = {
         })
         .eq('recruiter_id', recruiter_id);
     }
+  },
+  spendTriggerCredits: async (amount: number, recruiter_id: string) => {
+    const { data: wallet } = await supabase
+      .from('recruiter_wallet')
+      .select('trigger_balance')
+      .eq('recruiter_id', recruiter_id)
+      .single();
+    if (wallet && wallet.trigger_balance >= amount) {
+      await supabase
+        .from('recruiter_wallet')
+        .update({
+          trigger_balance: wallet.trigger_balance - amount,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('recruiter_id', recruiter_id);
+      return true;
+    }
+    return false;
+  },
+  addTriggerCredits: async (amount: number, recruiter_id: string) => {
+    const { data: wallet } = await supabase
+      .from('recruiter_wallet')
+      .select('trigger_balance')
+      .eq('recruiter_id', recruiter_id)
+      .single();
+    if (wallet) {
+      await supabase
+        .from('recruiter_wallet')
+        .update({
+          trigger_balance: (wallet.trigger_balance || 0) + amount,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('recruiter_id', recruiter_id);
+    }
+  },
+
+  // Recruiter Profiles
+  getRecruiterProfile: async (recruiter_id: string) => {
+    const { data } = await supabase
+      .from('recruiter_profiles')
+      .select('*')
+      .eq('user_id', recruiter_id)
+      .single();
+    return data;
+  },
+  initRecruiterProfile: async (recruiter_id: string, company_name: string) => {
+    const { data: existing } = await supabase
+      .from('recruiter_profiles')
+      .select('user_id')
+      .eq('user_id', recruiter_id)
+      .maybeSingle();
+    if (!existing) {
+      await supabase
+        .from('recruiter_profiles')
+        .insert([{ user_id: recruiter_id, company_name }]);
+    }
+  },
+  updateSubscription: async (recruiter_id: string, plan: string, status: string, expires_at: string) => {
+    await supabase
+      .from('recruiter_profiles')
+      .update({
+        subscription_plan: plan,
+        subscription_status: status,
+        subscription_expires_at: expires_at,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('user_id', recruiter_id);
   },
 
   // Credit transactions

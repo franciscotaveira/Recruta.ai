@@ -29,7 +29,7 @@ const AICopilot = () => {
 
   const getContextPrompt = () => {
     const path = location.pathname;
-    let context = 'O usuário está na plataforma Recruta.AI, focado em Engenharia de Carreira.';
+    let context = 'O usuário está na plataforma Recrutaria, focado em Engenharia de Carreira.';
 
     if (path.includes('/candidate/diagnosis')) {
       context +=
@@ -78,7 +78,7 @@ const AICopilot = () => {
       }
 
       const ai = new GoogleGenAI({ apiKey });
-      const systemInstruction = `Você é um especialista em carreira e UX Writer do Recruta.AI. 
+      const systemInstruction = `Você é um especialista em carreira e UX Writer do Recrutaria. 
       Seu tom é profissional, encorajador e direto.
       CONTEXTO: ${getContextPrompt()}
       Responda em no máximo 3 frases curtas.`;

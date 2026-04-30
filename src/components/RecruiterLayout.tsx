@@ -92,11 +92,15 @@ const RecruiterLayout: React.FC<LayoutProps> = ({ children }) => {
         className={`fixed lg:static inset-y-0 left-0 z-30 w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col transform transition-transform duration-200 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
       >
         <div className="h-16 flex items-center px-6 border-b border-slate-100 dark:border-slate-800">
-          <div className="w-8 h-8 bg-slate-900 dark:bg-white rounded-lg flex items-center justify-center text-white dark:text-slate-900 mr-3">
-            <Zap size={16} />
+          <div className="w-9 h-9 bg-indigo-500/10 text-indigo-500 rounded-lg flex items-center justify-center mr-3 border border-indigo-500/20">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-5 h-5">
+              <path d="M12 2L12 12L22 12" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12" strokeLinecap="round" />
+              <path d="M7 12H12" strokeLinecap="round" />
+            </svg>
           </div>
-          <span className="font-bold text-lg text-slate-900 dark:text-white">
-            Recruta.AI <span className="text-purple-600 text-xs">Corp</span>
+          <span className="font-black text-xl tracking-tighter text-slate-900 dark:text-white font-heading">
+            Recrutaria<span className="text-indigo-500">.</span>
           </span>
         </div>
 
@@ -119,9 +123,9 @@ const RecruiterLayout: React.FC<LayoutProps> = ({ children }) => {
                 key={item.path}
                 to={item.path}
                 onClick={() => setIsSidebarOpen(false)}
-                className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all ${
+                className={`flex items-center px-3 py-2.5 text-xs font-black uppercase tracking-widest rounded-lg transition-all ${
                   isActive(item.path)
-                    ? 'bg-slate-900 dark:bg-purple-600 text-white shadow-md'
+                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
                     : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >

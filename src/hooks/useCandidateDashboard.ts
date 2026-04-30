@@ -31,8 +31,10 @@ export function useCandidateDashboard() {
       if (profileRes?.scp_score > 0) {
         setAnalysis({
           score: profileRes.scp_score,
+          breakdown: profileRes.scp_breakdown || { clarity: 50, evidence: 50, focus: 50, freshness: 50 },
           reasoning: profileRes.diagnosis,
-          suggestions: profileRes.attention_points || [],
+          suggestions: profileRes.ai_suggestions || [],
+          attention_points: profileRes.attention_points || [],
           fallback: true,
         });
       }

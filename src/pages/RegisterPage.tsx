@@ -87,13 +87,17 @@ const RegisterPage: React.FC = () => {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 mb-4 shadow-xl">
-            <Mic size={24} />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-500/10 text-indigo-500 mb-6 shadow-xl border border-indigo-500/20">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-8 h-8">
+              <path d="M12 2L12 12L22 12" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12" strokeLinecap="round" />
+              <path d="M7 12H12" strokeLinecap="round" />
+            </svg>
           </div>
-          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            Recruta<span className="text-purple-600">.AI</span>
+          <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter font-heading">
+            Recrutaria<span className="text-indigo-500">.</span>
           </h1>
-          <p className="text-sm text-slate-500 mt-1">Crie sua conta gratuita</p>
+          <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mt-2">Crie sua conta soberana</p>
         </div>
 
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
@@ -104,9 +108,9 @@ const RegisterPage: React.FC = () => {
                 key={r}
                 type="button"
                 onClick={() => setRole(r)}
-                className={`flex-1 py-2.5 text-sm font-bold rounded-lg transition-all ${
+                className={`flex-1 py-2.5 text-xs font-black uppercase tracking-widest rounded-lg transition-all ${
                   role === r
-                    ? 'bg-white dark:bg-purple-600 text-purple-700 dark:text-white shadow-sm'
+                    ? 'bg-white dark:bg-indigo-600 text-indigo-700 dark:text-white shadow-sm'
                     : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                 }`}
               >

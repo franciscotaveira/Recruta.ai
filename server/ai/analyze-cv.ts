@@ -9,9 +9,16 @@ import crypto from 'crypto';
 
 export interface CVAnalysisResult {
   score: number;
+  breakdown: {
+    clarity: number;
+    evidence: number;
+    focus: number;
+    freshness: number;
+  };
   strengths: string[];
   weaknesses: string[];
   suggestions: string[];
+  attention_points: string[];
   reasoning?: string;
 }
 
@@ -27,9 +34,11 @@ export interface SafeResult {
 
 const FALLBACK: CVAnalysisResult = {
   score: 50,
+  breakdown: { clarity: 50, evidence: 50, focus: 50, freshness: 50 },
   strengths: ['Tente novamente mais tarde.'],
   weaknesses: ['Serviço sobrecarregado.'],
   suggestions: ['Aguarde e tente novamente.'],
+  attention_points: ['Erro na comunicação com a IA'],
   reasoning: 'Análise indisponível no momento.',
 };
 
@@ -65,11 +74,13 @@ export async function analyzeCVSafe(cvText: string): Promise<SafeResult> {
 ${cvText.substring(0, 10000)}
 
 Retorne JSON com:
-- score: número inteiro 0-100 baseado nos padrões do mercado brasileiro
+- score: número inteiro 0-100 (Global Score)
+- breakdown: objeto com scores 0-100 para { clarity, evidence, focus, freshness }
 - strengths: array de 3-5 pontos fortes
 - weaknesses: array de 3-5 pontos fracos ou áreas de melhoria
 - suggestions: array de 3-5 sugestões específicas e acionáveis para melhorar o CV
-- reasoning: resumo em 1-2 parágrafos em português`;
+- reasoning: resumo em 1-2 parágrafos em português
+- attention_points: array de 2-3 pontos críticos que impedem a aprovação em vagas de elite`;
 
     const result = await smartAI('analyze', systemPrompt, userContent, true);
     const data = JSON.parse(result) as CVAnalysisResult;

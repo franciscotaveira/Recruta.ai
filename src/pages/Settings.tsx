@@ -50,7 +50,7 @@ const Settings = () => {
             </label>
             <textarea
               className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm h-24"
-              defaultValue="Olá! Sou a LIA, assistente virtual da Recruta.AI. Estou aqui para ajudar você a turbinar sua carreira. Vamos começar seu diagnóstico?"
+              defaultValue="Olá! Sou a LIA, assistente virtual da Recrutaria. Estou aqui para ajudar você a turbinar sua carreira. Vamos começar seu diagnóstico?"
             ></textarea>
           </div>
           <div className="flex items-center gap-2">

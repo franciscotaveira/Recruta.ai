@@ -223,10 +223,13 @@ const CandidateDashboard = () => {
               <button
                 onClick={handleBuyDiagnostic}
                 disabled={paying}
-                className="group relative flex items-center gap-3 px-10 py-5 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-white rounded-2xl font-black text-sm transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl shadow-emerald-500/20"
+                className="group relative flex flex-col items-center gap-1 px-10 py-5 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-white rounded-2xl font-black text-sm transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl shadow-emerald-500/20"
               >
-                {paying ? <Loader2 size={20} className="animate-spin" /> : <CreditCard size={20} />}
-                Desbloquear Diagnóstico IA
+                <div className="flex items-center gap-3">
+                  {paying ? <Loader2 size={20} className="animate-spin" /> : <CreditCard size={20} />}
+                  Desbloquear Diagnóstico IA
+                </div>
+                <span className="text-[10px] opacity-80 font-bold uppercase tracking-widest">Apenas R$ 29,90 (Elite Advisor)</span>
               </button>
             ) : (
               <IntentButton
@@ -298,7 +301,24 @@ const CandidateDashboard = () => {
 
               <div className="md:col-span-2 space-y-8">
                 <div>
-                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Reasoning Strategy</p>
+                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Análise por Pilares</p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {[
+                      { label: 'Clareza', val: analysis.breakdown?.clarity, color: 'text-blue-400' },
+                      { label: 'Evidência', val: analysis.breakdown?.evidence, color: 'text-purple-400' },
+                      { label: 'Foco', val: analysis.breakdown?.focus, color: 'text-emerald-400' },
+                      { label: 'Atualização', val: analysis.breakdown?.freshness, color: 'text-amber-400' },
+                    ].map((p, i) => (
+                      <div key={i} className="s-glass p-4 border-white/5 flex flex-col items-center">
+                        <span className={`text-xl font-black ${p.color}`}>{p.val}%</span>
+                        <span className="text-[8px] font-black text-slate-500 uppercase tracking-wider mt-1">{p.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Estratégia de Rationale</p>
                   <div className="p-6 bg-white/5 rounded-3xl border-l-4 border-indigo-500 shadow-inner">
                     <p className="text-sm text-slate-300 leading-relaxed font-medium">
                       {analysis.reasoning}
@@ -306,9 +326,23 @@ const CandidateDashboard = () => {
                   </div>
                 </div>
 
+                {analysis.attention_points?.length > 0 && (
+                  <div>
+                    <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-4">Pontos de Atenção</p>
+                    <div className="grid gap-3">
+                      {analysis.attention_points.map((ap: string, i: number) => (
+                        <div key={i} className="flex items-center gap-3 p-3 bg-amber-500/5 border border-amber-500/10 rounded-xl">
+                          <AlertTriangle size={14} className="text-amber-500 shrink-0" />
+                          <p className="text-[11px] text-amber-200/70 font-bold">{ap}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {analysis.suggestions?.length > 0 && (
                   <div>
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Optimization Roadmap</p>
+                    <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-4">Optimization Roadmap</p>
                     <div className="grid gap-4">
                       {analysis.suggestions.map((s: string, i: number) => (
                         <div key={i} className="flex items-center gap-4 p-4 s-glass border-white/5 s-glass-hover">

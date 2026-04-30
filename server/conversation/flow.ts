@@ -625,17 +625,20 @@ async function finalizeSession(
     }
   }
 
-  analysis.competencyScores = computeCompetencyScores(
-    answered
-      .filter((item) => item.questionType !== 'knockout')
-      .map((item) => ({
-        requirementId: item.requirementId,
-        requirementText: item.requirementText,
-        category: item.category,
-        weight: item.weight,
-      })),
-    analysis.questionScores || []
-  );
+  // Use AI-extracted competency scores if available, otherwise fallback to mathematical calculation
+  if (!analysis.competencyScores || analysis.competencyScores.length === 0) {
+    analysis.competencyScores = computeCompetencyScores(
+      answered
+        .filter((item) => item.questionType !== 'knockout')
+        .map((item) => ({
+          requirementId: item.requirementId,
+          requirementText: item.requirementText,
+          category: item.category,
+          weight: item.weight,
+        })),
+      analysis.questionScores || []
+    );
+  }
 
   const knockoutAnswers = answered.filter((item) => item.questionType === 'knockout');
   if (knockoutAnswers.length > 0) {

@@ -640,24 +640,23 @@ export async function getCreditTransactions() {
 }
 
 export async function createCreditPayment(
-  packageId: 'starter' | 'growth' | 'scale',
+  packageId: string,
   customer?: PaymentCustomer
 ) {
-  const response = await fetch('https://csuxlpodmqmycxfkmuxv.functions.supabase.co/payment-checkout', {
+  return fetchJson<PaymentCheckoutResponse>('/payment/credits', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('recruta_token')}`
-    },
     body: JSON.stringify(customer ? { packageId, customer } : { packageId }),
   });
+}
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Erro ao criar pagamento');
-  }
-
-  return response.json() as Promise<PaymentCheckoutResponse>;
+export async function createSubscriptionPayment(
+  planId: 'monthly' | 'annual',
+  customer?: PaymentCustomer
+) {
+  return fetchJson<PaymentCheckoutResponse>('/payment/subscription', {
+    method: 'POST',
+    body: JSON.stringify(customer ? { planId, customer } : { planId }),
+  });
 }
 
 export async function createDiagnosticPayment(customer?: PaymentCustomer) {

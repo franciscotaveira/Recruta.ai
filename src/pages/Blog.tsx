@@ -31,7 +31,7 @@ const Blog = () => {
       category: 'Histórias de Sucesso',
       title: 'De ignorada a contratada: Como a Mariana conseguiu vaga de Gerente em 3 dias',
       excerpt:
-        'Estudo de caso real de uma candidata que usou o Recruta.AI para pular a etapa do currículo de papel.',
+        'Estudo de caso real de uma candidata que usou o Recrutaria para pular a etapa do currículo de papel.',
       readTime: '4 min',
       image:
         'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
@@ -41,7 +41,7 @@ const Blog = () => {
 
   const initPayment = () => {
     const phoneNumber = '554999999999';
-    const message = 'Olá! Li o blog e quero ativar meu Ciclo de Posicionamento (R$ 49)';
+    const message = 'Olá! Li o blog e quero ativar meu Ciclo de Posicionamento (R$ 29,90)';
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
@@ -51,15 +51,17 @@ const Blog = () => {
       {/* Navbar Simplificada */}
       <nav className="bg-white border-b border-slate-200 py-4 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
-          <Link
-            to="/"
-            className="font-bold text-xl tracking-tight text-slate-900 flex items-center gap-2"
-          >
-            <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center text-white">
-              <Mic size={16} />
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-400">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-6 h-6">
+                  <path d="M12 2L12 12L22 12" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12" strokeLinecap="round" />
+                </svg>
+              </div>
+              <span className="text-xl font-black tracking-tighter font-heading text-slate-900">
+                Recrutaria<span className="text-indigo-500">.</span> <span className="text-slate-400 font-normal ml-2">Blog</span>
+              </span>
             </div>
-            Recruta.AI <span className="text-slate-400 font-normal">| Blog</span>
-          </Link>
           <Link to="/" className="text-sm font-medium text-slate-600 hover:text-purple-600">
             Voltar para Home
           </Link>
@@ -69,11 +71,11 @@ const Blog = () => {
       {/* Header */}
       <header className="bg-slate-900 text-white py-20 px-4 text-center">
         <div className="max-w-3xl mx-auto">
-          <span className="inline-block px-3 py-1 bg-white/10 rounded-full text-xs font-bold uppercase tracking-wider mb-6 text-purple-300">
-            Central de Conhecimento
+          <span className="inline-block px-4 py-1.5 bg-white/10 rounded-full text-[10px] font-black uppercase tracking-[0.3em] mb-8 text-indigo-300 border border-white/5">
+            Knowledge Engine
           </span>
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">Domine sua Carreira na Era da IA</h1>
-          <p className="text-lg text-slate-300">
+          <h1 className="text-4xl md:text-6xl font-black mb-8 font-heading tracking-tighter">Domine sua Carreira na Era da IA</h1>
+          <p className="text-lg text-slate-400 font-medium leading-relaxed">
             Artigos, dicas e insights para você parar de enviar currículos para o vácuo e começar a
             ser notado.
           </p>
@@ -104,7 +106,7 @@ const Blog = () => {
                 {/* Inline Funnel CTA */}
                 <div className="mt-auto pt-6 border-t border-slate-100">
                   <p className="text-xs font-bold text-purple-600 mb-2 uppercase">
-                    Recruta.AI recomenda:
+                    Recrutaria recomenda:
                   </p>
                   <button
                     onClick={initPayment}
@@ -140,7 +142,7 @@ const Blog = () => {
 
       {/* Footer Simple */}
       <footer className="bg-slate-900 text-slate-500 py-8 text-center text-sm border-t border-slate-800">
-        <p>© 2026 Recruta.AI - Conteúdo Educativo.</p>
+        <p>© 2026 Recrutaria - Conteúdo Educativo.</p>
       </footer>
     </div>
   );

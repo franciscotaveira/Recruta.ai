@@ -13,6 +13,8 @@ export interface CandidateCompetencyScore {
   score: number;
   barsLevel: 1 | 2 | 3 | 4 | 5;
   evidence: 'fraca' | 'moderada' | 'forte';
+  methodology: 'STAR' | 'BARS' | 'SITUATIONAL' | 'PAR' | 'CAR';
+  evidenceType: 'behavioral' | 'technical' | 'situational';
   rationale: string;
 }
 
@@ -98,6 +100,7 @@ Analise as respostas e retorne APENAS um JSON com exatamente estas chaves:
 - recommendation: uma destas strings: "entrevista", "rejeitar", "mais_info"
 - questionScores: array de números 0-100, um por pergunta, avaliando a qualidade da resposta
 - communicationPerformance: objeto com clarity, vocabulary, objectivity (números inteiros 1-5)
+- competencyScores: array de objetos com requirementId, requirementText, category, score, barsLevel (1-5), methodology (STAR|BARS|SITUATIONAL|PAR|CAR), evidenceType (behavioral|technical|situational), evidence (fraca|moderada|forte), rationale (justificativa técnica baseada em evidências).
 
 Critérios para communicationPerformance:
 - clarity: o quanto o candidato é fácil de entender, articulação e linha de raciocínio.

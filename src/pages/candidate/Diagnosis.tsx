@@ -182,6 +182,27 @@ const DiagnosisPage = () => {
               </section>
             )}
 
+            {/* AI Suggestions */}
+            {profile.ai_suggestions && profile.ai_suggestions.length > 0 && (
+              <section className="s-glass p-8 bg-indigo-500/5 border-indigo-500/20 shadow-2xl shadow-indigo-500/5">
+                <h2 className="text-xs font-black text-indigo-400 uppercase tracking-widest mb-6 flex items-center gap-2">
+                  <Sparkles size={14} /> Recomendações Táticas
+                </h2>
+                <ul className="space-y-6">
+                  {profile.ai_suggestions.map((s: string, idx: number) => (
+                    <li key={idx} className="flex items-start gap-4 group/item">
+                      <div className="w-6 h-6 rounded-lg bg-indigo-500/10 flex items-center justify-center shrink-0 group-hover/item:bg-indigo-500 transition-colors">
+                        <span className="text-[10px] font-black text-indigo-400 group-hover/item:text-white">{idx + 1}</span>
+                      </div>
+                      <span className="text-xs text-slate-300 leading-relaxed font-bold">
+                        {s}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
             {/* Premium CTA */}
             <section className="s-glass p-8 bg-indigo-600/10 border-indigo-500/20 text-center">
               <Zap size={32} className="mx-auto text-indigo-400 mb-4" />

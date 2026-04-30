@@ -1,10 +1,10 @@
 import React from 'react';
-import { GovernanceChat } from '../../components/governance/GovernanceChat';
+import { CareerChatComponent } from '../../components/candidate/CareerChatComponent';
 
 const CareerChatPage = () => {
   return (
-    <div className="h-[calc(100vh-160px)] -m-4 md:-m-8 overflow-hidden">
-      <GovernanceChat />
+    <div className="h-[calc(100vh-120px)] overflow-hidden">
+      <CareerChatComponent />
     </div>
   );
 };

@@ -15,7 +15,8 @@ import {
   RefreshCw,
   Search,
   Upload,
-  X
+  X,
+  Activity
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRecruiterJobs } from '../../hooks/useRecruiterJobs';
@@ -45,9 +46,40 @@ const RecruiterDashboard = () => {
   const [showWhatsApp, setShowWhatsApp] = useState(false);
   const [showResumeUpload, setShowResumeUpload] = useState(false);
   const [selectedJob, setSelectedJob] = useState<PublicJob | null>(null);
+  const [activeSessionsCount, setActiveSessionsCount] = useState(0);
+
   useEffect(() => {
     loadJobs();
+    fetchActiveSessionsCount();
+    
+    // Subscribe to session changes for real-time counter
+    const channel = import('../../lib/supabase').then(m => 
+      m.supabase
+        .channel('dashboard_stats')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'whatsapp_sessions' }, () => {
+          fetchActiveSessionsCount();
+        })
+        .subscribe()
+    );
+
+    return () => {
+      channel.then(c => import('../../lib/supabase').then(m => m.supabase.removeChannel(c)));
+    };
   }, [loadJobs]);
+
+  const fetchActiveSessionsCount = async () => {
+    try {
+      const { supabase } = await import('../../lib/supabase');
+      const { count, error } = await supabase
+        .from('whatsapp_sessions')
+        .select('*', { count: 'exact', head: true })
+        .in('state', ['invited', 'accepted', 'questioning', 'mic_check', 'consent_pending']);
+      
+      if (!error) setActiveSessionsCount(count || 0);
+    } catch (err) {
+      console.error('Failed to fetch active sessions count', err);
+    }
+  };
 
   useEffect(() => {
     if (jobs.length > 0) {
@@ -89,6 +121,12 @@ const RecruiterDashboard = () => {
         </div>
         <div className="flex gap-4">
           <button
+            onClick={() => navigate('/recruiter/live')}
+            className="flex items-center gap-2 px-4 py-2.5 s-glass s-glass-hover text-indigo-600 dark:text-indigo-400 font-black text-[10px] uppercase tracking-widest border-indigo-500/20"
+          >
+            <Activity size={14} className="animate-pulse" /> Live Control
+          </button>
+          <button
             onClick={loadJobs}
             className="flex items-center gap-2 px-4 py-2.5 s-glass s-glass-hover text-slate-700 dark:text-slate-300 font-bold text-sm"
           >
@@ -104,17 +142,29 @@ const RecruiterDashboard = () => {
       </div>
 
       {/* KPIs - Stitch Style */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-6">
+        <div className="s-glass p-6 group transition-all duration-300 border-indigo-500/5 hover:border-indigo-500/20 cursor-pointer" onClick={() => navigate('/recruiter/live')}>
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Comando Neural</span>
+            <div className="p-3 bg-indigo-500/10 rounded-xl group-hover:bg-indigo-500/20 transition-colors">
+              <Activity size={20} className="text-indigo-500 animate-pulse" />
+            </div>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <p className="text-4xl font-black text-slate-900 dark:text-white">{activeSessionsCount}</p>
+            <span className="text-[10px] text-indigo-500 font-black uppercase tracking-tighter">Ativos Agora</span>
+          </div>
+        </div>
+
         <div className="s-glass p-6 group transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Vagas Ativas</span>
-            <div className="p-3 bg-indigo-500/10 rounded-xl group-hover:bg-indigo-500/20 transition-colors">
-              <Briefcase size={20} className="text-indigo-500" />
+            <div className="p-3 bg-slate-500/10 rounded-xl group-hover:bg-slate-500/20 transition-colors">
+              <Briefcase size={20} className="text-slate-500" />
             </div>
           </div>
           <div className="flex items-baseline gap-2">
             <p className="text-4xl font-black text-slate-900 dark:text-white">{(jobs || []).length}</p>
-            <span className="text-[10px] text-emerald-500 font-bold">+12% vs last month</span>
           </div>
         </div>
 
@@ -130,16 +180,15 @@ const RecruiterDashboard = () => {
 
         <div className="s-glass p-6 group transition-all duration-300 relative overflow-hidden">
           <div className="flex items-center justify-between mb-4">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Engajamento WhatsApp</span>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">IA Response</span>
             <div className="p-3 bg-emerald-500/10 rounded-xl group-hover:bg-emerald-500/20 transition-colors">
               <MessageCircle size={20} className="text-emerald-500" />
             </div>
           </div>
           <div className="relative z-10">
             <p className="text-4xl font-black text-slate-900 dark:text-white">88%</p>
-            <p className="text-[10px] text-slate-400 mt-1 font-medium">Taxa de resposta autônoma</p>
+            <p className="text-[10px] text-slate-400 mt-1 font-medium italic">Taxa de resposta autônoma</p>
           </div>
-          {/* Shimmer effect background */}
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-500/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
         </div>
       </div>

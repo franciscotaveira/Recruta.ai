@@ -11,7 +11,9 @@ import {
   FileSearch,
   MessageCircle,
   ShieldCheck,
+  Sparkles,
   Users,
+  Zap,
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { buildAppUrl } from '../utils/runtimeHost';
@@ -191,7 +193,7 @@ function getSegmentConfig(segment: Segment, runtime: RuntimeInput): SegmentConfi
       'O foco do produto é simples: ajudar empresas a sair do convite até o diagnóstico com menos ruído, e ajudar candidatos a entender e melhorar seu posicionamento.',
     primaryLabel: 'Ver solução para empresas',
     primaryHref: '/para-empresas',
-    secondaryLabel: 'Ver solução para candidatos',
+    secondaryLabel: 'Elite Advisor (Candidatos)',
     secondaryHref: '/para-candidatos',
     metaTitle: 'Recrutaria | Triagem por WhatsApp com IA para empresas e candidatos',
     metaDescription:
@@ -245,12 +247,18 @@ const LandingPage: React.FC = () => {
       {/* Premium Header */}
       <header className="sticky top-0 z-50 s-glass border-white/5 bg-slate-950/60 backdrop-blur-xl">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
-          <Link to="/" className="flex items-center gap-3 group">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-500/10 text-indigo-400 group-hover:bg-indigo-500/20 transition-all duration-300">
-              <Bot size={22} className="group-hover:scale-110 transition-transform" />
+          <Link to="/" className="flex items-center gap-4 group">
+            <div className="relative flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400 group-hover:bg-indigo-500/20 transition-all duration-500 overflow-hidden">
+              {/* Sovereign R SVG Logo */}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-7 h-7 z-10">
+                <path d="M12 2L12 12L22 12" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12" strokeLinecap="round" />
+                <path d="M7 12H12" strokeLinecap="round" />
+              </svg>
+              <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
-            <span className="text-xl font-black tracking-tight font-heading">
-              Recrutaria<span className="text-indigo-400">.AI</span>
+            <span className="text-2xl font-black tracking-tighter font-heading text-white">
+              Recrutaria<span className="text-indigo-400">.</span>
             </span>
           </Link>
 
@@ -372,7 +380,7 @@ const LandingPage: React.FC = () => {
               <p className="text-slate-500 font-bold mb-8 italic">"Decifre o seu potencial neural."</p>
               
               <div className="flex items-baseline gap-2 mb-8">
-                <span className="text-5xl font-black text-white">R$ 49</span>
+                <span className="text-5xl font-black text-white">R$ 29,90</span>
                 <span className="text-xs font-black text-slate-500 uppercase tracking-widest">/ Diagnóstico</span>
               </div>
 
@@ -402,8 +410,8 @@ const LandingPage: React.FC = () => {
                <p className="text-indigo-300 font-bold mb-8">"Triagem em escala, sem ruído."</p>
                
                <div className="flex items-baseline gap-2 mb-8">
-                 <span className="text-5xl font-black text-white">Custom</span>
-                 <span className="text-xs font-black text-slate-500 uppercase tracking-widest">/ Pay per Usage</span>
+                 <span className="text-5xl font-black text-white">R$ 397</span>
+                 <span className="text-xs font-black text-slate-500 uppercase tracking-widest">/ mensal base</span>
                </div>
 
                <ul className="space-y-4 mb-12">
@@ -434,10 +442,15 @@ const LandingPage: React.FC = () => {
           <div className="flex flex-col md:flex-row justify-between items-center gap-12">
             <div className="flex flex-col items-center md:items-start gap-4">
               <div className="flex items-center gap-3">
-                <Bot size={24} className="text-indigo-400" />
-                <span className="text-2xl font-black tracking-tight font-heading">Recrutaria<span className="text-indigo-400">.AI</span></span>
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-400">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-6 h-6">
+                    <path d="M12 2L12 12L22 12" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12" strokeLinecap="round" />
+                  </svg>
+                </div>
+                <span className="text-2xl font-black tracking-tighter font-heading text-white">Recrutaria<span className="text-indigo-400">.</span></span>
               </div>
-              <p className="text-slate-500 text-xs font-bold uppercase tracking-[0.2em]">MCT Sovereign Kernel v2.0</p>
+              <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">MCT Sovereign Kernel v2.0</p>
             </div>
 
             <nav className="flex flex-wrap justify-center gap-x-8 gap-y-4 text-[10px] font-black uppercase tracking-widest text-slate-500">

@@ -138,31 +138,64 @@ export async function listWithdraws() {
   return abacateFetch('/v1/withdraw/list');
 }
 
-// ── Credit Packages (mapped to AbacatePay products) ───────────
+  priceCents: 2990, // R$29,90
+};
+
 export const CREDIT_PACKAGES = {
-  starter: {
-    externalId: 'recruta_starter',
-    name: 'Pack Decisão Rápida',
+  pack10: {
+    externalId: 'recruta_pack_10',
+    name: 'Pack 10 Disparos',
+    credits: 10,
+    priceCents: 10000, // R$100
+  },
+  pack20: {
+    externalId: 'recruta_pack_20',
+    name: 'Pack 20 Disparos',
+    credits: 20,
+    priceCents: 18000, // R$180
+  },
+  pack50: {
+    externalId: 'recruta_pack_50',
+    name: 'Pack 50 Disparos',
     credits: 50,
-    priceCents: 19900,
-  }, // R$199
-  growth: {
-    externalId: 'recruta_growth',
-    name: 'Pack Processo Full',
+    priceCents: 40000, // R$400
+  },
+  pack100: {
+    externalId: 'recruta_pack_100',
+    name: 'Pack 100 Disparos',
+    credits: 100,
+    priceCents: 70000, // R$700
+  },
+  pack200: {
+    externalId: 'recruta_pack_200',
+    name: 'Pack 200 Disparos',
     credits: 200,
-    priceCents: 69900,
-  }, // R$699
-  scale: {
-    externalId: 'recruta_scale',
-    name: 'Pack Enterprise',
-    credits: 1000,
-    priceCents: 299000,
-  }, // R$2.990
+    priceCents: 120000, // R$1.200
+  },
+  pack500: {
+    externalId: 'recruta_pack_500',
+    name: 'Pack 500 Disparos',
+    credits: 500,
+    priceCents: 250000, // R$2.500
+  },
+};
+
+export const SUBSCRIPTION_PLANS = {
+  monthly: {
+    externalId: 'recruta_pro_monthly',
+    name: 'Plano Pro Mensal',
+    priceCents: 39700, // R$397
+  },
+  annual: {
+    externalId: 'recruta_pro_annual',
+    name: 'Plano Pro Anual',
+    priceCents: 428760, // R$4.287,60
+  }
 };
 
 export const DIAGNOSTIC_PRODUCT = {
   externalId: 'recruta_diagnostico',
-  name: 'Diagnóstico Profissional + Otimização de CV',
-  description: 'Análise completa do seu currículo com IA + sugestões de otimização',
-  priceCents: 4900, // R$49
+  name: 'Plano Elite Advisor',
+  description: 'Mentoria IA + Análise de Elite + Radar de Carreira',
+  priceCents: 2990, // R$29,90
 };

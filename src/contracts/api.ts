@@ -66,8 +66,14 @@ export interface CandidateProfile {
   seniority?: string | null;
   cv_master?: string | null;
   scp_score: number;
-  scp_breakdown?: Record<string, boolean> | null;
+  scp_breakdown?: {
+    clarity: number;
+    evidence: number;
+    focus: number;
+    freshness: number;
+  } | null;
   diagnosis?: string | null;
+  ai_suggestions?: string[];
   attention_points?: string[];
   diagnostic_unlocked?: boolean;
   blind_candidate?: WhatsAppBlindCandidate | null;
@@ -120,8 +126,15 @@ export interface RecruiterCandidatesExportPayload {
 
 export interface CVAnalysisResult {
   score: number;
+  breakdown: {
+    clarity: number;
+    evidence: number;
+    focus: number;
+    freshness: number;
+  };
   reasoning?: string | null;
   suggestions?: string[];
+  attention_points?: string[];
   fallback?: boolean;
 }
 
