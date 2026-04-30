@@ -9,6 +9,7 @@
     "build": "tsc",
     "seed": "tsx seed-demo.ts",
     "seed:admin": "tsx seed-admin.ts",
+    "seed:test": "tsx seed-test.ts",
     "test": "NODE_ENV=test SKIP_SERVER_START=1 tsx --test test/**/*.test.ts"
   },
   "dependencies": {
