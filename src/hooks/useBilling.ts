@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { createCreditPayment, createSubscriptionPayment, getRecruiterWallet } from '../services/api';
+import {
+  createCreditPayment,
+  createSubscriptionPayment,
+  getRecruiterWallet,
+} from '../services/api';
 import type { CreditTransaction, PaymentCustomer, RecruiterWallet } from '../contracts/api';
 
 export function useBilling() {
@@ -31,12 +35,9 @@ export function useBilling() {
     refresh();
   }, [refresh]);
 
-  const buyCredits = useCallback(
-    async (packageId: string, customer?: PaymentCustomer) => {
-      return createCreditPayment(packageId, customer);
-    },
-    []
-  );
+  const buyCredits = useCallback(async (packageId: string, customer?: PaymentCustomer) => {
+    return createCreditPayment(packageId, customer);
+  }, []);
 
   const buySubscription = useCallback(
     async (planId: 'monthly' | 'annual', customer?: PaymentCustomer) => {

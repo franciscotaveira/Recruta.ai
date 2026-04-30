@@ -63,7 +63,9 @@ export function parseBooleanQueryFlag(value: unknown): boolean {
 export function normalizeRecruiterCandidateExportFormat(
   value: unknown
 ): RecruiterCandidateExportFormat | null {
-  const normalized = asText(value || 'csv').trim().toLowerCase();
+  const normalized = asText(value || 'csv')
+    .trim()
+    .toLowerCase();
   if (normalized === 'csv' || normalized === 'json') return normalized;
   return null;
 }
@@ -77,13 +79,13 @@ function escapeCsv(value: unknown): string {
   return text;
 }
 
-export function buildRecruiterCandidateExportRows(candidates: any[]): RecruiterCandidateExportRow[] {
+export function buildRecruiterCandidateExportRows(
+  candidates: any[]
+): RecruiterCandidateExportRow[] {
   return (candidates || []).map((candidate: any) => {
     const history = Array.isArray(candidate?.history) ? candidate.history : [];
     const latest = history.length > 0 ? history[0] : null;
-    const attention = Array.isArray(candidate?.attention_points)
-      ? candidate.attention_points
-      : [];
+    const attention = Array.isArray(candidate?.attention_points) ? candidate.attention_points : [];
 
     return {
       profile_id: String(candidate?.id || ''),

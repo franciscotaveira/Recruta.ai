@@ -108,7 +108,9 @@ export function buildRecruiterReviewQueueItem(
   const fallbackAnalysisUsed =
     parsed.confidence?.signals.fallbackAnalysisUsed ||
     parsed.concerns.some((concern) => concern.toLowerCase().includes('fallback')) ||
-    String(parsed.summary || '').toLowerCase().includes('fallback');
+    String(parsed.summary || '')
+      .toLowerCase()
+      .includes('fallback');
 
   const confidence =
     parsed.confidence ||

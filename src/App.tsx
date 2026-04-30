@@ -15,8 +15,10 @@ const LoginPage = lazy(() => import('./pages/LoginPage'));
 const AdminLoginPage = lazy(() => import('./pages/AdminLoginPage'));
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 const Blog = lazy(() => import('./pages/Blog'));
+const BlogPost = lazy(() => import('./pages/BlogPost'));
 const About = lazy(() => import('./pages/About'));
 const Legal = lazy(() => import('./pages/Legal'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 
 const RecruiterDashboard = lazy(() => import('./pages/recruiter/Dashboard'));
 const RecruiterJobs = lazy(() => import('./pages/recruiter/Jobs'));
@@ -71,6 +73,7 @@ const App = () => {
               <Route path="/admin/login" element={<AdminLoginPage />} />
               <Route path="/registro" element={<RegisterPage />} />
               <Route path="/blog" element={<Blog />} />
+              <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/sobre" element={<About />} />
               <Route path="/privacidade" element={<Legal type="privacy" />} />
               <Route path="/termos" element={<Legal type="terms" />} />
@@ -149,7 +152,7 @@ const App = () => {
               />
 
               <Route path="/dashboard/*" element={<Navigate to="/recruiter" replace />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
         </BrowserRouter>

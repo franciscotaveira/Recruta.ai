@@ -113,17 +113,25 @@ const PostJobModal: React.FC<Props> = ({ open, onClose, onSuccess }) => {
     setResult(null);
     try {
       const reqs = buildRequirementsPayload();
-      const job = await JobQueue.createJob('recruiter.post_job', { 
-        title, company, location, description, requirements: reqs 
-      }, user?.id);
+      const job = await JobQueue.createJob(
+        'recruiter.post_job',
+        {
+          title,
+          company,
+          location,
+          description,
+          requirements: reqs,
+        },
+        user?.id
+      );
 
-      if (!job) throw new Error("Falha ao criar ação de publicação");
+      if (!job) throw new Error('Falha ao criar ação de publicação');
 
       setResult({
         ok: true,
         msg: 'Ação de publicação enviada! A vaga será processada em breve.',
       });
-      
+
       setTitle('');
       setCompany('');
       setLocation('');
@@ -131,11 +139,10 @@ const PostJobModal: React.FC<Props> = ({ open, onClose, onSuccess }) => {
       setRequirements('');
       setRequirementDraft('');
       setStructuredRequirements([]);
-      
+
       setTimeout(() => {
         onSuccess?.();
       }, 1500);
-
     } catch (err: any) {
       setResult({ ok: false, msg: err.message || 'Erro ao publicar vaga' });
     } finally {

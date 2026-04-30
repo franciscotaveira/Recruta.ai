@@ -1,7 +1,4 @@
-import {
-  projectBlindCandidateIdentity,
-  sanitizeCandidateDocumentText,
-} from './blind-screening.js';
+import { projectBlindCandidateIdentity, sanitizeCandidateDocumentText } from './blind-screening.js';
 
 export type BulkRecommendation = 'entrevistar' | 'rejeitar' | 'talvez';
 
@@ -41,9 +38,7 @@ const NEGATIVE_POINT_PATTERNS = [
 function normalizeStringList(input: unknown): string[] {
   if (!Array.isArray(input)) return [];
 
-  return input
-    .map((item) => String(item || '').trim())
-    .filter(Boolean);
+  return input.map((item) => String(item || '').trim()).filter(Boolean);
 }
 
 export function buildBulkCandidateProfileId(jobId: string, candidatePhone?: string | null): string {
@@ -51,7 +46,10 @@ export function buildBulkCandidateProfileId(jobId: string, candidatePhone?: stri
   return `bulk_${jobId}_${digits || 'candidate'}`;
 }
 
-export function encodeBulkAttentionPoints(strengths: string[] = [], concerns: string[] = []): string[] {
+export function encodeBulkAttentionPoints(
+  strengths: string[] = [],
+  concerns: string[] = []
+): string[] {
   return [
     ...strengths.map((item) => `[strength] ${String(item || '').trim()}`.trim()),
     ...concerns.map((item) => `[concern] ${String(item || '').trim()}`.trim()),
@@ -88,7 +86,9 @@ export function decodeBulkAttentionPoints(input: unknown): {
   return { strengths, concerns };
 }
 
-export function deriveBulkRecommendationFromScore(score: number | null | undefined): BulkRecommendation {
+export function deriveBulkRecommendationFromScore(
+  score: number | null | undefined
+): BulkRecommendation {
   const normalizedScore = Number.isFinite(score) ? Number(score) : 0;
 
   if (normalizedScore >= 70) return 'entrevistar';
@@ -131,7 +131,8 @@ export function shapeBulkAnalysisCandidateForApi(
         enabled: options.blindScreeningEnabled,
       }) || '',
     recommendation:
-      candidate.recommendation || deriveBulkRecommendationFromScore(Number(candidate.matchScore || 0)),
+      candidate.recommendation ||
+      deriveBulkRecommendationFromScore(Number(candidate.matchScore || 0)),
     blind_candidate: candidateProjection.blindCandidate,
   };
 }

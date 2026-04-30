@@ -177,18 +177,22 @@ function buildKnockoutQuestion(jobTitle: string, req: StructuredRequirement): st
 }
 
 function buildBarsQuestion(jobTitle: string, req: StructuredRequirement): string {
-  const isTechJob = /(dev|software|engenheiro|engineer|analista de sistemas|tecnologia|ti|fullstack|backend|frontend)/i.test(jobTitle);
-  
+  const isTechJob =
+    /(dev|software|engenheiro|engineer|analista de sistemas|tecnologia|ti|fullstack|backend|frontend)/i.test(
+      jobTitle
+    );
+
   let evidenceHint = '';
-  
+
   if (req.evidenceType === 'technical') {
-    evidenceHint = isTechJob 
-      ? 'Explique a stack, sua decisão técnica e o impacto gerado.' 
+    evidenceHint = isTechJob
+      ? 'Explique a stack, sua decisão técnica e o impacto gerado.'
       : 'Explique a metodologia ou técnica que você utilizou e o resultado prático alcançado.';
   } else if (req.evidenceType === 'behavioral') {
     evidenceHint = 'Descreva a situação, sua ação específica e o resultado final (método STAR).';
   } else if (req.evidenceType === 'situational') {
-    evidenceHint = 'Como você agiu nesse cenário? Quais foram suas prioridades e o impacto da sua decisão?';
+    evidenceHint =
+      'Como você agiu nesse cenário? Quais foram suas prioridades e o impacto da sua decisão?';
   } else {
     evidenceHint = 'Use o formato Situação -> Ação -> Resultado (STAR).';
   }

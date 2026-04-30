@@ -1,7 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ChevronLeft, Sparkles, MoreHorizontal, Plus, Loader2, Check, X, MessageCircle } from 'lucide-react';
-import { getPublicJob, getJobApplications, updateApplicationStatus, sendWhatsAppInvite, getWhatsAppSessions } from '../../services/api';
+import {
+  ChevronLeft,
+  Sparkles,
+  MoreHorizontal,
+  Plus,
+  Loader2,
+  Check,
+  X,
+  MessageCircle,
+} from 'lucide-react';
+import {
+  getPublicJob,
+  getJobApplications,
+  updateApplicationStatus,
+  sendWhatsAppInvite,
+  getWhatsAppSessions,
+} from '../../services/api';
 import { WhatsAppSession } from '../../contracts/api';
 import type { JobApplication, PublicJob } from '../../contracts/api';
 import { resolveBlindCandidateDisplay } from '../../utils/blindCandidate';
@@ -75,9 +90,9 @@ const JobKanban = () => {
         candidateName: app.candidate_name || undefined,
         candidatePhone: app.candidate_phone || undefined,
         jobTitle: job?.title,
-        companyName: job?.company
+        companyName: job?.company,
       });
-      setInvitedIds(prev => new Set(prev).add(app.id!));
+      setInvitedIds((prev) => new Set(prev).add(app.id!));
     } catch (error) {
       console.error('Failed to send WhatsApp invite', error);
       alert('Erro ao enviar convite por WhatsApp. Verifique se o telefone está correto.');
@@ -87,7 +102,7 @@ const JobKanban = () => {
   };
 
   const toggleSelection = (appId: string) => {
-    setSelectedIds(prev => {
+    setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(appId)) next.delete(appId);
       else next.add(appId);
@@ -140,7 +155,9 @@ const JobKanban = () => {
                 {job.location}
               </span>
             </h1>
-            <p className="text-sm text-slate-500">Pipeline de contratação • {(apps || []).length} candidatos</p>
+            <p className="text-sm text-slate-500">
+              Pipeline de contratação • {(apps || []).length} candidatos
+            </p>
           </div>
         </div>
 
@@ -186,7 +203,7 @@ const JobKanban = () => {
 
               {/* Column Content */}
               <div className="p-3 flex-1 overflow-y-auto space-y-3 custom-scrollbar">
-                 {(getStageApps(stage.id) || []).map((app) => {
+                {(getStageApps(stage.id) || []).map((app) => {
                   const candidate = resolveBlindCandidateDisplay({
                     candidateName: app?.candidate_name,
                     blindCandidate: app?.blind_candidate,
@@ -196,13 +213,13 @@ const JobKanban = () => {
                     <div
                       key={app.id}
                       className={`bg-white dark:bg-slate-800 p-4 rounded-xl border transition-all group relative ${
-                        selectedIds.has(app.id!) 
-                          ? 'border-purple-500 ring-2 ring-purple-100 dark:ring-purple-900/20 shadow-md' 
+                        selectedIds.has(app.id!)
+                          ? 'border-purple-500 ring-2 ring-purple-100 dark:ring-purple-900/20 shadow-md'
                           : 'border-slate-200 dark:border-slate-700 hover:shadow-lg'
                       } ${updatingId === app.id ? 'opacity-50 pointer-events-none' : ''}`}
                     >
                       {/* Selection Checkbox */}
-                      <div 
+                      <div
                         onClick={(e) => {
                           e.stopPropagation();
                           toggleSelection(app.id!);
@@ -226,7 +243,9 @@ const JobKanban = () => {
                               {candidate.label}
                             </h4>
                             <span className="text-[10px] text-slate-400 font-medium">
-                              {new Date(app.applied_at || app.created_at || '').toLocaleDateString('pt-BR')}
+                              {new Date(app.applied_at || app.created_at || '').toLocaleDateString(
+                                'pt-BR'
+                              )}
                             </span>
                           </div>
                         </div>
@@ -317,12 +336,12 @@ const JobKanban = () => {
         </div>
       </div>
       {showComparison && (
-        <CandidateComparison 
-          sessions={sessions.filter(s => {
-            const app = apps.find(a => a.id === Array.from(selectedIds)[0]); // Example mapping logic
+        <CandidateComparison
+          sessions={sessions.filter((s) => {
+            const app = apps.find((a) => a.id === Array.from(selectedIds)[0]); // Example mapping logic
             // Mapping by phone is safer
             const selectedPhones = new Set(
-              apps.filter(a => selectedIds.has(a.id!)).map(a => a.candidate_phone)
+              apps.filter((a) => selectedIds.has(a.id!)).map((a) => a.candidate_phone)
             );
             return selectedPhones.has(s.candidate_phone);
           })}

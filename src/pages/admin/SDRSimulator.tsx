@@ -1,5 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Play, Send, RefreshCw, Star, User, Bot, AlertTriangle, CheckCircle, ShieldAlert } from 'lucide-react';
+import {
+  Play,
+  Send,
+  RefreshCw,
+  Star,
+  User,
+  Bot,
+  AlertTriangle,
+  CheckCircle,
+  ShieldAlert,
+} from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 type SimulatorRole = 'candidate' | 'recruiter';
@@ -27,13 +37,14 @@ interface SimulationEvaluation {
 
 export default function SDRSimulator() {
   const { token } = useAuth();
-  
+
   const [step, setStep] = useState<'setup' | 'chat' | 'evaluation'>('setup');
   const [scenario, setScenario] = useState<SimulationScenario>({
     id: 'sc-' + Math.random().toString(36).substring(2, 9),
     role: 'recruiter',
     mood: 'skeptical',
-    context: 'Você é um Recrutador de uma agência buscando uma ferramenta para analisar CVs mais rápido.',
+    context:
+      'Você é um Recrutador de uma agência buscando uma ferramenta para analisar CVs mais rápido.',
     objectionFocus: 'O preço (créditos) parece caro comparado a ignorar os CVs que não leio.',
   });
 
@@ -52,7 +63,12 @@ export default function SDRSimulator() {
 
   const startSimulation = () => {
     // Add a system welcome message just for UI locally, we won't feed it back as user
-    setHistory([{ role: 'model', content: `[Simulação Iniciada] Perfil do Lead: ${scenario.role === 'recruiter' ? 'RH/Empresa' : 'Candidato'} - Humor: ${scenario.mood}.` }]);
+    setHistory([
+      {
+        role: 'model',
+        content: `[Simulação Iniciada] Perfil do Lead: ${scenario.role === 'recruiter' ? 'RH/Empresa' : 'Candidato'} - Humor: ${scenario.mood}.`,
+      },
+    ]);
     setStep('chat');
   };
 
@@ -61,7 +77,7 @@ export default function SDRSimulator() {
 
     const newMessage: ChatMessage = { role: 'user', content: inputValue };
     const currentHistory = [...history, newMessage];
-    
+
     setHistory(currentHistory);
     setInputValue('');
     setIsLoading(true);
@@ -71,22 +87,25 @@ export default function SDRSimulator() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ 
-          scenario, 
+        body: JSON.stringify({
+          scenario,
           // filter out the initial system message if we added one
-          history: currentHistory.filter(m => !m.content.startsWith('[Simulação Iniciada]')) 
-        })
+          history: currentHistory.filter((m) => !m.content.startsWith('[Simulação Iniciada]')),
+        }),
       });
 
       if (!res.ok) throw new Error('Falha ao gerar resposta');
       const data = await res.json();
-      
+
       setHistory([...currentHistory, { role: 'model', content: data.text }]);
     } catch (error) {
       console.error(error);
-      setHistory([...currentHistory, { role: 'model', content: "[Erro de Conexão: o lead caiu da sessão]" }]);
+      setHistory([
+        ...currentHistory,
+        { role: 'model', content: '[Erro de Conexão: o lead caiu da sessão]' },
+      ]);
     } finally {
       setIsLoading(false);
     }
@@ -100,12 +119,12 @@ export default function SDRSimulator() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ 
-          scenario, 
-          history: history.filter(m => !m.content.startsWith('[Simulação Iniciada]')) 
-        })
+        body: JSON.stringify({
+          scenario,
+          history: history.filter((m) => !m.content.startsWith('[Simulação Iniciada]')),
+        }),
       });
 
       if (!res.ok) throw new Error('Falha ao avaliar');
@@ -115,9 +134,9 @@ export default function SDRSimulator() {
       console.error(error);
       setEvaluation({
         score: 0,
-        strengths: ["Falha de API"],
-        weaknesses: ["Não foi possível avaliar sua simulação."],
-        recommendation: "Tente novamente mais tarde."
+        strengths: ['Falha de API'],
+        weaknesses: ['Não foi possível avaliar sua simulação.'],
+        recommendation: 'Tente novamente mais tarde.',
       });
     } finally {
       setIsLoading(false);
@@ -127,21 +146,27 @@ export default function SDRSimulator() {
   return (
     <div className="p-8 max-w-5xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight text-white mb-2">Simulador de Atendimento (SDR)</h1>
-        <p className="text-zinc-400">Treine suas abordagens de venda com leads gerados por Inteligência Artificial.</p>
+        <h1 className="text-2xl font-bold tracking-tight text-white mb-2">
+          Simulador de Atendimento (SDR)
+        </h1>
+        <p className="text-zinc-400">
+          Treine suas abordagens de venda com leads gerados por Inteligência Artificial.
+        </p>
       </div>
 
       {step === 'setup' && (
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
           <h2 className="text-xl font-semibold text-white mb-4">Configurar Novo Lead</h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
               <label className="block text-sm font-medium text-zinc-300 mb-2">Perfil do Lead</label>
               <select
                 className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-lg p-2.5 outline-none focus:border-[#7c3aed]"
                 value={scenario.role}
-                onChange={(e) => setScenario({...scenario, role: e.target.value as SimulatorRole})}
+                onChange={(e) =>
+                  setScenario({ ...scenario, role: e.target.value as SimulatorRole })
+                }
               >
                 <option value="recruiter">Recrutador (Venda B2B - Pacote de Créditos)</option>
                 <option value="candidate">Candidato (Venda B2C - Diagnóstico de CV)</option>
@@ -149,14 +174,20 @@ export default function SDRSimulator() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">Humor / Temperamento</label>
+              <label className="block text-sm font-medium text-zinc-300 mb-2">
+                Humor / Temperamento
+              </label>
               <select
                 className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-lg p-2.5 outline-none focus:border-[#7c3aed]"
                 value={scenario.mood}
-                onChange={(e) => setScenario({...scenario, mood: e.target.value as SimulatorMood})}
+                onChange={(e) =>
+                  setScenario({ ...scenario, mood: e.target.value as SimulatorMood })
+                }
               >
                 <option value="skeptical">Cético (Desconfiado das promessas)</option>
-                <option value="interested">Interessado (Dúvidas sobre como funciona na prática)</option>
+                <option value="interested">
+                  Interessado (Dúvidas sobre como funciona na prática)
+                </option>
                 <option value="angry">Frustrado/Irado (Impaciente com processos lentos)</option>
                 <option value="busy">Ocupado (Respostas curtas, sem tempo)</option>
                 <option value="confused">Confuso (Não entende de tecnologia)</option>
@@ -164,21 +195,25 @@ export default function SDRSimulator() {
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-zinc-300 mb-2">Contexto Específico (Opcional)</label>
+              <label className="block text-sm font-medium text-zinc-300 mb-2">
+                Contexto Específico (Opcional)
+              </label>
               <textarea
                 className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-lg p-2.5 outline-none focus:border-[#7c3aed] min-h-[80px]"
                 value={scenario.context}
-                onChange={(e) => setScenario({...scenario, context: e.target.value})}
+                onChange={(e) => setScenario({ ...scenario, context: e.target.value })}
                 placeholder="Ex: É um dono de uma padaria que não sabe recrutar..."
               />
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-zinc-300 mb-2">Foco da Objeção (Opcional)</label>
+              <label className="block text-sm font-medium text-zinc-300 mb-2">
+                Foco da Objeção (Opcional)
+              </label>
               <input
                 className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-lg p-2.5 outline-none focus:border-[#7c3aed]"
                 value={scenario.objectionFocus || ''}
-                onChange={(e) => setScenario({...scenario, objectionFocus: e.target.value})}
+                onChange={(e) => setScenario({ ...scenario, objectionFocus: e.target.value })}
                 placeholder="Ex: Acha o pacote de créditos muito caro."
               />
             </div>
@@ -205,7 +240,9 @@ export default function SDRSimulator() {
                 <Bot className="w-5 h-5 text-violet-400" />
               </div>
               <div>
-                <h3 className="text-white font-medium">Lead {scenario.role === 'recruiter' ? 'B2B' : 'B2C'}</h3>
+                <h3 className="text-white font-medium">
+                  Lead {scenario.role === 'recruiter' ? 'B2B' : 'B2C'}
+                </h3>
                 <p className="text-xs text-zinc-400 uppercase tracking-widest">{scenario.mood}</p>
               </div>
             </div>
@@ -220,12 +257,17 @@ export default function SDRSimulator() {
           {/* Chat Area */}
           <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-[#09090b]">
             {history.map((msg, idx) => (
-              <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[70%] rounded-2xl px-5 py-3 ${
-                  msg.role === 'user' 
-                    ? 'bg-[#7c3aed] text-white rounded-br-sm' 
-                    : 'bg-zinc-800 text-zinc-200 border border-zinc-700 rounded-bl-sm'
-                }`}>
+              <div
+                key={idx}
+                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                <div
+                  className={`max-w-[70%] rounded-2xl px-5 py-3 ${
+                    msg.role === 'user'
+                      ? 'bg-[#7c3aed] text-white rounded-br-sm'
+                      : 'bg-zinc-800 text-zinc-200 border border-zinc-700 rounded-bl-sm'
+                  }`}
+                >
                   <p className="whitespace-pre-wrap">{msg.content}</p>
                 </div>
               </div>
@@ -287,10 +329,14 @@ export default function SDRSimulator() {
                   <p className="text-zinc-400 mt-1">Sessão simulada com Lead {scenario.mood}</p>
                 </div>
                 <div className="text-center">
-                  <div className={`text-5xl font-black ${evaluation.score >= 80 ? 'text-green-500' : evaluation.score >= 50 ? 'text-yellow-500' : 'text-red-500'}`}>
+                  <div
+                    className={`text-5xl font-black ${evaluation.score >= 80 ? 'text-green-500' : evaluation.score >= 50 ? 'text-yellow-500' : 'text-red-500'}`}
+                  >
                     {evaluation.score}
                   </div>
-                  <span className="text-zinc-500 text-sm uppercase font-bold tracking-widest">Score</span>
+                  <span className="text-zinc-500 text-sm uppercase font-bold tracking-widest">
+                    Score
+                  </span>
                 </div>
               </div>
 
@@ -298,8 +344,7 @@ export default function SDRSimulator() {
                 {/* Strengths */}
                 <div className="bg-zinc-950/50 p-6 rounded-xl border border-green-900/30">
                   <h3 className="text-green-400 font-semibold mb-4 flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5" />
-                    O que você fez BEM
+                    <CheckCircle className="w-5 h-5" />O que você fez BEM
                   </h3>
                   <ul className="space-y-3">
                     {evaluation.strengths.map((str, idx) => (

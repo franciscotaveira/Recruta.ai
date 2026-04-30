@@ -26,7 +26,12 @@ import { aiCache } from './ai/cache';
 import { autoSeed } from './seed-auto';
 import { downloadMediaWithMeta } from './whatsapp/client';
 import { toCanonicalDigits } from './whatsapp/phone';
-import { generateSimulatedResponse, evaluateSimulation, SimulationScenario, ChatMessage } from './ai/simulator';
+import {
+  generateSimulatedResponse,
+  evaluateSimulation,
+  SimulationScenario,
+  ChatMessage,
+} from './ai/simulator';
 import {
   projectBlindCandidateIdentity,
   sanitizeCandidateDocumentText,
@@ -57,13 +62,17 @@ const app = express();
 app.get('/diag', (req, res) => res.json({ diag: 'ok', time: new Date().toISOString() }));
 const PORT = parseInt(process.env.PORT || '3456', 10);
 const IS_PROD = process.env.NODE_ENV === 'production';
-const WHATSAPP_PROVIDER = String(process.env.WHATSAPP_PROVIDER || 'meta').trim().toLowerCase();
+const WHATSAPP_PROVIDER = String(process.env.WHATSAPP_PROVIDER || 'meta')
+  .trim()
+  .toLowerCase();
 const SERVICE = 'recrutaria-api';
 
 function mustHave(name: string) {
   const value = process.env[name];
   if (!value || !String(value).trim()) {
-    console.warn(`[BOOT] WARNING: Missing environment variable: ${name}. Some features may not work.`);
+    console.warn(
+      `[BOOT] WARNING: Missing environment variable: ${name}. Some features may not work.`
+    );
   }
 }
 
@@ -150,7 +159,8 @@ function shapeJobApplicationForApi(application: any, blindScreeningEnabled: bool
         ? profile.name.trim()
         : null;
   const candidatePhone =
-    typeof application?.candidate_phone === 'string' && application.candidate_phone.trim().length > 0
+    typeof application?.candidate_phone === 'string' &&
+    application.candidate_phone.trim().length > 0
       ? application.candidate_phone.trim()
       : typeof profile?.phone === 'string' && profile.phone.trim().length > 0
         ? profile.phone.trim()
@@ -223,13 +233,17 @@ async function loadRecruiterCandidateBankForApi(options?: {
       ? options.blindScreeningEnabledOverride
       : governanceBlindScreeningEnabled;
 
-  const profileIds = (profiles || []).map((profile: any) => String(profile?.id || '')).filter(Boolean);
+  const profileIds = (profiles || [])
+    .map((profile: any) => String(profile?.id || ''))
+    .filter(Boolean);
   const { data: historyRows } =
     profileIds.length === 0
       ? { data: [] as any[] }
       : await supabase
           .from('job_applications')
-          .select('id, profile_id, status, match_score, applied_at, updated_at, public_jobs(title, company)')
+          .select(
+            'id, profile_id, status, match_score, applied_at, updated_at, public_jobs(title, company)'
+          )
           .in('profile_id', profileIds);
 
   const historyByProfile = new Map<string, any[]>();
@@ -440,7 +454,9 @@ const allowedOriginsSet = new Set<string>([
   ...(IS_PROD ? ['https://app.recrutaria.com.br', 'https://recrutaria.com.br'] : []),
 ]);
 
-const frontendUrlOrigin = process.env.FRONTEND_URL ? normalizeOrigin(process.env.FRONTEND_URL) : null;
+const frontendUrlOrigin = process.env.FRONTEND_URL
+  ? normalizeOrigin(process.env.FRONTEND_URL)
+  : null;
 if (frontendUrlOrigin) {
   allowedOriginsSet.add(frontendUrlOrigin);
 }
@@ -719,12 +735,15 @@ app.get('/api/ai/status', (_req, res) => {
 const simulatorLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 50,
-  message: { error: 'Too many simulation requests' }
+  message: { error: 'Too many simulation requests' },
 });
 
 app.post('/api/simulator/chat', requireAuth(), simulatorLimiter, async (req, res) => {
   try {
-    const { scenario, history } = req.body as { scenario: SimulationScenario; history: ChatMessage[] };
+    const { scenario, history } = req.body as {
+      scenario: SimulationScenario;
+      history: ChatMessage[];
+    };
     if (!scenario || !history || !Array.isArray(history)) {
       return fail(res, 400, 'Payload inválido para simulação', 'SIMULATOR_INVALID_PAYLOAD');
     }
@@ -742,7 +761,10 @@ app.post('/api/simulator/chat', requireAuth(), simulatorLimiter, async (req, res
 
 app.post('/api/simulator/evaluate', requireAuth(), simulatorLimiter, async (req, res) => {
   try {
-    const { scenario, history } = req.body as { scenario: SimulationScenario; history: ChatMessage[] };
+    const { scenario, history } = req.body as {
+      scenario: SimulationScenario;
+      history: ChatMessage[];
+    };
     if (!scenario || !history || history.length === 0) {
       return fail(res, 400, 'Histórico vazio', 'SIMULATOR_EMPTY_HISTORY');
     }
@@ -974,11 +996,15 @@ app.get('/api/admin/whatsapp-token', requireAuth('admin'), async (req, res) => {
     const testRes = await fetch(`https://graph.facebook.com/v21.0/${phoneId}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    const body = await testRes.json() as any;
+    const body = (await testRes.json()) as any;
     if (testRes.ok) {
       return res.json({ status: 'valid', phoneId, displayPhoneNumber: body.display_phone_number });
     }
-    return res.json({ status: 'invalid', error: body?.error?.message || 'Token inválido', code: body?.error?.code });
+    return res.json({
+      status: 'invalid',
+      error: body?.error?.message || 'Token inválido',
+      code: body?.error?.code,
+    });
   } catch (err: any) {
     return res.json({ status: 'error', message: err.message });
   }
@@ -995,16 +1021,26 @@ app.put('/api/admin/whatsapp-token', requireAuth('admin'), async (req, res) => {
     const testRes = await fetch(`https://graph.facebook.com/v21.0/${phoneId}`, {
       headers: { Authorization: `Bearer ${token.trim()}` },
     });
-    const body = await testRes.json() as any;
+    const body = (await testRes.json()) as any;
     if (!testRes.ok) {
-      return fail(res, 400, `Token rejeitado pela Meta: ${body?.error?.message || 'inválido'}`, 'WHATSAPP_TOKEN_REJECTED');
+      return fail(
+        res,
+        400,
+        `Token rejeitado pela Meta: ${body?.error?.message || 'inválido'}`,
+        'WHATSAPP_TOKEN_REJECTED'
+      );
     }
     // Token is valid — update runtime env (persists until next process restart)
     process.env.WHATSAPP_ACCESS_TOKEN = token.trim();
     logEvent('info', 'admin.whatsapp_token.updated', { userId: req.user?.id, phoneId });
     return res.json({ status: 'updated', displayPhoneNumber: body.display_phone_number });
   } catch (err: any) {
-    return fail(res, 500, `Erro ao validar token: ${err.message}`, 'WHATSAPP_TOKEN_VALIDATION_FAILED');
+    return fail(
+      res,
+      500,
+      `Erro ao validar token: ${err.message}`,
+      'WHATSAPP_TOKEN_VALIDATION_FAILED'
+    );
   }
 });
 
@@ -1222,7 +1258,12 @@ app.post(
 
       const hasPaid = await dual.hasPaidDiagnostic(req.user!.id);
       if (!hasPaid) {
-        return fail(res, 402, 'Pagamento obrigatório. Adquira o diagnóstico para desbloquear a análise.', 'PAYMENT_REQUIRED');
+        return fail(
+          res,
+          402,
+          'Pagamento obrigatório. Adquira o diagnóstico para desbloquear a análise.',
+          'PAYMENT_REQUIRED'
+        );
       }
 
       const result = await analyzeCVSafe(cvText);
@@ -1267,7 +1308,12 @@ app.post('/api/public/apply', async (req, res) => {
   try {
     const { name, phone, email, jobId, cvText } = req.body;
     if (!name || !phone || !jobId || !cvText) {
-      return fail(res, 400, 'Campos obrigatórios: name, phone, jobId, cvText', 'PUBLIC_APPLY_REQUIRED_FIELDS');
+      return fail(
+        res,
+        400,
+        'Campos obrigatórios: name, phone, jobId, cvText',
+        'PUBLIC_APPLY_REQUIRED_FIELDS'
+      );
     }
 
     const job = (await dual.getJobById(jobId)) as any;
@@ -1276,7 +1322,7 @@ app.post('/api/public/apply', async (req, res) => {
     // Link or create profile by phone
     const normalizedPhone = toCanonicalDigits ? toCanonicalDigits(phone) : phone.replace(/\D/g, '');
     let profile = (await dual.getProfileByPhone(normalizedPhone)) as any;
-    
+
     if (!profile) {
       const id = `profile_${randomUUID()}`;
       await dual.createProfile(
@@ -1293,7 +1339,7 @@ app.post('/api/public/apply', async (req, res) => {
     }
 
     const appId = `app_${randomUUID()}`;
-    
+
     // 1. Intelligent CV Analysis for initial score
     let matchScore = 50;
     try {
@@ -1308,11 +1354,11 @@ app.post('/api/public/apply', async (req, res) => {
     // 2. Record application with real/fallback score
     await dual.applyToJob(profile.id, jobId, 'public_cv', matchScore, appId);
 
-    res.json({ 
-      success: true, 
-      appId, 
+    res.json({
+      success: true,
+      appId,
       profileId: profile.id,
-      matchScore 
+      matchScore,
     });
   } catch (err: any) {
     fail(res, 500, err.message || 'Erro interno', 'PUBLIC_APPLY_FAILED');
@@ -1358,7 +1404,7 @@ app.post('/api/candidate/chat', requireAuth('candidate'), async (req, res) => {
   try {
     const { message, history } = req.body;
     const profile = (await dual.getProfileByUser(req.user!.id)) as any;
-    
+
     const context = `
       Candidato: ${profile?.name || 'Não informado'}
       Cargo Pretendido: ${profile?.target_role || 'Não informado'}
@@ -1378,7 +1424,12 @@ app.post('/api/candidate/chat', requireAuth('candidate'), async (req, res) => {
     ${context}
     `;
 
-    const response = await smartAI('chat', systemPrompt, JSON.stringify({ message, history }), false);
+    const response = await smartAI(
+      'chat',
+      systemPrompt,
+      JSON.stringify({ message, history }),
+      false
+    );
     res.json({ response });
   } catch (err: any) {
     fail(res, 500, err.message || 'Erro no chat', 'CHAT_FAILED');
@@ -1691,10 +1742,12 @@ app.post(
 
       await dual.initWallet(req.user!.id);
       const profile = await dual.getRecruiterProfile(req.user!.id);
-      
+
       // If not Pro, we might want to limit or block, but for now let's just log
       if (!profile || profile.subscription_status !== 'active') {
-        console.log(`[bulk-analyze] Recruiter ${req.user!.id} is not active, but allowing for now.`);
+        console.log(
+          `[bulk-analyze] Recruiter ${req.user!.id} is not active, but allowing for now.`
+        );
       }
 
       const reqText = (job.requirements || []).map((r: any) => r.text).join(', ');
@@ -1801,7 +1854,9 @@ app.get('/api/recruiter/candidates/export', requireAuth('recruiter'), async (req
       return fail(res, 400, 'format deve ser csv ou json', 'EXPORT_FORMAT_INVALID');
     }
 
-    const includePiiRequested = parseBooleanQueryFlag(req.query.includePii ?? req.query.include_pii);
+    const includePiiRequested = parseBooleanQueryFlag(
+      req.query.includePii ?? req.query.include_pii
+    );
     const requestedLimit = Number(req.query.limit ?? 1000);
     const safeLimit = Number.isFinite(requestedLimit)
       ? Math.min(Math.max(Math.round(requestedLimit), 1), 2000)
@@ -1859,7 +1914,8 @@ const bulkInviteLimiter = rateLimit({
 
 app.post('/api/whatsapp/invite', requireAuth('recruiter'), inviteLimiter, async (req, res) => {
   try {
-    const { candidatePhone, candidateName, profileId, jobId, jobTitle, companyName, scenario } = req.body;
+    const { candidatePhone, candidateName, profileId, jobId, jobTitle, companyName, scenario } =
+      req.body;
     if (!jobId || (!candidatePhone && !profileId)) {
       return fail(
         res,
@@ -1897,14 +1953,14 @@ app.post('/api/whatsapp/invite', requireAuth('recruiter'), inviteLimiter, async 
     if (!wallet || (wallet.trigger_balance || 0) < 1) {
       return res.status(402).json({
         error: 'Créditos de disparo insuficientes.',
-        code: 'INSUFFICIENT_TRIGGER_CREDITS'
+        code: 'INSUFFICIENT_TRIGGER_CREDITS',
       });
     }
 
     const resolvedCandidateName =
       String(candidateName || '').trim() || String(profile?.name || '').trim() || 'Candidato';
     const canonicalPhone = toCanonicalDigits(resolvedCandidatePhone);
-    
+
     // Deduct Credit
     await dual.spendTriggerCredits(1, req.user!.id);
 
@@ -1919,13 +1975,18 @@ app.post('/api/whatsapp/invite', requireAuth('recruiter'), inviteLimiter, async 
     );
 
     // Observability: Log the invite event
-    logEvent('info', 'whatsapp.invite.sent', {
-      recruiterId: req.user!.id,
-      candidatePhone: canonicalPhone || resolvedCandidatePhone,
-      candidateName: resolvedCandidateName,
-      jobId,
-      sessionId
-    }, req.user!.id);
+    logEvent(
+      'info',
+      'whatsapp.invite.sent',
+      {
+        recruiterId: req.user!.id,
+        candidatePhone: canonicalPhone || resolvedCandidatePhone,
+        candidateName: resolvedCandidateName,
+        jobId,
+        sessionId,
+      },
+      req.user!.id
+    );
 
     res.json({ sessionId, status: 'invited', creditsRemaining: (wallet.trigger_balance || 0) - 1 });
   } catch (err: any) {
@@ -1933,79 +1994,81 @@ app.post('/api/whatsapp/invite', requireAuth('recruiter'), inviteLimiter, async 
   }
 });
 
-app.post('/api/resumes/upload', express.json({ limit: '10mb' }), requireAuth('recruiter'), async (req, res) => {
-  const { jobId, fileName, fileType, base64 } = req.body;
-  const recruiterId = (req as any).user?.id;
+app.post(
+  '/api/resumes/upload',
+  express.json({ limit: '10mb' }),
+  requireAuth('recruiter'),
+  async (req, res) => {
+    const { jobId, fileName, fileType, base64 } = req.body;
+    const recruiterId = (req as any).user?.id;
 
-  if (!jobId || !base64) {
-    return res.status(400).json({ error: 'Job ID and base64 content are required' });
-  }
-
-  try {
-    const job = await dual.getJobById(jobId);
-    if (!job) return res.status(404).json({ error: 'Job not found' });
-
-    // 1. Convert Base64 to Buffer
-    const buffer = Buffer.from(base64, 'base64');
-
-    // 2. Parse Resume with Gemini
-    const parsed = await parseResume(buffer, fileType || 'application/pdf');
-    
-    // 3. Find or Create Profile
-    let profile = await dual.getProfileByPhone(parsed.phone);
-    if (!profile && parsed.email) {
-      const u = await users.findByEmail(parsed.email);
-      if (u) profile = await dual.getProfileByUser(u.id);
+    if (!jobId || !base64) {
+      return res.status(400).json({ error: 'Job ID and base64 content are required' });
     }
 
-    const profileId = profile?.id || randomUUID();
-    if (!profile) {
-      await dual.createProfile(
-        profileId,
-        null, // No user account yet
-        parsed.name,
-        parsed.email,
-        parsed.phone,
-        parsed.location || null,
-        null,
-        null
-      );
+    try {
+      const job = await dual.getJobById(jobId);
+      if (!job) return res.status(404).json({ error: 'Job not found' });
+
+      // 1. Convert Base64 to Buffer
+      const buffer = Buffer.from(base64, 'base64');
+
+      // 2. Parse Resume with Gemini
+      const parsed = await parseResume(buffer, fileType || 'application/pdf');
+
+      // 3. Find or Create Profile
+      let profile = await dual.getProfileByPhone(parsed.phone);
+      if (!profile && parsed.email) {
+        const u = await users.findByEmail(parsed.email);
+        if (u) profile = await dual.getProfileByUser(u.id);
+      }
+
+      const profileId = profile?.id || randomUUID();
+      if (!profile) {
+        await dual.createProfile(
+          profileId,
+          null, // No user account yet
+          parsed.name,
+          parsed.email,
+          parsed.phone,
+          parsed.location || null,
+          null,
+          null
+        );
+      }
+
+      // 4. Create CV Version
+      const cvId = randomUUID();
+      await supabase.from('cv_versions').insert([
+        {
+          id: cvId,
+          profile_id: profileId,
+          version_num: 1,
+          target_job_id: jobId,
+          cv_text: parsed.markdown,
+          created_at: new Date().toISOString(),
+        },
+      ]);
+
+      // 5. Start WhatsApp Session
+      const sessionId = randomUUID();
+      await createSession(sessionId, parsed.phone, parsed.name, jobId, recruiterId, {
+        scenario: 'direct_invite',
+      });
+
+      res.json({
+        success: true,
+        sessionId,
+        candidateName: parsed.name,
+        candidatePhone: parsed.phone,
+        summary: parsed.summary,
+      });
+    } catch (err: any) {
+      console.error('[upload] Failed to process resume:', err);
+      res.status(500).json({ error: err.message || 'Failed to process resume' });
     }
-
-    // 4. Create CV Version
-    const cvId = randomUUID();
-    await supabase.from('cv_versions').insert([{
-      id: cvId,
-      profile_id: profileId,
-      version_num: 1,
-      target_job_id: jobId,
-      cv_text: parsed.markdown,
-      created_at: new Date().toISOString()
-    }]);
-
-    // 5. Start WhatsApp Session
-    const sessionId = randomUUID();
-    await createSession(
-      sessionId,
-      parsed.phone,
-      parsed.name,
-      jobId,
-      recruiterId,
-      { scenario: 'direct_invite' }
-    );
-
-    res.json({
-      success: true,
-      sessionId,
-      candidateName: parsed.name,
-      candidatePhone: parsed.phone,
-      summary: parsed.summary
-    });
-  } catch (err: any) {
-    console.error('[upload] Failed to process resume:', err);
-    res.status(500).json({ error: err.message || 'Failed to process resume' });
   }
-});
+);
 
 app.post(
   '/api/whatsapp/invite-bulk',
@@ -2026,7 +2089,8 @@ app.post(
 
       const job = (await dual.getJobById(resolvedJobId)) as any;
       if (!job) return fail(res, 404, 'Vaga não encontrada', 'JOB_NOT_FOUND');
-      if (job.recruiter_id !== req.user!.id) return fail(res, 403, 'Acesso negado', 'JOB_FORBIDDEN');
+      if (job.recruiter_id !== req.user!.id)
+        return fail(res, 403, 'Acesso negado', 'JOB_FORBIDDEN');
 
       const squad = await getAISquad();
       const blindScreeningEnabled = Boolean(squad.governance.blindScreeningEnabled);
@@ -2037,7 +2101,7 @@ app.post(
       if (!wallet || (wallet.trigger_balance || 0) < creditsNeeded) {
         return res.status(402).json({
           error: `Créditos insuficientes para o lote. Necessário: ${creditsNeeded}, disponível: ${wallet?.trigger_balance || 0}`,
-          code: 'INSUFFICIENT_TRIGGER_CREDITS'
+          code: 'INSUFFICIENT_TRIGGER_CREDITS',
         });
       }
 
@@ -2055,15 +2119,19 @@ app.post(
 
       for (const rawCandidate of candidates) {
         const candidate =
-          rawCandidate && typeof rawCandidate === 'object' ? (rawCandidate as Record<string, any>) : {};
+          rawCandidate && typeof rawCandidate === 'object'
+            ? (rawCandidate as Record<string, any>)
+            : {};
         const profileId = String(candidate.profileId || '').trim() || null;
         const requestedName = String(candidate.name || '').trim();
         const requestedPhone = String(candidate.phone || '').trim();
         const requestedReferenceId =
           profileId ||
-          `bulk_${resolvedJobId}_${String(requestedPhone || '')
-            .replace(/\D+/g, '')
-            .slice(-16) || 'candidate'}`;
+          `bulk_${resolvedJobId}_${
+            String(requestedPhone || '')
+              .replace(/\D+/g, '')
+              .slice(-16) || 'candidate'
+          }`;
         let resolvedName = requestedName || 'Candidato';
         let resolvedPhone = requestedPhone;
         let candidateProjection = projectBlindCandidateIdentity({
@@ -2221,7 +2289,7 @@ app.get('/api/jobs/:id/stats', requireAuth('recruiter'), async (req, res) => {
         responded: sessions.filter((s: any) => (s.responses?.length || 0) > 0).length,
         matchOk: applications.filter((a: any) => (a.match_score || 0) >= 70).length,
         hired: applications.filter((a: any) => a.status === 'approved').length,
-      }
+      },
     });
   } catch (err: any) {
     fail(res, 500, err.message || 'Erro interno', 'JOB_STATS_FAILED');
@@ -2257,7 +2325,8 @@ app.get('/api/recruiter/review-queue', requireAuth('recruiter'), async (req, res
     const triagePolicy = resolveAreaPolicy(squad, 'triage');
     const qualityPolicy = resolveAreaPolicy(squad, 'quality');
     const requiresHumanReview =
-      shouldRequireHumanReview(squad, triagePolicy) || shouldRequireHumanReview(squad, qualityPolicy);
+      shouldRequireHumanReview(squad, triagePolicy) ||
+      shouldRequireHumanReview(squad, qualityPolicy);
 
     const items = (sessions || [])
       .map((session: any) =>
@@ -2376,7 +2445,9 @@ if (process.env.SKIP_SERVER_START !== '1' && process.env.NODE_ENV !== 'test') {
 
   server.on('error', (err: NodeJS.ErrnoException) => {
     if (err.code === 'EPERM' || err.code === 'EACCES') {
-      console.warn(`[server] Falha ao escutar em 0.0.0.0:${PORT} (${err.code}). Tentando localhost...`);
+      console.warn(
+        `[server] Falha ao escutar em 0.0.0.0:${PORT} (${err.code}). Tentando localhost...`
+      );
       const fallback = app.listen(PORT, '127.0.0.1', () => {
         logEvent('info', 'server.started', { port: PORT, bind: '127.0.0.1' });
         ensureBootstrapAdmin().catch((e) => console.error('[BOOT] Admin bootstrap falhou:', e));
@@ -2390,7 +2461,9 @@ if (process.env.SKIP_SERVER_START !== '1' && process.env.NODE_ENV !== 'test') {
         process.exit(1);
       });
     } else if (err.code === 'EADDRINUSE') {
-      console.error(`[server] Porta ${PORT} já está em uso. Encerre o processo anterior: lsof -ti:${PORT} | xargs kill -9`);
+      console.error(
+        `[server] Porta ${PORT} já está em uso. Encerre o processo anterior: lsof -ti:${PORT} | xargs kill -9`
+      );
       process.exit(1);
     } else {
       console.error('[server] Erro inesperado:', err);

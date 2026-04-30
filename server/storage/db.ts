@@ -818,12 +818,15 @@ export const dual = {
       .eq('user_id', recruiter_id)
       .maybeSingle();
     if (!existing) {
-      await supabase
-        .from('recruiter_profiles')
-        .insert([{ user_id: recruiter_id, company_name }]);
+      await supabase.from('recruiter_profiles').insert([{ user_id: recruiter_id, company_name }]);
     }
   },
-  updateSubscription: async (recruiter_id: string, plan: string, status: string, expires_at: string) => {
+  updateSubscription: async (
+    recruiter_id: string,
+    plan: string,
+    status: string,
+    expires_at: string
+  ) => {
     await supabase
       .from('recruiter_profiles')
       .update({

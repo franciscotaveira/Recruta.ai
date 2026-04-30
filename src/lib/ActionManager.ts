@@ -39,14 +39,14 @@ export class ActionManager {
 
   static validateIntent<T extends ActionId>(actionId: T, payload: any): ValidationResult {
     const metadata = this.getMetadata(actionId);
-    
+
     if (!metadata) {
       return {
         valid: false,
         actionId,
         metadata: {} as ActionMetadata,
         payload,
-        errors: [`Action contract ${actionId} not found`]
+        errors: [`Action contract ${actionId} not found`],
       };
     }
 
@@ -57,7 +57,7 @@ export class ActionManager {
         actionId,
         metadata,
         payload,
-        errors: [`Zod schema for ${actionId} not found`]
+        errors: [`Zod schema for ${actionId} not found`],
       };
     }
 
@@ -69,7 +69,7 @@ export class ActionManager {
         actionId,
         metadata,
         payload,
-        errors: parseResult.error.format()
+        errors: parseResult.error.format(),
       };
     }
 
@@ -77,7 +77,7 @@ export class ActionManager {
       valid: true,
       actionId,
       metadata,
-      payload: parseResult.data
+      payload: parseResult.data,
     };
   }
 }

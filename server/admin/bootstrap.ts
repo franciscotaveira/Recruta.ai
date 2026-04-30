@@ -38,8 +38,10 @@ export async function ensureBootstrapAdmin() {
 
 export async function ensureBootstrapSquad() {
   try {
-    const { count } = await supabase.from('ai_specialists').select('*', { count: 'exact', head: true });
-    
+    const { count } = await supabase
+      .from('ai_specialists')
+      .select('*', { count: 'exact', head: true });
+
     if (count && count > 0) {
       console.log(`[boot] AI Squad já possui ${count} especialistas.`);
       return;
@@ -48,15 +50,60 @@ export async function ensureBootstrapSquad() {
     console.log('[boot] Inicializando AI Squad Squad (Aria, Theo, Iris, Cyrus, Xavier)...');
 
     const specialists = [
-      { id: 'aria', name: 'Aria', area: 'triage', objective: 'Triagem técnica profunda', key_metric: 'Precisão de Match', enabled: true, model_policy: 'auto', owner: 'MCT Kernel' },
-      { id: 'theo', name: 'Theo', area: 'attraction', objective: 'Engajamento de talentos', key_metric: 'Conversion Rate', enabled: true, model_policy: 'auto', owner: 'MCT Kernel' },
-      { id: 'iris', name: 'Iris', area: 'interview', objective: 'Entrevistas comportamentais', key_metric: 'Profundidade de Insights', enabled: true, model_policy: 'auto', owner: 'MCT Kernel' },
-      { id: 'cyrus', name: 'Cyrus', area: 'compliance', objective: 'Segurança e RLS', key_metric: 'Zero Data Leak', enabled: true, model_policy: 'auto', owner: 'MCT Kernel' },
-      { id: 'xavier', name: 'Xavier', area: 'candidate_experience', objective: 'UX do candidato', key_metric: 'CSAT', enabled: true, model_policy: 'auto', owner: 'MCT Kernel' }
+      {
+        id: 'aria',
+        name: 'Aria',
+        area: 'triage',
+        objective: 'Triagem técnica profunda',
+        key_metric: 'Precisão de Match',
+        enabled: true,
+        model_policy: 'auto',
+        owner: 'MCT Kernel',
+      },
+      {
+        id: 'theo',
+        name: 'Theo',
+        area: 'attraction',
+        objective: 'Engajamento de talentos',
+        key_metric: 'Conversion Rate',
+        enabled: true,
+        model_policy: 'auto',
+        owner: 'MCT Kernel',
+      },
+      {
+        id: 'iris',
+        name: 'Iris',
+        area: 'interview',
+        objective: 'Entrevistas comportamentais',
+        key_metric: 'Profundidade de Insights',
+        enabled: true,
+        model_policy: 'auto',
+        owner: 'MCT Kernel',
+      },
+      {
+        id: 'cyrus',
+        name: 'Cyrus',
+        area: 'compliance',
+        objective: 'Segurança e RLS',
+        key_metric: 'Zero Data Leak',
+        enabled: true,
+        model_policy: 'auto',
+        owner: 'MCT Kernel',
+      },
+      {
+        id: 'xavier',
+        name: 'Xavier',
+        area: 'candidate_experience',
+        objective: 'UX do candidato',
+        key_metric: 'CSAT',
+        enabled: true,
+        model_policy: 'auto',
+        owner: 'MCT Kernel',
+      },
     ];
 
     await supabase.from('ai_specialists').insert(specialists);
-    
+
     // Governance
     await supabase.from('system_settings').upsert({
       key: 'ai_governance',
@@ -66,7 +113,7 @@ export async function ensureBootstrapSquad() {
         humanInTheLoopRequired: true,
         biasAuditCadenceDays: 30,
         maxParallelSessions: 200,
-      }
+      },
     });
 
     console.log('[boot] AI Squad inicializado com sucesso.');

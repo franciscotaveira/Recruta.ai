@@ -173,7 +173,11 @@ function sanitizeDoc(raw: unknown, fallbackId: string): RAGDocument | null {
   const text = String(row.text || '').trim();
   const tags = Array.isArray(row.tags)
     ? row.tags
-        .map((tag) => String(tag || '').trim().toLowerCase())
+        .map((tag) =>
+          String(tag || '')
+            .trim()
+            .toLowerCase()
+        )
         .filter((tag) => tag.length > 0)
     : [];
 
@@ -206,7 +210,9 @@ function readCorpusFromDisk(corpusPath: string): RAGDocument[] | null {
 }
 
 function computeSignature(docs: RAGDocument[]): string {
-  const joined = docs.map((doc) => `${doc.id}:${doc.title}:${doc.source}:${doc.text.length}`).join('|');
+  const joined = docs
+    .map((doc) => `${doc.id}:${doc.title}:${doc.source}:${doc.text.length}`)
+    .join('|');
   return crypto.createHash('sha256').update(joined).digest('hex');
 }
 

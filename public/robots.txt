@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Allow: /sobre
+Allow: /blog
+Allow: /vagas
+Disallow: /admin/
+Disallow: /candidate/
+Disallow: /recruiter/
+Disallow: /auth/
+Disallow: /api/
+
+Sitemap: https://recrutaria.com.br/sitemap.xml

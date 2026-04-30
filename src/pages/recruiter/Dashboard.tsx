@@ -16,7 +16,7 @@ import {
   Search,
   Upload,
   X,
-  Activity
+  Activity,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRecruiterJobs } from '../../hooks/useRecruiterJobs';
@@ -51,19 +51,23 @@ const RecruiterDashboard = () => {
   useEffect(() => {
     loadJobs();
     fetchActiveSessionsCount();
-    
+
     // Subscribe to session changes for real-time counter
-    const channel = import('../../lib/supabase').then(m => 
+    const channel = import('../../lib/supabase').then((m) =>
       m.supabase
         .channel('dashboard_stats')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'whatsapp_sessions' }, () => {
-          fetchActiveSessionsCount();
-        })
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'whatsapp_sessions' },
+          () => {
+            fetchActiveSessionsCount();
+          }
+        )
         .subscribe()
     );
 
     return () => {
-      channel.then(c => import('../../lib/supabase').then(m => m.supabase.removeChannel(c)));
+      channel.then((c) => import('../../lib/supabase').then((m) => m.supabase.removeChannel(c)));
     };
   }, [loadJobs]);
 
@@ -74,7 +78,7 @@ const RecruiterDashboard = () => {
         .from('whatsapp_sessions')
         .select('*', { count: 'exact', head: true })
         .in('state', ['invited', 'accepted', 'questioning', 'mic_check', 'consent_pending']);
-      
+
       if (!error) setActiveSessionsCount(count || 0);
     } catch (err) {
       console.error('Failed to fetch active sessions count', err);
@@ -105,7 +109,10 @@ const RecruiterDashboard = () => {
       j?.company?.toLowerCase()?.includes(searchTerm.toLowerCase())
   );
 
-  const totalCandidates = Object.values(jobApps || {}).reduce((sum, apps) => sum + (Array.isArray(apps) ? apps.length : 0), 0);
+  const totalCandidates = Object.values(jobApps || {}).reduce(
+    (sum, apps) => sum + (Array.isArray(apps) ? apps.length : 0),
+    0
+  );
 
   return (
     <div className="space-y-10 max-w-7xl mx-auto pb-16 animate-fade-in px-4 md:px-0">
@@ -143,34 +150,49 @@ const RecruiterDashboard = () => {
 
       {/* KPIs - Stitch Style */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-6">
-        <div className="s-glass p-6 group transition-all duration-300 border-indigo-500/5 hover:border-indigo-500/20 cursor-pointer" onClick={() => navigate('/recruiter/live')}>
+        <div
+          className="s-glass p-6 group transition-all duration-300 border-indigo-500/5 hover:border-indigo-500/20 cursor-pointer"
+          onClick={() => navigate('/recruiter/live')}
+        >
           <div className="flex items-center justify-between mb-4">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Comando Neural</span>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              Comando Neural
+            </span>
             <div className="p-3 bg-indigo-500/10 rounded-xl group-hover:bg-indigo-500/20 transition-colors">
               <Activity size={20} className="text-indigo-500 animate-pulse" />
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <p className="text-4xl font-black text-slate-900 dark:text-white">{activeSessionsCount}</p>
-            <span className="text-[10px] text-indigo-500 font-black uppercase tracking-tighter">Ativos Agora</span>
+            <p className="text-4xl font-black text-slate-900 dark:text-white">
+              {activeSessionsCount}
+            </p>
+            <span className="text-[10px] text-indigo-500 font-black uppercase tracking-tighter">
+              Ativos Agora
+            </span>
           </div>
         </div>
 
         <div className="s-glass p-6 group transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Vagas Ativas</span>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              Vagas Ativas
+            </span>
             <div className="p-3 bg-slate-500/10 rounded-xl group-hover:bg-slate-500/20 transition-colors">
               <Briefcase size={20} className="text-slate-500" />
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <p className="text-4xl font-black text-slate-900 dark:text-white">{(jobs || []).length}</p>
+            <p className="text-4xl font-black text-slate-900 dark:text-white">
+              {(jobs || []).length}
+            </p>
           </div>
         </div>
 
         <div className="s-glass p-6 group transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Candidatos</span>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              Total Candidatos
+            </span>
             <div className="p-3 bg-purple-500/10 rounded-xl group-hover:bg-purple-500/20 transition-colors">
               <Users size={20} className="text-purple-500" />
             </div>
@@ -180,14 +202,18 @@ const RecruiterDashboard = () => {
 
         <div className="s-glass p-6 group transition-all duration-300 relative overflow-hidden">
           <div className="flex items-center justify-between mb-4">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">IA Response</span>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              IA Response
+            </span>
             <div className="p-3 bg-emerald-500/10 rounded-xl group-hover:bg-emerald-500/20 transition-colors">
               <MessageCircle size={20} className="text-emerald-500" />
             </div>
           </div>
           <div className="relative z-10">
             <p className="text-4xl font-black text-slate-900 dark:text-white">88%</p>
-            <p className="text-[10px] text-slate-400 mt-1 font-medium italic">Taxa de resposta autônoma</p>
+            <p className="text-[10px] text-slate-400 mt-1 font-medium italic">
+              Taxa de resposta autônoma
+            </p>
           </div>
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-500/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
         </div>
@@ -195,7 +221,10 @@ const RecruiterDashboard = () => {
 
       {/* Search */}
       <div className="relative group max-w-2xl">
-        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
+        <Search
+          size={18}
+          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-400 transition-colors"
+        />
         <input
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -239,10 +268,7 @@ const RecruiterDashboard = () => {
           {filteredJobs.map((job) => {
             const apps: JobApplication[] = jobApps[job.id] || [];
             return (
-              <div
-                key={job.id}
-                className="s-glass p-6 s-glass-hover group/card"
-              >
+              <div key={job.id} className="s-glass p-6 s-glass-hover group/card">
                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
                   <div className="flex-1">
                     <div className="flex items-start justify-between gap-4">
@@ -265,17 +291,17 @@ const RecruiterDashboard = () => {
                               {job.salary_range}
                             </span>
                           )}
-                           <span className="flex items-center gap-1.5">
+                          <span className="flex items-center gap-1.5">
                             <Clock size={12} />
-                            {job.created_at ? new Date(job.created_at).toLocaleDateString('pt-BR') : '—'}
+                            {job.created_at
+                              ? new Date(job.created_at).toLocaleDateString('pt-BR')
+                              : '—'}
                           </span>
                         </div>
                       </div>
                       <span
                         className={`s-badge ${
-                          job.is_active
-                            ? 's-badge-success'
-                            : 's-badge-warning opacity-50'
+                          job.is_active ? 's-badge-success' : 's-badge-warning opacity-50'
                         }`}
                       >
                         {job.is_active ? 'Ativa' : 'Fechada'}
@@ -293,17 +319,23 @@ const RecruiterDashboard = () => {
                       {/* Left: Quick Stats */}
                       <div className="flex items-center gap-8">
                         <div className="flex flex-col">
-                          <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Candidatos</span>
+                          <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">
+                            Candidatos
+                          </span>
                           <div className="flex items-center gap-2">
                             <Users size={16} className="text-purple-500" />
                             <span className="text-lg font-black text-slate-200">{apps.length}</span>
                           </div>
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Performance</span>
+                          <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">
+                            Performance
+                          </span>
                           <div className="flex items-center gap-2">
                             <TrendingUp size={16} className="text-emerald-500" />
-                            <span className="text-lg font-black text-slate-200">{Math.min(apps.length * 12, 100)}%</span>
+                            <span className="text-lg font-black text-slate-200">
+                              {Math.min(apps.length * 12, 100)}%
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -315,19 +347,19 @@ const RecruiterDashboard = () => {
                             const stats = jobStats[job.id] || {
                               invites: apps.length,
                               responded: Math.round(apps.length * 0.7),
-                              matchOk: apps.filter(a => (a.match_score || 0) >= 70).length,
-                              hired: apps.filter(a => a.status === 'approved').length
+                              matchOk: apps.filter((a) => (a.match_score || 0) >= 70).length,
+                              hired: apps.filter((a) => a.status === 'approved').length,
                             };
                             const steps = [
                               { count: stats.invites, color: 'bg-slate-700' },
                               { count: stats.responded, color: 'bg-blue-500' },
                               { count: stats.matchOk, color: 'bg-indigo-500' },
-                              { count: stats.hired, color: 'bg-emerald-500' }
+                              { count: stats.hired, color: 'bg-emerald-500' },
                             ];
-                            const max = Math.max(...steps.map(s => s.count), 1);
+                            const max = Math.max(...steps.map((s) => s.count), 1);
                             return steps.map((step, idx) => (
-                              <div 
-                                key={idx} 
+                              <div
+                                key={idx}
                                 className={`flex-1 rounded-t-sm ${step.color} transition-all duration-700 opacity-80 hover:opacity-100`}
                                 style={{ height: `${Math.max((step.count / max) * 100, 15)}%` }}
                               ></div>
@@ -335,8 +367,12 @@ const RecruiterDashboard = () => {
                           })()}
                         </div>
                         <div className="flex justify-between mt-1 px-0.5">
-                          <span className="text-[7px] font-black text-slate-600 uppercase">Input</span>
-                          <span className="text-[7px] font-black text-slate-600 uppercase">Hire</span>
+                          <span className="text-[7px] font-black text-slate-600 uppercase">
+                            Input
+                          </span>
+                          <span className="text-[7px] font-black text-slate-600 uppercase">
+                            Hire
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -348,14 +384,23 @@ const RecruiterDashboard = () => {
                       onClick={() => handleWhatsAppInvite(job)}
                       className="flex items-center justify-center gap-2 px-6 py-3 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-500 hover:text-white border border-emerald-500/20 rounded-xl text-xs font-black transition-all active:scale-95 group/btn"
                     >
-                      <MessageCircle size={16} className="group-hover/btn:scale-110 transition-transform" />
+                      <MessageCircle
+                        size={16}
+                        className="group-hover/btn:scale-110 transition-transform"
+                      />
                       Convocar
                     </button>
                     <button
-                      onClick={() => { setSelectedJob(job); setShowResumeUpload(true); }}
+                      onClick={() => {
+                        setSelectedJob(job);
+                        setShowResumeUpload(true);
+                      }}
                       className="flex items-center justify-center gap-2 px-6 py-3 bg-indigo-500/10 hover:bg-indigo-500 text-indigo-500 hover:text-white border border-indigo-500/20 rounded-xl text-xs font-black transition-all active:scale-95 group/btn"
                     >
-                      <Upload size={16} className="group-hover/btn:scale-110 transition-transform" />
+                      <Upload
+                        size={16}
+                        className="group-hover/btn:scale-110 transition-transform"
+                      />
                       Extrair CV
                     </button>
                     <button
@@ -375,7 +420,7 @@ const RecruiterDashboard = () => {
                       <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
                         Candidatos em Destaque
                       </p>
-                      <button 
+                      <button
                         onClick={() => navigate(`/recruiter/jobs/${job.id}`)}
                         className="text-[10px] font-black text-indigo-400 uppercase hover:text-indigo-300 transition-colors"
                       >
@@ -456,16 +501,20 @@ const RecruiterDashboard = () => {
                   Arraste os currículos para triagem automática.
                 </p>
               </div>
-              <button 
-                onClick={() => { setShowResumeUpload(false); setSelectedJob(null); loadJobs(); }}
+              <button
+                onClick={() => {
+                  setShowResumeUpload(false);
+                  setSelectedJob(null);
+                  loadJobs();
+                }}
                 className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors text-slate-400"
               >
                 <X size={24} />
               </button>
             </div>
-            
-            <ResumeUploadZone 
-              jobId={selectedJob.id} 
+
+            <ResumeUploadZone
+              jobId={selectedJob.id}
               onSuccess={() => {
                 // Keep modal open to allow multiple uploads or show success
               }}

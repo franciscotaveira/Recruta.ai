@@ -138,8 +138,6 @@ export async function listWithdraws() {
   return abacateFetch('/v1/withdraw/list');
 }
 
-  priceCents: 2990, // R$29,90
-};
 
 export const CREDIT_PACKAGES = {
   pack10: {

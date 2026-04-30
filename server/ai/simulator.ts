@@ -31,20 +31,35 @@ export interface SimulationEvaluation {
  * Helper to build the system prompt for the Simulated Lead.
  */
 function buildLeadSystemPrompt(scenario: SimulationScenario): string {
-  const roleDesc = scenario.role === 'recruiter' 
-    ? 'um Profissional de RH / Recrutador buscando otimizar seu processo seletivo ou reduzir custos'
-    : 'um Candidato buscando emprego que quer ajuda para melhorar seu currículo e arrumar uma vaga';
+  const roleDesc =
+    scenario.role === 'recruiter'
+      ? 'um Profissional de RH / Recrutador buscando otimizar seu processo seletivo ou reduzir custos'
+      : 'um Candidato buscando emprego que quer ajuda para melhorar seu currículo e arrumar uma vaga';
 
   let moodDesc = '';
-  switch(scenario.mood) {
-    case 'skeptical': moodDesc = 'Você é cético, faz muitas perguntas difíceis e não acredita em promessas fáceis de IA.'; break;
-    case 'interested': moodDesc = 'Você está bastante interessado, mas precisa entender como funciona na prática antes de fechar.'; break;
-    case 'angry': moodDesc = 'Você está frustrado com as ferramentas atuais de mercado e tem pouca paciência.'; break;
-    case 'busy': moodDesc = 'Você está extremamente ocupado, responde com frases curtas e diretas, querendo ir direto ao ponto.'; break;
-    case 'confused': moodDesc = 'Você é leigo em tecnologia, tem muitas dúvidas básicas e tem medo de usar algo novo.'; break;
+  switch (scenario.mood) {
+    case 'skeptical':
+      moodDesc =
+        'Você é cético, faz muitas perguntas difíceis e não acredita em promessas fáceis de IA.';
+      break;
+    case 'interested':
+      moodDesc =
+        'Você está bastante interessado, mas precisa entender como funciona na prática antes de fechar.';
+      break;
+    case 'angry':
+      moodDesc = 'Você está frustrado com as ferramentas atuais de mercado e tem pouca paciência.';
+      break;
+    case 'busy':
+      moodDesc =
+        'Você está extremamente ocupado, responde com frases curtas e diretas, querendo ir direto ao ponto.';
+      break;
+    case 'confused':
+      moodDesc =
+        'Você é leigo em tecnologia, tem muitas dúvidas básicas e tem medo de usar algo novo.';
+      break;
   }
 
-  const objection = scenario.objectionFocus 
+  const objection = scenario.objectionFocus
     ? `\nSua principal objeção/barreira será: "${scenario.objectionFocus}". Traga isso à tona durante a conversa de forma natural.`
     : '';
 
@@ -73,9 +88,9 @@ export async function generateSimulatedResponse(
     throw new Error('GEMINI_API_KEY não configurada');
   }
 
-  const transcript = history.map(msg => 
-    msg.role === 'user' ? `SDR: ${msg.content}` : `Cliente: ${msg.content}`
-  ).join('\n\n');
+  const transcript = history
+    .map((msg) => (msg.role === 'user' ? `SDR: ${msg.content}` : `Cliente: ${msg.content}`))
+    .join('\n\n');
 
   const prompt = `${buildLeadSystemPrompt(scenario)}
 
@@ -89,7 +104,7 @@ ${transcript}`;
     contents: prompt,
     config: {
       temperature: 0.7,
-    }
+    },
   });
 
   if (!response.text) {
@@ -110,9 +125,9 @@ export async function evaluateSimulation(
     throw new Error('GEMINI_API_KEY não configurada');
   }
 
-  const transcript = history.map(msg => 
-    msg.role === 'user' ? `SDR: ${msg.content}` : `Cliente: ${msg.content}`
-  ).join('\n\n');
+  const transcript = history
+    .map((msg) => (msg.role === 'user' ? `SDR: ${msg.content}` : `Cliente: ${msg.content}`))
+    .join('\n\n');
 
   const prompt = `Você é um AI Sales Coach Master avaliando um treinamento de um SDR vendendo o sistema Recruta.AI para este cliente:
 Perfil: ${scenario.role} | Estado Emocional: ${scenario.mood} | Objeção Principal: ${scenario.objectionFocus || 'Nenhuma'}

@@ -10,11 +10,12 @@ if (!supabaseServiceKey) {
   );
 }
 // We use the Service Role Key because this backend bypasses RLS and acts entirely as the root authority.
-export const supabase = (supabaseUrl && supabaseServiceKey) 
-  ? createClient(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    })
-  : null as any;
+export const supabase =
+  supabaseUrl && supabaseServiceKey
+    ? createClient(supabaseUrl, supabaseServiceKey, {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      })
+    : (null as any);

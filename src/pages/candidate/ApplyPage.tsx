@@ -65,10 +65,13 @@ const ApplyPage = () => {
           <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-6">
             <Check size={40} strokeWidth={3} />
           </div>
-          <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-3 tracking-tight">Candidatura Enviada!</h2>
+          <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-3 tracking-tight">
+            Candidatura Enviada!
+          </h2>
           <p className="text-slate-500 dark:text-slate-400 mb-8 font-medium">
-            Obrigado, <span className="font-bold text-slate-700 dark:text-slate-200">{name}</span>! Recebemos seus dados. 
-            Fique atento ao seu WhatsApp, nosso assistente entrará em contato em breve para a próxima etapa.
+            Obrigado, <span className="font-bold text-slate-700 dark:text-slate-200">{name}</span>!
+            Recebemos seus dados. Fique atento ao seu WhatsApp, nosso assistente entrará em contato
+            em breve para a próxima etapa.
           </p>
           <Link
             to="/landing"
@@ -85,9 +88,13 @@ const ApplyPage = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-4 text-center">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Ops! Algo deu errado.</h2>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+            Ops! Algo deu errado.
+          </h2>
           <p className="text-slate-500 mb-6">{error || 'Não foi possível carregar a vaga.'}</p>
-          <Link to="/landing" className="text-purple-600 font-bold hover:underline">Ver outras vagas</Link>
+          <Link to="/landing" className="text-purple-600 font-bold hover:underline">
+            Ver outras vagas
+          </Link>
         </div>
       </div>
     );
@@ -99,18 +106,21 @@ const ApplyPage = () => {
       <div className="absolute top-0 inset-x-0 h-80 bg-gradient-to-b from-purple-600/10 to-transparent pointer-events-none"></div>
 
       <div className="max-w-4xl mx-auto px-4 pt-12 relative z-10">
-        <Link 
-          to="/landing" 
+        <Link
+          to="/landing"
           className="inline-flex items-center gap-1 text-slate-500 hover:text-slate-800 dark:hover:text-white mb-8 group transition-colors text-sm font-bold"
         >
-          <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Voltar
+          <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />{' '}
+          Voltar
         </Link>
 
         <div className="flex flex-col lg:flex-row gap-12">
           {/* Job Info */}
           <div className="flex-1 space-y-6">
             <div>
-              <span className="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 text-[10px] font-black uppercase tracking-widest rounded-full mb-3 inline-block border border-purple-200 dark:border-purple-800">Candidatura Aberta</span>
+              <span className="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 text-[10px] font-black uppercase tracking-widest rounded-full mb-3 inline-block border border-purple-200 dark:border-purple-800">
+                Candidatura Aberta
+              </span>
               <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-none mb-2">
                 {job.title}
               </h1>
@@ -122,17 +132,24 @@ const ApplyPage = () => {
             </div>
 
             <div className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
-              <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest mb-4">Sobre a vaga</h3>
+              <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest mb-4">
+                Sobre a vaga
+              </h3>
               <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed whitespace-pre-wrap">
                 {job.description}
               </p>
             </div>
 
             <div className="space-y-3">
-              <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">Requisitos</h3>
+              <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">
+                Requisitos
+              </h3>
               <div className="flex flex-wrap gap-2">
                 {job.requirements.map((req, i) => (
-                  <span key={i} className="px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-300">
+                  <span
+                    key={i}
+                    className="px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-300"
+                  >
                     {req.text}
                   </span>
                 ))}
@@ -148,14 +165,20 @@ const ApplyPage = () => {
                   <Sparkles size={20} className="text-emerald-600" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-black text-slate-900 dark:text-white leading-tight">Candidatar-se</h2>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Leva menos de 2 minutos</p>
+                  <h2 className="text-lg font-black text-slate-900 dark:text-white leading-tight">
+                    Candidatar-se
+                  </h2>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+                    Leva menos de 2 minutos
+                  </p>
                 </div>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nome Completo</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                    Nome Completo
+                  </label>
                   <input
                     required
                     type="text"
@@ -168,7 +191,9 @@ const ApplyPage = () => {
 
                 <div className="grid grid-cols-1 gap-4">
                   <div className="space-y-1">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">WhatsApp</label>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                      WhatsApp
+                    </label>
                     <input
                       required
                       type="tel"
@@ -181,7 +206,9 @@ const ApplyPage = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email (Opcional)</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                    Email (Opcional)
+                  </label>
                   <input
                     type="email"
                     value={email}
@@ -192,7 +219,9 @@ const ApplyPage = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Resumo Professional / CV</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                    Resumo Professional / CV
+                  </label>
                   <textarea
                     required
                     rows={6}
@@ -203,7 +232,11 @@ const ApplyPage = () => {
                   ></textarea>
                 </div>
 
-                {error && <div className="text-xs text-rose-500 font-bold p-2 bg-rose-50 dark:bg-rose-900/10 rounded-lg">{error}</div>}
+                {error && (
+                  <div className="text-xs text-rose-500 font-bold p-2 bg-rose-50 dark:bg-rose-900/10 rounded-lg">
+                    {error}
+                  </div>
+                )}
 
                 <button
                   disabled={submitting}
@@ -220,7 +253,11 @@ const ApplyPage = () => {
                 </button>
               </form>
               <p className="text-[10px] text-slate-400 text-center mt-6 leading-tight">
-                Ao clicar em enviar, você concorda com nossos <Link to="/termos" className="underline">Termos de Uso</Link> e autoriza o contato via WhatsApp.
+                Ao clicar em enviar, você concorda com nossos{' '}
+                <Link to="/termos" className="underline">
+                  Termos de Uso
+                </Link>{' '}
+                e autoriza o contato via WhatsApp.
               </p>
             </div>
           </div>

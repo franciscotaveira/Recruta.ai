@@ -238,16 +238,28 @@ const WhatsAppSessionsPanel: React.FC<Props> = ({ sessions, onSelectSession }) =
                 </p>
                 <div className="grid grid-cols-3 gap-2">
                   <div className="bg-white dark:bg-slate-800 rounded-lg p-2 text-center border border-slate-100 dark:border-slate-700">
-                    <p className="text-[10px] text-slate-400 uppercase font-black tracking-tighter">Clareza</p>
-                    <p className="text-sm font-black text-blue-600 dark:text-blue-400">{s.communication_performance.clarity}/5</p>
+                    <p className="text-[10px] text-slate-400 uppercase font-black tracking-tighter">
+                      Clareza
+                    </p>
+                    <p className="text-sm font-black text-blue-600 dark:text-blue-400">
+                      {s.communication_performance.clarity}/5
+                    </p>
                   </div>
                   <div className="bg-white dark:bg-slate-800 rounded-lg p-2 text-center border border-slate-100 dark:border-slate-700">
-                    <p className="text-[10px] text-slate-400 uppercase font-black tracking-tighter">Vocabulário</p>
-                    <p className="text-sm font-black text-purple-600 dark:text-purple-400">{s.communication_performance.vocabulary}/5</p>
+                    <p className="text-[10px] text-slate-400 uppercase font-black tracking-tighter">
+                      Vocabulário
+                    </p>
+                    <p className="text-sm font-black text-purple-600 dark:text-purple-400">
+                      {s.communication_performance.vocabulary}/5
+                    </p>
                   </div>
                   <div className="bg-white dark:bg-slate-800 rounded-lg p-2 text-center border border-slate-100 dark:border-slate-700">
-                    <p className="text-[10px] text-slate-400 uppercase font-black tracking-tighter">Objetividade</p>
-                    <p className="text-sm font-black text-emerald-600 dark:text-emerald-400">{s.communication_performance.objectivity}/5</p>
+                    <p className="text-[10px] text-slate-400 uppercase font-black tracking-tighter">
+                      Objetividade
+                    </p>
+                    <p className="text-sm font-black text-emerald-600 dark:text-emerald-400">
+                      {s.communication_performance.objectivity}/5
+                    </p>
                   </div>
                 </div>
               </div>

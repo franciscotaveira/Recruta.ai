@@ -36,15 +36,28 @@ const AdminLayout: React.FC<Props> = ({ children }) => {
       <aside className="w-72 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 p-4 hidden lg:block">
         <div className="mb-8 px-2 flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 shadow-lg">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-6 h-6">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              className="w-6 h-6"
+            >
               <path d="M12 2L12 12L22 12" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12" strokeLinecap="round" />
+              <path
+                d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12"
+                strokeLinecap="round"
+              />
               <path d="M7 12H12" strokeLinecap="round" />
             </svg>
           </div>
           <div>
-            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500">Sovereign Admin</p>
-            <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tighter font-heading">Recrutaria<span className="text-indigo-500">.</span></h1>
+            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500">
+              Sovereign Admin
+            </p>
+            <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tighter font-heading">
+              Recrutaria<span className="text-indigo-500">.</span>
+            </h1>
           </div>
         </div>
 

@@ -12,47 +12,62 @@
 import https from 'https';
 import http from 'http';
 
-const TOKEN = 'EAAdLlW6lFT4BRXZBxZAjSs5SlN9b9qhmS31uut3DPdHxVLgAtatWZBmnkOjVtU2Js3lSdzdnZBKAiZCgegJifZBIXtZBv4aP9hNurvOsRdp2WSQw5bN2LQimLZBVKR8zUN3gV6dgBXHqWk4XERiWc0pCJh2BWz1ZBgUyqnzHqJfZCd0JR6s5rekfcVm3yDqkq9A1djVgZDZD';
-const APP_ID   = '2053430015497534'; // Meta App ID (visible in dashboard URL)
+const TOKEN =
+  'EAAdLlW6lFT4BRXZBxZAjSs5SlN9b9qhmS31uut3DPdHxVLgAtatWZBmnkOjVtU2Js3lSdzdnZBKAiZCgegJifZBIXtZBv4aP9hNurvOsRdp2WSQw5bN2LQimLZBVKR8zUN3gV6dgBXHqWk4XERiWc0pCJh2BWz1ZBgUyqnzHqJfZCd0JR6s5rekfcVm3yDqkq9A1djVgZDZD';
+const APP_ID = '2053430015497534'; // Meta App ID (visible in dashboard URL)
 const PHONE_ID = '853596591180846';
 const VERIFY_TOKEN = 'recruta_ai_v2_654f71da_prod';
 
 function get(url) {
   return new Promise((resolve, reject) => {
     const mod = url.startsWith('https') ? https : http;
-    mod.get(url, r => {
-      let d = '';
-      r.on('data', c => d += c);
-      r.on('end', () => {
-        try { resolve({ status: r.statusCode, body: JSON.parse(d) }); }
-        catch { resolve({ status: r.statusCode, body: d }); }
-      });
-    }).on('error', reject);
+    mod
+      .get(url, (r) => {
+        let d = '';
+        r.on('data', (c) => (d += c));
+        r.on('end', () => {
+          try {
+            resolve({ status: r.statusCode, body: JSON.parse(d) });
+          } catch {
+            resolve({ status: r.statusCode, body: d });
+          }
+        });
+      })
+      .on('error', reject);
   });
 }
 
 function post(hostname, path, payload, token) {
   const body = JSON.stringify(payload);
   return new Promise((resolve) => {
-    const req = https.request({
-      hostname,
-      path,
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(body)
+    const req = https.request(
+      {
+        hostname,
+        path,
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(body),
+        },
+      },
+      (r) => {
+        let d = '';
+        r.on('data', (c) => (d += c));
+        r.on('end', () => {
+          try {
+            resolve({ status: r.statusCode, body: JSON.parse(d) });
+          } catch {
+            resolve({ status: r.statusCode, body: d });
+          }
+        });
       }
-    }, r => {
-      let d = '';
-      r.on('data', c => d += c);
-      r.on('end', () => {
-        try { resolve({ status: r.statusCode, body: JSON.parse(d) }); }
-        catch { resolve({ status: r.statusCode, body: d }); }
-      });
+    );
+    req.on('error', (e) => resolve({ status: 0, error: e.message }));
+    req.setTimeout(10000, () => {
+      req.destroy();
+      resolve({ status: 0, error: 'timeout' });
     });
-    req.on('error', e => resolve({ status: 0, error: e.message }));
-    req.setTimeout(10000, () => { req.destroy(); resolve({ status: 0, error: 'timeout' }); });
     req.write(body);
     req.end();
   });
@@ -76,7 +91,7 @@ let publicUrl = '';
 try {
   const ngrokApi = await get('http://localhost:4040/api/tunnels');
   const tunnels = ngrokApi.body?.tunnels || [];
-  const httpsTunnel = tunnels.find(t => t.proto === 'https');
+  const httpsTunnel = tunnels.find((t) => t.proto === 'https');
   if (!httpsTunnel) throw new Error('Nenhum túnel HTTPS ativo. Inicie ngrok primeiro.');
   publicUrl = httpsTunnel.public_url;
   console.log(`✅ URL pública: ${publicUrl}`);
@@ -92,12 +107,17 @@ console.log(`   Webhook: ${webhookUrl}`);
 
 // ── 3. Registrar webhook na Meta ──────────────────────────────
 console.log('\n📡 [3/4] Registrando webhook na Meta...');
-const subResult = await post('graph.facebook.com', `/v21.0/${APP_ID}/subscriptions`, {
-  object: 'whatsapp_business_account',
-  callback_url: webhookUrl,
-  verify_token: VERIFY_TOKEN,
-  fields: 'messages',
-}, TOKEN);
+const subResult = await post(
+  'graph.facebook.com',
+  `/v21.0/${APP_ID}/subscriptions`,
+  {
+    object: 'whatsapp_business_account',
+    callback_url: webhookUrl,
+    verify_token: VERIFY_TOKEN,
+    fields: 'messages',
+  },
+  TOKEN
+);
 
 if (subResult.status === 200 && subResult.body?.success) {
   console.log('✅ Webhook registrado com sucesso!');
@@ -105,7 +125,9 @@ if (subResult.status === 200 && subResult.body?.success) {
   console.warn('⚠️  Falha ao registrar via subscriptions. Tente manualmente no painel Meta.');
   console.warn(`   Code: ${subResult.body?.error?.code} | ${subResult.body?.error?.message}`);
   console.warn('\n   URL para configurar manualmente:');
-  console.warn('   https://developers.facebook.com/apps/2053430015497534/whatsapp-business/wa-settings/');
+  console.warn(
+    '   https://developers.facebook.com/apps/2053430015497534/whatsapp-business/wa-settings/'
+  );
   console.warn(`   Callback URL: ${webhookUrl}`);
   console.warn(`   Verify Token: ${VERIFY_TOKEN}`);
 }
@@ -120,7 +142,9 @@ console.log(`🔑 Verify Token:    ${VERIFY_TOKEN}`);
 console.log(`📱 Phone ID:        ${PHONE_ID}`);
 console.log('');
 console.log('📋 Se precisar configurar manualmente:');
-console.log('   https://developers.facebook.com/apps/2053430015497534/whatsapp-business/wa-settings/');
+console.log(
+  '   https://developers.facebook.com/apps/2053430015497534/whatsapp-business/wa-settings/'
+);
 console.log('');
 console.log('✅ Sistema pronto para receber respostas de candidatos!');
 console.log('═'.repeat(60));

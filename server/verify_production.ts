@@ -1,4 +1,3 @@
-
 import './env';
 import { supabase } from './storage/supabase';
 import { dual } from './storage/db';
@@ -24,7 +23,7 @@ async function verify() {
     'WHATSAPP_WEBHOOK_VERIFY_TOKEN',
     'WHATSAPP_APP_SECRET',
     'OPENROUTER_API_KEY',
-    'JWT_SECRET'
+    'JWT_SECRET',
   ];
 
   for (const key of required) {

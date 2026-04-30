@@ -7,11 +7,7 @@ import {
 } from '../../services/api';
 import { JobQueue } from '../../lib/JobQueue';
 import { useAuth } from '../../contexts/AuthContext';
-import type {
-  BulkAnalysisErrorItem,
-  BulkAnalysisResultItem,
-  PublicJob,
-} from '../../contracts/api';
+import type { BulkAnalysisErrorItem, BulkAnalysisResultItem, PublicJob } from '../../contracts/api';
 import { resolveBlindCandidateDisplay } from '../../utils/blindCandidate';
 import {
   Upload,
@@ -167,12 +163,16 @@ const BulkAnalysis = () => {
       setResultsSource(null);
     });
     try {
-      const job = await JobQueue.createJob('recruiter.bulk_analyze', { 
-        jobId: selectedJobId, 
-        candidates 
-      }, user?.id);
+      const job = await JobQueue.createJob(
+        'recruiter.bulk_analyze',
+        {
+          jobId: selectedJobId,
+          candidates,
+        },
+        user?.id
+      );
 
-      if (!job) throw new Error("Falha ao iniciar triagem");
+      if (!job) throw new Error('Falha ao iniciar triagem');
 
       // We listen for the result
       const unsubscribe = JobQueue.subscribe((updatedJob) => {
@@ -192,7 +192,6 @@ const BulkAnalysis = () => {
           }
         }
       });
-
     } catch (err: any) {
       setAnalyzeError(err.message || 'Erro ao iniciar análise');
       setAnalyzing(false);
@@ -222,29 +221,33 @@ const BulkAnalysis = () => {
     let ok = 0;
     let fail = 0;
 
-    const jobTitle = jobs.find((j) => j.id === selectedJobId)?.title || "";
-    const companyName = jobs.find((j) => j.id === selectedJobId)?.company || "";
+    const jobTitle = jobs.find((j) => j.id === selectedJobId)?.title || '';
+    const companyName = jobs.find((j) => j.id === selectedJobId)?.company || '';
 
     // We create individual jobs for better tracking of bulk invites
-    const jobPromises = selected.map(c => 
-      JobQueue.createJob('recruiter.invite_candidate', {
-        phone: c.phone || '',
-        name: c.name || '',
-        jobId: selectedJobId,
-        jobTitle,
-        companyName,
-        scenario: 'direct' as const,
-        recruiterId: user?.id || '',
-      }, user?.id)
+    const jobPromises = selected.map((c) =>
+      JobQueue.createJob(
+        'recruiter.invite_candidate',
+        {
+          phone: c.phone || '',
+          name: c.name || '',
+          jobId: selectedJobId,
+          jobTitle,
+          companyName,
+          scenario: 'direct' as const,
+          recruiterId: user?.id || '',
+        },
+        user?.id
+      )
     );
 
     const createdJobs = await Promise.all(jobPromises);
-    ok = createdJobs.filter(j => !!j).length;
+    ok = createdJobs.filter((j) => !!j).length;
     fail = createdJobs.length - ok;
 
     setDispatchResult({ ok, fail });
     setDispatching(false);
-    
+
     // UI Feedback: since these are jobs, we inform the user they are being processed
     if (ok > 0) {
       alert(`${ok} convites enfileirados para disparo via WhatsApp.`);
@@ -255,7 +258,12 @@ const BulkAnalysis = () => {
     <div className="max-w-6xl mx-auto space-y-6 pb-16">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-black text-slate-900 dark:text-white font-heading">Triagem <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-indigo-500">Inteligente</span></h1>
+        <h1 className="text-3xl font-black text-slate-900 dark:text-white font-heading">
+          Triagem{' '}
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-indigo-500">
+            Inteligente
+          </span>
+        </h1>
         <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 font-medium">
           Ranquemanento neural de alta performance com disparo autônomo via WhatsApp.
         </p>
@@ -444,35 +452,58 @@ CV: [cole o texto do currículo aqui]`}
             <div className="lg:col-span-3 s-glass p-6 border-white/5 flex items-center justify-between">
               <div className="flex items-center gap-8">
                 <div className="flex flex-col">
-                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Candidatos</span>
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">
+                    Candidatos
+                  </span>
                   <p className="text-2xl font-black text-white">{results.length}</p>
                 </div>
                 <div className="w-px h-10 bg-white/5" />
                 <div className="flex flex-col">
-                  <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-1">Aprovados</span>
+                  <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-1">
+                    Aprovados
+                  </span>
                   <p className="text-2xl font-black text-emerald-500">
                     {results.filter((r) => r.recommendation === 'entrevistar').length}
                   </p>
                 </div>
                 <div className="w-px h-10 bg-white/5" />
                 <div className="flex flex-col">
-                  <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-1">Potenciais</span>
+                  <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-1">
+                    Potenciais
+                  </span>
                   <p className="text-2xl font-black text-amber-500">
                     {results.filter((r) => r.recommendation === 'talvez').length}
                   </p>
                 </div>
               </div>
               <div className="flex gap-2">
-                <button onClick={() => selectTop(5)} className="px-4 py-2 s-glass border-white/10 text-[10px] font-black uppercase hover:bg-white/10 transition-all">Top 5</button>
-                <button onClick={() => selectTop(10)} className="px-4 py-2 s-glass border-white/10 text-[10px] font-black uppercase hover:bg-white/10 transition-all">Top 10</button>
-                <button onClick={() => selectTop(results.length)} className="px-4 py-2 s-glass border-white/10 text-[10px] font-black uppercase hover:bg-white/10 transition-all">Todos</button>
+                <button
+                  onClick={() => selectTop(5)}
+                  className="px-4 py-2 s-glass border-white/10 text-[10px] font-black uppercase hover:bg-white/10 transition-all"
+                >
+                  Top 5
+                </button>
+                <button
+                  onClick={() => selectTop(10)}
+                  className="px-4 py-2 s-glass border-white/10 text-[10px] font-black uppercase hover:bg-white/10 transition-all"
+                >
+                  Top 10
+                </button>
+                <button
+                  onClick={() => selectTop(results.length)}
+                  className="px-4 py-2 s-glass border-white/10 text-[10px] font-black uppercase hover:bg-white/10 transition-all"
+                >
+                  Todos
+                </button>
               </div>
             </div>
-            
+
             <div className="s-glass p-6 border-indigo-500/20 bg-indigo-500/5 flex flex-col justify-center">
               <div className="flex items-center gap-2 mb-1">
                 <Brain size={14} className="text-indigo-400" />
-                <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">Neural Match Avg</span>
+                <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">
+                  Neural Match Avg
+                </span>
               </div>
               <p className="text-2xl font-black text-white">
                 {Math.round(results.reduce((acc, r) => acc + r.matchScore, 0) / results.length)}%
@@ -503,137 +534,137 @@ CV: [cole o texto do currículo aqui]`}
                     className="flex items-center gap-3 p-4 cursor-pointer"
                     onClick={() => setExpandedIdx(expandedIdx === idx ? null : idx)}
                   >
-                  {/* Rank badge */}
-                  <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black shrink-0 ${
-                      idx === 0
-                        ? 'bg-yellow-400 text-yellow-900'
-                        : idx === 1
-                          ? 'bg-slate-300 text-slate-700'
-                          : idx === 2
-                            ? 'bg-amber-600 text-white'
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
-                    }`}
-                  >
-                    #{idx + 1}
-                  </div>
-
-                  {/* Checkbox */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleSelect(r.profile_id);
-                    }}
-                    className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center shrink-0 transition-colors ${
-                      selectedProfileIds.has(r.profile_id)
-                        ? 'bg-emerald-500 border-emerald-500 text-white'
-                        : 'border-slate-300 dark:border-slate-600'
-                    }`}
-                  >
-                    {selectedProfileIds.has(r.profile_id) && <CheckCircle2 size={14} />}
-                  </button>
-
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="font-bold text-slate-900 dark:text-white text-sm truncate">
-                        {candidate.label}
-                      </p>
-                      {r.blind_candidate?.enabled && (
-                        <span className="text-[10px] px-2 py-0.5 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 rounded-full shrink-0 font-bold uppercase tracking-wide">
-                          Blind
-                        </span>
-                      )}
-                      <span
-                        className={`text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 ${
-                          r.recommendation === 'entrevistar'
-                            ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
-                            : r.recommendation === 'talvez'
-                              ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
-                              : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-                        }`}
-                      >
-                        {r.recommendation === 'entrevistar'
-                          ? '✅ Entrevistar'
-                          : r.recommendation === 'talvez'
-                            ? '⚠️ Talvez'
-                          : '❌ Rejeitar'}
-                      </span>
-                    </div>
-                    {candidate.phone && (
-                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                        {candidate.phone}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Score */}
-                  <div className="text-right shrink-0">
-                    <p
-                      className={`text-xl font-black ${
-                        r.matchScore >= 70
-                          ? 'text-emerald-500'
-                          : r.matchScore >= 40
-                            ? 'text-amber-500'
-                            : 'text-red-500'
+                    {/* Rank badge */}
+                    <div
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black shrink-0 ${
+                        idx === 0
+                          ? 'bg-yellow-400 text-yellow-900'
+                          : idx === 1
+                            ? 'bg-slate-300 text-slate-700'
+                            : idx === 2
+                              ? 'bg-amber-600 text-white'
+                              : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
                       }`}
                     >
-                      {r.matchScore}%
-                    </p>
-                    <p className="text-[10px] text-slate-400">match</p>
-                  </div>
+                      #{idx + 1}
+                    </div>
 
-                  <ChevronDown
-                    size={16}
-                    className={`text-slate-400 shrink-0 transition-transform ${expandedIdx === idx ? 'rotate-180' : ''}`}
-                  />
-                  </div>
+                    {/* Checkbox */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleSelect(r.profile_id);
+                      }}
+                      className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center shrink-0 transition-colors ${
+                        selectedProfileIds.has(r.profile_id)
+                          ? 'bg-emerald-500 border-emerald-500 text-white'
+                          : 'border-slate-300 dark:border-slate-600'
+                      }`}
+                    >
+                      {selectedProfileIds.has(r.profile_id) && <CheckCircle2 size={14} />}
+                    </button>
 
-                {/* Expanded details */}
-                {expandedIdx === idx && (
-                  <div className="px-4 pb-4 pt-0 border-t border-slate-100 dark:border-slate-700 space-y-3">
-                    <p className="text-sm text-slate-600 dark:text-slate-300 italic mt-3">
-                      {r.summary}
-                    </p>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-1">
-                          Pontos Fortes
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="font-bold text-slate-900 dark:text-white text-sm truncate">
+                          {candidate.label}
                         </p>
-                        <ul className="space-y-1">
-                          {(r.strengths || []).map((s, i) => (
-                            <li
-                              key={i}
-                              className="flex items-start gap-1.5 text-xs text-slate-600 dark:text-slate-400"
-                            >
-                              <CheckCircle2
-                                size={12}
-                                className="text-emerald-500 mt-0.5 shrink-0"
-                              />
-                              {s}
-                            </li>
-                          ))}
-                        </ul>
+                        {r.blind_candidate?.enabled && (
+                          <span className="text-[10px] px-2 py-0.5 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 rounded-full shrink-0 font-bold uppercase tracking-wide">
+                            Blind
+                          </span>
+                        )}
+                        <span
+                          className={`text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 ${
+                            r.recommendation === 'entrevistar'
+                              ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
+                              : r.recommendation === 'talvez'
+                                ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
+                                : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                          }`}
+                        >
+                          {r.recommendation === 'entrevistar'
+                            ? '✅ Entrevistar'
+                            : r.recommendation === 'talvez'
+                              ? '⚠️ Talvez'
+                              : '❌ Rejeitar'}
+                        </span>
                       </div>
-                      <div>
-                        <p className="text-xs font-bold text-red-600 dark:text-red-400 uppercase tracking-wider mb-1">
-                          Preocupações
+                      {candidate.phone && (
+                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                          {candidate.phone}
                         </p>
-                        <ul className="space-y-1">
-                          {(r.concerns || []).map((c, i) => (
-                            <li
-                              key={i}
-                              className="flex items-start gap-1.5 text-xs text-slate-600 dark:text-slate-400"
-                            >
-                              <AlertTriangle size={12} className="text-red-500 mt-0.5 shrink-0" />
-                              {c}
-                            </li>
-                          ))}
-                        </ul>
+                      )}
+                    </div>
+
+                    {/* Score */}
+                    <div className="text-right shrink-0">
+                      <p
+                        className={`text-xl font-black ${
+                          r.matchScore >= 70
+                            ? 'text-emerald-500'
+                            : r.matchScore >= 40
+                              ? 'text-amber-500'
+                              : 'text-red-500'
+                        }`}
+                      >
+                        {r.matchScore}%
+                      </p>
+                      <p className="text-[10px] text-slate-400">match</p>
+                    </div>
+
+                    <ChevronDown
+                      size={16}
+                      className={`text-slate-400 shrink-0 transition-transform ${expandedIdx === idx ? 'rotate-180' : ''}`}
+                    />
+                  </div>
+
+                  {/* Expanded details */}
+                  {expandedIdx === idx && (
+                    <div className="px-4 pb-4 pt-0 border-t border-slate-100 dark:border-slate-700 space-y-3">
+                      <p className="text-sm text-slate-600 dark:text-slate-300 italic mt-3">
+                        {r.summary}
+                      </p>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-1">
+                            Pontos Fortes
+                          </p>
+                          <ul className="space-y-1">
+                            {(r.strengths || []).map((s, i) => (
+                              <li
+                                key={i}
+                                className="flex items-start gap-1.5 text-xs text-slate-600 dark:text-slate-400"
+                              >
+                                <CheckCircle2
+                                  size={12}
+                                  className="text-emerald-500 mt-0.5 shrink-0"
+                                />
+                                {s}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-red-600 dark:text-red-400 uppercase tracking-wider mb-1">
+                            Preocupações
+                          </p>
+                          <ul className="space-y-1">
+                            {(r.concerns || []).map((c, i) => (
+                              <li
+                                key={i}
+                                className="flex items-start gap-1.5 text-xs text-slate-600 dark:text-slate-400"
+                              >
+                                <AlertTriangle size={12} className="text-red-500 mt-0.5 shrink-0" />
+                                {c}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
                 </div>
               );
             })}
@@ -682,7 +713,8 @@ CV: [cole o texto do currículo aqui]`}
                 </>
               ) : (
                 <>
-                  <MessageCircle size={16} /> Enviar {selectedProfileIds.size} Convite(s) via WhatsApp
+                  <MessageCircle size={16} /> Enviar {selectedProfileIds.size} Convite(s) via
+                  WhatsApp
                 </>
               )}
             </button>

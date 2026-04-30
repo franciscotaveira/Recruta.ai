@@ -195,18 +195,15 @@ export const TEXT_MESSAGES = {
   DECLINE_REASON_PROMPT:
     'Para registro interno do processo, informe o motivo do declínio.\n\nResponda com o *número*:\n1) Salário\n2) Local de trabalho\n3) Benefícios\n4) Outra vaga aceita\n5) Já empregado\n6) Horário\n7) Requisitos\n8) Tipo de contratação\n9) Outro',
 
-  DECLINE_REASON_PROMPT_BODY:
-    'Para registro do processo, informe o motivo do declínio.',
+  DECLINE_REASON_PROMPT_BODY: 'Para registro do processo, informe o motivo do declínio.',
 
   DECLINE_REASON_PROMPT_BUTTON: 'Menu',
 
   DECLINE_REASON_PROMPT_SECTION: 'Motivos',
 
-  DECLINE_REASON_REMINDER:
-    'Informe o motivo com um número de *1 a 9*.',
+  DECLINE_REASON_REMINDER: 'Informe o motivo com um número de *1 a 9*.',
 
-  DECLINE_REASON_THANK_YOU:
-    'Informação registrada. Obrigado.',
+  DECLINE_REASON_THANK_YOU: 'Informação registrada. Obrigado.',
 
   WELCOME:
     'Olá. Sou o assistente de triagem da Recruta.AI. Vou conduzir as etapas do processo seletivo. Pode responder em áudio ou texto.',

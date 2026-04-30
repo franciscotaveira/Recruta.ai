@@ -113,7 +113,11 @@ function createHarness() {
     if (session) session.questions = JSON.parse(questions);
   }) as typeof wa.updateSessionQuestions;
 
-  wa.addResponse = (async (responseObj: any, id: string, options?: { advanceQuestion?: boolean }) => {
+  wa.addResponse = (async (
+    responseObj: any,
+    id: string,
+    options?: { advanceQuestion?: boolean }
+  ) => {
     const session = sessions.get(id);
     if (!session) return;
     session.responses.push(responseObj);

@@ -93,9 +93,18 @@ const RecruiterLayout: React.FC<LayoutProps> = ({ children }) => {
       >
         <div className="h-16 flex items-center px-6 border-b border-slate-100 dark:border-slate-800">
           <div className="w-9 h-9 bg-indigo-500/10 text-indigo-500 rounded-lg flex items-center justify-center mr-3 border border-indigo-500/20">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-5 h-5">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              className="w-5 h-5"
+            >
               <path d="M12 2L12 12L22 12" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12" strokeLinecap="round" />
+              <path
+                d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12"
+                strokeLinecap="round"
+              />
               <path d="M7 12H12" strokeLinecap="round" />
             </svg>
           </div>

@@ -35,31 +35,34 @@ const WhatsAppInviteModal: React.FC<Props> = ({
     setResult(null);
 
     try {
-      const job = await JobQueue.createJob('recruiter.invite_candidate', {
-        phone: phone.replace(/\D/g, ''),
-        name: name.trim() || '',
-        jobId,
-        recruiterId,
-        jobTitle,
-        companyName,
-        scenario,
-      }, recruiterId);
+      const job = await JobQueue.createJob(
+        'recruiter.invite_candidate',
+        {
+          phone: phone.replace(/\D/g, ''),
+          name: name.trim() || '',
+          jobId,
+          recruiterId,
+          jobTitle,
+          companyName,
+          scenario,
+        },
+        recruiterId
+      );
 
-      if (!job) throw new Error("Falha ao agendar disparo de convite");
+      if (!job) throw new Error('Falha ao agendar disparo de convite');
 
       setResult({
         ok: true,
         msg: `Ação de convite enfileirada! O WhatsApp disparará o convite em instantes.`,
       });
-      
+
       setPhone('');
       setName('');
-      
+
       // Since we don't have the sessionId immediately anymore, we use the jobId as reference or wait
       setTimeout(() => {
         onSuccess?.(job.id);
       }, 1500);
-
     } catch (err: any) {
       setResult({ ok: false, msg: err.message || 'Erro ao enviar convite.' });
     } finally {
@@ -90,7 +93,7 @@ const WhatsAppInviteModal: React.FC<Props> = ({
 
         {/* Body */}
         <div className="p-5 space-y-4">
-            {/* Scenario Selector */}
+          {/* Scenario Selector */}
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"

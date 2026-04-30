@@ -15,7 +15,9 @@ import { processInboundMessage } from '../conversation/flow.js';
 import { wa } from '../storage/db.js';
 import { toCanonicalDigits } from './phone.js';
 
-const PROVIDER = String(process.env.WHATSAPP_PROVIDER || 'meta').trim().toLowerCase();
+const PROVIDER = String(process.env.WHATSAPP_PROVIDER || 'meta')
+  .trim()
+  .toLowerCase();
 const VERIFY_TOKEN = process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN || 'recruta-ai-verify';
 const APP_SECRET = process.env.WHATSAPP_APP_SECRET || '';
 const GATEWAY_WEBHOOK_SECRET = process.env.WHATSAPP_GATEWAY_WEBHOOK_SECRET || '';
@@ -130,8 +132,9 @@ function parseAutomatikInbound(body: any): ParsedInboundEvent[] {
           : typeof source?.body === 'string'
             ? source.body
             : '';
-    const mediaUrl =
-      String(source?.media_url || source?.audio_url || source?.message?.media_url || '').trim();
+    const mediaUrl = String(
+      source?.media_url || source?.audio_url || source?.message?.media_url || ''
+    ).trim();
 
     if ((messageTypeRaw === 'audio' || mediaUrl) && mediaUrl) {
       parsed.push({ from, messageType: 'audio', content: mediaUrl, isAudio: true });

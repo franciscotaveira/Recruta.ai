@@ -29,10 +29,7 @@ function normalizeModelPolicy(value: unknown): AISquadModelPolicy {
     : 'auto';
 }
 
-function findSpecialistByArea(
-  squad: AISquadSettings,
-  area: AISpecialistArea
-): AISpecialist | null {
+function findSpecialistByArea(squad: AISquadSettings, area: AISpecialistArea): AISpecialist | null {
   return squad.experts.find((expert) => expert.area === area) || null;
 }
 

@@ -24,11 +24,10 @@ async function run() {
       await users.verify(id);
       console.log('Usuário demo criado com sucesso!');
     }
-    
+
     console.log('\nCREDENCIAIS DE ACESSO:');
     console.log(`Email: ${email}`);
     console.log(`Senha: ${password}`);
-    
   } catch (err) {
     console.error('Erro ao criar usuário:', err);
   }

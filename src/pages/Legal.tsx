@@ -25,15 +25,16 @@ const Legal: React.FC<LegalProps> = ({ type }) => {
             <h3 className="font-bold text-slate-900 text-lg mb-2">2. Pagamentos e Créditos</h3>
             <p className="text-slate-600">
               Créditos adquiridos por Recrutadores não possuem data de expiração enquanto a conta
-              estiver ativa. O "Diagnóstico de Elite" para Candidatos é um produto digital de entrega
-              imediata, não sendo elegível para reembolso após o processamento da análise pela IA.
+              estiver ativa. O "Diagnóstico de Elite" para Candidatos é um produto digital de
+              entrega imediata, não sendo elegível para reembolso após o processamento da análise
+              pela IA.
             </p>
           </section>
           <section>
             <h3 className="font-bold text-slate-900 text-lg mb-2">3. Uso de IA e Algoritmos</h3>
             <p className="text-slate-600">
-              A plataforma utiliza modelos de linguagem de larga escala (LLM). O Recrutaria garante a
-              auditabilidade dos critérios de triagem (Neural Moat), permitindo que recrutadores
+              A plataforma utiliza modelos de linguagem de larga escala (LLM). O Recrutaria garante
+              a auditabilidade dos critérios de triagem (Neural Moat), permitindo que recrutadores
               entendam os fundamentos de cada score gerado.
             </p>
           </section>

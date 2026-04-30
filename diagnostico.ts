@@ -15,7 +15,9 @@ async function runDiagnostics() {
       process.env.SUPABASE_URL || '',
       process.env.SUPABASE_SERVICE_ROLE_KEY || ''
     );
-    const { data, error } = await supabase.from('jobs').select('count', { count: 'exact', head: true });
+    const { data, error } = await supabase
+      .from('jobs')
+      .select('count', { count: 'exact', head: true });
     if (error) throw error;
     console.log('✅ Supabase: Conectado com sucesso.');
   } catch (err) {
@@ -26,7 +28,7 @@ async function runDiagnostics() {
   console.log('\n[2/3] Verificando Evolution API...');
   try {
     const response = await fetch(`${process.env.EVOLUTION_URL}/instance/fetchInstances`, {
-      headers: { 'apikey': process.env.EVOLUTION_API_KEY || '' }
+      headers: { apikey: process.env.EVOLUTION_API_KEY || '' },
     });
     if (!response.ok) throw new Error(`Status ${response.status}`);
     console.log('✅ Evolution API: Conectada com sucesso.');

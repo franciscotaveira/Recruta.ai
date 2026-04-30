@@ -28,12 +28,12 @@ export async function generateQuestions(
   }
 
   const ragContext = String(options?.ragContext || '').trim();
-  
+
   // Modelos de 2026 (conforme painel do usuário)
   const models = [
     'google/gemini-3-flash-preview',
     'google/gemini-2.5-flash',
-    'google/gemini-2.0-flash-001'
+    'google/gemini-2.0-flash-001',
   ];
 
   for (const model of models) {
@@ -41,10 +41,10 @@ export async function generateQuestions(
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+          Authorization: `Bearer ${OPENROUTER_API_KEY}`,
           'Content-Type': 'application/json',
           'HTTP-Referer': 'https://recrutaria.com.br',
-          'X-Title': 'Recruta.AI'
+          'X-Title': 'Recruta.AI',
         },
         body: JSON.stringify({
           model: model,
@@ -61,7 +61,7 @@ DIRETRIZES DE ENGENHARIA DE RH:
 3. CENÁRIOS DE "STRESS TEST": Para vagas de Vendas/Atendimento, proponha cenários críticos de conflito, objeção de preço ou pressão por metas.
 4. LINGUAGEM DO NEGÓCIO: Se a vaga é Vendas, use termos como "Funil", "Objeção", "Fechamento", "CAC". Se for Suporte, fale de "Empatia", "Resolução" e "SLA".
 5. ZERO TECNÊS: Nunca use termos de TI (stack, deploy, bug) se a vaga for para áreas administrativas, vendas ou operacionais.
-6. PROVOCATIVAS E CURTAS: O candidato deve ser desafiado a pensar rápido. Máximo 2 frases por pergunta.`
+6. PROVOCATIVAS E CURTAS: O candidato deve ser desafiado a pensar rápido. Máximo 2 frases por pergunta.`,
             },
             {
               role: 'user',
@@ -83,16 +83,16 @@ Retorne APENAS um JSON no formato:
   "questions": [
     { "text": "texto da pergunta", "category": "behavioral|technical|motivation|experience" }
   ]
-}`
-            }
+}`,
+            },
           ],
-          response_format: { type: 'json_object' }
-        })
+          response_format: { type: 'json_object' },
+        }),
       });
 
       const data = await response.json();
       const text = data.choices?.[0]?.message?.content;
-      
+
       if (text) {
         const parsed = JSON.parse(text) as { questions: GeneratedQuestion[] };
         if (parsed.questions && parsed.questions.length > 0) {

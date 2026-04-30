@@ -1,5 +1,12 @@
 import { supabase } from '../storage/supabase.js';
-import { AISpecialist, AISpecialistArea, AISquadGovernance, AISquadModelPolicy, AISquadSettings, AISquadSummary } from './ai-squad.types.js';
+import {
+  AISpecialist,
+  AISpecialistArea,
+  AISquadGovernance,
+  AISquadModelPolicy,
+  AISquadSettings,
+  AISquadSummary,
+} from './ai-squad.types.js';
 
 const DEFAULT_GOVERNANCE: AISquadGovernance = {
   consentRequired: true,
@@ -108,35 +115,31 @@ export async function updateAISquad(
     // 1. Update Specialists if present
     if (patch.experts) {
       for (const expert of patch.experts) {
-        const { error } = await supabase
-          .from('ai_specialists')
-          .upsert({
-            id: expert.id,
-            name: expert.name,
-            area: expert.area,
-            objective: expert.objective,
-            key_metric: expert.keyMetric,
-            enabled: expert.enabled,
-            human_review_required: expert.humanReviewRequired,
-            model_policy: expert.modelPolicy,
-            sla_minutes: expert.slaMinutes,
-            owner: expert.owner,
-            updated_at: new Date().toISOString(),
-          });
+        const { error } = await supabase.from('ai_specialists').upsert({
+          id: expert.id,
+          name: expert.name,
+          area: expert.area,
+          objective: expert.objective,
+          key_metric: expert.keyMetric,
+          enabled: expert.enabled,
+          human_review_required: expert.humanReviewRequired,
+          model_policy: expert.modelPolicy,
+          sla_minutes: expert.slaMinutes,
+          owner: expert.owner,
+          updated_at: new Date().toISOString(),
+        });
         if (error) throw error;
       }
     }
 
     // 2. Update Governance if present
     if (patch.governance) {
-      const { error } = await supabase
-        .from('system_settings')
-        .upsert({
-          key: 'ai_governance',
-          value: patch.governance,
-          updated_at: new Date().toISOString(),
-          updated_by: actorId,
-        });
+      const { error } = await supabase.from('system_settings').upsert({
+        key: 'ai_governance',
+        value: patch.governance,
+        updated_at: new Date().toISOString(),
+        updated_by: actorId,
+      });
       if (error) throw error;
     }
 

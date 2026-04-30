@@ -71,7 +71,6 @@ export async function analyzeCandidate(
     governanceNotes?: string[];
   }
 ): Promise<CandidateAnalysis> {
-
   const qaText = questionsAndAnswers
     .map((qa, i) => `P${i + 1}: ${qa.question}\nR: ${qa.transcription}`)
     .join('\n\n---\n\n');

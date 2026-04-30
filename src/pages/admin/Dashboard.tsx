@@ -77,7 +77,13 @@ const AdminDashboard: React.FC = () => {
   const [ragSettings, setRagSettings] = useState<AdminAIRagSettings | null>(null);
 
   const adminSection = useMemo<
-    'overview' | 'analytics' | 'ai-control' | 'ai-squad' | 'ai-rag' | 'ai-observability' | 'ai-governance'
+    | 'overview'
+    | 'analytics'
+    | 'ai-control'
+    | 'ai-squad'
+    | 'ai-rag'
+    | 'ai-observability'
+    | 'ai-governance'
   >(() => {
     if (location.pathname.startsWith('/admin/analytics')) return 'analytics';
     if (location.pathname.startsWith('/admin/ai-control')) return 'ai-control';
@@ -101,11 +107,11 @@ const AdminDashboard: React.FC = () => {
     try {
       const [overviewData, squadRes] = await Promise.all([
         getAdminOverview(),
-        supabase.from('ai_specialists').select('*').order('area')
+        supabase.from('ai_specialists').select('*').order('area'),
       ]);
 
       const squadData: AdminAISquad = {
-        experts: (squadRes.data || []).map(row => ({
+        experts: (squadRes.data || []).map((row) => ({
           id: row.id,
           name: row.name,
           area: row.area as AdminAISpecialistArea,
@@ -116,17 +122,17 @@ const AdminDashboard: React.FC = () => {
           modelPolicy: row.model_policy as AdminAISpecialist['modelPolicy'],
           slaMinutes: row.sla_minutes,
           owner: row.owner,
-          updatedAt: row.updated_at
+          updatedAt: row.updated_at,
         })),
         governance: overviewData.aiSquadSummary?.governance || {
-           consentRequired: true,
-           blindScreeningEnabled: true,
-           humanInTheLoopRequired: true,
-           biasAuditCadenceDays: 30,
-           maxParallelSessions: 200,
+          consentRequired: true,
+          blindScreeningEnabled: true,
+          humanInTheLoopRequired: true,
+          biasAuditCadenceDays: 30,
+          maxParallelSessions: 200,
         },
         updatedAt: new Date().toISOString(),
-        updatedBy: null
+        updatedBy: null,
       };
 
       setOverview(overviewData);
@@ -242,10 +248,14 @@ const AdminDashboard: React.FC = () => {
             <Shield size={12} /> Sovereign Command Tower
           </div>
           <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white font-heading">
-            Painel <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-amber-500 font-black">Gestor</span>
+            Painel{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-amber-500 font-black">
+              Gestor
+            </span>
           </h1>
           <p className="text-slate-400 text-sm font-medium flex items-center gap-2">
-            <Activity size={14} className="text-red-500 animate-pulse" /> Operação Global v2.0 · {overview?.generatedAt ? new Date(overview.generatedAt).toLocaleTimeString() : '--:--'}
+            <Activity size={14} className="text-red-500 animate-pulse" /> Operação Global v2.0 ·{' '}
+            {overview?.generatedAt ? new Date(overview.generatedAt).toLocaleTimeString() : '--:--'}
           </p>
         </div>
 
@@ -290,25 +300,59 @@ const AdminDashboard: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
         {[
           { label: 'Usuários', value: overview?.users.total, icon: Users, color: 'text-blue-400' },
-          { label: 'Vagas Ativas', value: overview?.jobs.active, icon: Workflow, color: 'text-indigo-400' },
-          { label: 'Match Rate', value: `${overview?.triage.completionRate}%`, icon: Activity, color: 'text-emerald-400' },
-          { label: 'Receita', value: money(overview?.revenue.paidRevenueCents || 0), icon: BarChart3, color: 'text-amber-400' },
-          { label: 'Squad Ativo', value: `${overview?.aiSquadSummary?.enabledExperts}/${overview?.aiSquadSummary?.totalExperts}`, icon: Bot, color: 'text-purple-400' },
-          { label: 'RAG Hit', value: `${Math.round((ragDiagnostics?.cacheHitRate || 0) * 100)}%`, icon: BrainCircuit, color: 'text-pink-400' },
+          {
+            label: 'Vagas Ativas',
+            value: overview?.jobs.active,
+            icon: Workflow,
+            color: 'text-indigo-400',
+          },
+          {
+            label: 'Match Rate',
+            value: `${overview?.triage.completionRate}%`,
+            icon: Activity,
+            color: 'text-emerald-400',
+          },
+          {
+            label: 'Receita',
+            value: money(overview?.revenue.paidRevenueCents || 0),
+            icon: BarChart3,
+            color: 'text-amber-400',
+          },
+          {
+            label: 'Squad Ativo',
+            value: `${overview?.aiSquadSummary?.enabledExperts}/${overview?.aiSquadSummary?.totalExperts}`,
+            icon: Bot,
+            color: 'text-purple-400',
+          },
+          {
+            label: 'RAG Hit',
+            value: `${Math.round((ragDiagnostics?.cacheHitRate || 0) * 100)}%`,
+            icon: BrainCircuit,
+            color: 'text-pink-400',
+          },
         ].map((kpi, idx) => (
-          <div key={idx} className="s-glass p-5 border-white/5 group hover:border-white/10 transition-all">
+          <div
+            key={idx}
+            className="s-glass p-5 border-white/5 group hover:border-white/10 transition-all"
+          >
             <div className="flex items-center justify-between mb-3">
               <kpi.icon size={16} className={`${kpi.color} opacity-80`} />
               <div className="w-1.5 h-1.5 rounded-full bg-slate-800" />
             </div>
-            <p className="text-2xl font-black text-white group-hover:scale-105 transition-transform origin-left">{kpi.value || 0}</p>
-            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1.5">{kpi.label}</p>
+            <p className="text-2xl font-black text-white group-hover:scale-105 transition-transform origin-left">
+              {kpi.value || 0}
+            </p>
+            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1.5">
+              {kpi.label}
+            </p>
           </div>
         ))}
       </div>
 
       {(showAnalytics || showControl) && (
-        <div className={`grid gap-6 ${showAnalytics && showControl ? 'xl:grid-cols-3' : 'grid-cols-1'}`}>
+        <div
+          className={`grid gap-6 ${showAnalytics && showControl ? 'xl:grid-cols-3' : 'grid-cols-1'}`}
+        >
           {showAnalytics && (
             <div className={`${showControl ? 'xl:col-span-2 ' : ''} s-glass p-8`}>
               <div className="flex items-center gap-3 mb-8">
@@ -352,11 +396,15 @@ const AdminDashboard: React.FC = () => {
                   <div className="p-4 bg-indigo-500/5 rounded-2xl border border-indigo-500/10 flex justify-around">
                     <div className="text-center">
                       <p className="text-[8px] font-black text-slate-500 uppercase">Avg Match</p>
-                      <p className="text-sm font-black text-white">{overview?.triage.avgMatchScore ?? '—'}</p>
+                      <p className="text-sm font-black text-white">
+                        {overview?.triage.avgMatchScore ?? '—'}
+                      </p>
                     </div>
                     <div className="text-center">
                       <p className="text-[8px] font-black text-slate-500 uppercase">Decline</p>
-                      <p className="text-sm font-black text-red-400">{overview?.triage.declineRate ?? 0}%</p>
+                      <p className="text-sm font-black text-red-400">
+                        {overview?.triage.declineRate ?? 0}%
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -380,7 +428,10 @@ const AdminDashboard: React.FC = () => {
                     { label: 'Deep Dive Engine', key: 'deepDiveEnabled', icon: BrainCircuit },
                     { label: 'Smart Fallback', key: 'textFallbackEnabled', icon: Workflow },
                   ].map((toggle) => (
-                    <label key={toggle.key} className="flex items-center justify-between p-4 s-glass border-white/5 cursor-pointer hover:border-white/10 transition-all">
+                    <label
+                      key={toggle.key}
+                      className="flex items-center justify-between p-4 s-glass border-white/5 cursor-pointer hover:border-white/10 transition-all"
+                    >
                       <div className="flex items-center gap-3">
                         <toggle.icon size={14} className="text-slate-500" />
                         <span className="text-slate-300 font-bold">{toggle.label}</span>
@@ -396,20 +447,28 @@ const AdminDashboard: React.FC = () => {
 
                   <div className="space-y-4 pt-4 border-t border-white/5">
                     <label className="block">
-                      <span className="block text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">Max Audio Payload (Bytes)</span>
+                      <span className="block text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">
+                        Max Audio Payload (Bytes)
+                      </span>
                       <input
                         type="number"
                         value={control.maxAudioBytes}
-                        onChange={(e) => setControl({ ...control, maxAudioBytes: Number(e.target.value) })}
+                        onChange={(e) =>
+                          setControl({ ...control, maxAudioBytes: Number(e.target.value) })
+                        }
                         className="w-full px-4 py-3 s-glass bg-slate-950 border-white/5 text-slate-200 text-xs focus:ring-2 focus:ring-indigo-500/30 outline-none"
                       />
                     </label>
 
                     <label className="block">
-                      <span className="block text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">Policy Master</span>
+                      <span className="block text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">
+                        Policy Master
+                      </span>
                       <select
                         value={control.modelPolicy}
-                        onChange={(e) => setControl({ ...control, modelPolicy: e.target.value as any })}
+                        onChange={(e) =>
+                          setControl({ ...control, modelPolicy: e.target.value as any })
+                        }
                         className="w-full px-4 py-3 s-glass bg-slate-950 border-white/5 text-slate-200 text-xs focus:ring-2 focus:ring-indigo-500/30 outline-none"
                       >
                         <option value="auto">Automatic (Dynamic)</option>
@@ -436,7 +495,7 @@ const AdminDashboard: React.FC = () => {
       {showRag && (
         <div className="s-glass p-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-pink-500/5 rounded-full -mr-32 -mt-32 blur-[100px]" />
-          
+
           <div className="flex items-center justify-between gap-3 mb-8">
             <div className="flex items-center gap-3">
               <div className="p-2.5 bg-pink-500/10 rounded-xl">
@@ -458,12 +517,25 @@ const AdminDashboard: React.FC = () => {
               {[
                 { label: 'Corpus Size', value: ragDiagnostics.corpusSize, icon: Database },
                 { label: 'Cache Entries', value: ragDiagnostics.cacheEntries, icon: Workflow },
-                { label: 'Efficiency', value: `${Math.round(ragDiagnostics.cacheHitRate * 100)}%`, icon: Activity },
-                { label: 'Neural Signature', value: ragDiagnostics.corpusSignature.substring(0, 12) + '...', icon: ShieldCheck, mono: true },
+                {
+                  label: 'Efficiency',
+                  value: `${Math.round(ragDiagnostics.cacheHitRate * 100)}%`,
+                  icon: Activity,
+                },
+                {
+                  label: 'Neural Signature',
+                  value: ragDiagnostics.corpusSignature.substring(0, 12) + '...',
+                  icon: ShieldCheck,
+                  mono: true,
+                },
               ].map((stat, i) => (
                 <div key={i} className="p-5 s-glass border-white/5">
-                  <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">{stat.label}</p>
-                  <p className={`text-xl font-black text-white ${stat.mono ? 'font-mono' : ''}`}>{stat.value}</p>
+                  <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">
+                    {stat.label}
+                  </p>
+                  <p className={`text-xl font-black text-white ${stat.mono ? 'font-mono' : ''}`}>
+                    {stat.value}
+                  </p>
                 </div>
               ))}
             </div>
@@ -476,16 +548,26 @@ const AdminDashboard: React.FC = () => {
                 { label: 'Citations', key: 'includeCitations', type: 'toggle' },
                 { label: 'Top-K', key: 'topK', type: 'number', min: 1, max: 10 },
                 { label: 'Min Score', key: 'minScore', type: 'number', min: 0, max: 20 },
-                { label: 'Context Limit', key: 'maxContextChars', type: 'number', min: 300, max: 5000 },
+                {
+                  label: 'Context Limit',
+                  key: 'maxContextChars',
+                  type: 'number',
+                  min: 300,
+                  max: 5000,
+                },
                 { label: 'Cache TTL', key: 'cacheTtlSeconds', type: 'number', min: 30, max: 3600 },
               ].map((field) => (
                 <div key={field.key} className="p-4 s-glass border-white/5">
-                  <span className="block text-[8px] font-black text-slate-500 uppercase tracking-widest mb-2">{field.label}</span>
+                  <span className="block text-[8px] font-black text-slate-500 uppercase tracking-widest mb-2">
+                    {field.label}
+                  </span>
                   {field.type === 'toggle' ? (
                     <input
                       type="checkbox"
                       checked={(ragSettings as any)[field.key]}
-                      onChange={(e) => setRagSettings({ ...ragSettings, [field.key]: e.target.checked })}
+                      onChange={(e) =>
+                        setRagSettings({ ...ragSettings, [field.key]: e.target.checked })
+                      }
                       className="w-4 h-4 rounded border-white/10 bg-slate-900 text-pink-500 focus:ring-0"
                     />
                   ) : (
@@ -494,7 +576,9 @@ const AdminDashboard: React.FC = () => {
                       min={field.min}
                       max={field.max}
                       value={(ragSettings as any)[field.key]}
-                      onChange={(e) => setRagSettings({ ...ragSettings, [field.key]: Number(e.target.value) })}
+                      onChange={(e) =>
+                        setRagSettings({ ...ragSettings, [field.key]: Number(e.target.value) })
+                      }
                       className="w-full bg-transparent border-none text-white font-black text-sm p-0 focus:ring-0"
                     />
                   )}
@@ -508,7 +592,7 @@ const AdminDashboard: React.FC = () => {
       {showSquad && (
         <div className="s-glass p-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/5 rounded-full -mr-40 -mt-40 blur-[120px]" />
-          
+
           <div className="flex items-center justify-between gap-3 mb-8">
             <div className="flex items-center gap-3">
               <div className="p-2.5 bg-emerald-500/10 rounded-xl">
@@ -749,7 +833,9 @@ const AdminDashboard: React.FC = () => {
         <div className="space-y-6">
           <div className="flex items-center gap-2">
             <Activity size={20} className="text-purple-600" />
-            <h2 className="text-xl font-black text-slate-900 dark:text-white">Observabilidade do Kernel</h2>
+            <h2 className="text-xl font-black text-slate-900 dark:text-white">
+              Observabilidade do Kernel
+            </h2>
           </div>
           <AuditFeed />
         </div>

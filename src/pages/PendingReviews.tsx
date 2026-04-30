@@ -1,5 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Clock, CheckCircle, XCircle, FileText, PlayCircle, Loader2, Volume2, Check } from 'lucide-react';
+import {
+  Clock,
+  CheckCircle,
+  XCircle,
+  FileText,
+  PlayCircle,
+  Loader2,
+  Volume2,
+  Check,
+} from 'lucide-react';
 import {
   getAudioBlob,
   getReviewQueue,
@@ -59,20 +68,23 @@ const PendingReviews = () => {
   ) {
     setUpdatingIds((prev) => new Set([...prev, sessionId]));
     try {
-      const job = await JobQueue.createJob('recruiter.update_review_status', {
-        sessionId,
-        recommendation,
-        state
-      }, user?.id);
+      const job = await JobQueue.createJob(
+        'recruiter.update_review_status',
+        {
+          sessionId,
+          recommendation,
+          state,
+        },
+        user?.id
+      );
 
-      if (!job) throw new Error("Falha ao criar ação de revisão");
+      if (!job) throw new Error('Falha ao criar ação de revisão');
 
       // We don't necessarily reload immediately, the JobQueue will process it.
       // But for this UI, we can optimistic update or just reload after a delay.
       setTimeout(() => {
         load();
       }, 1000);
-      
     } catch (err: any) {
       setError(`Falha ao atualizar sessão: ${err.message}`);
     } finally {
@@ -99,7 +111,7 @@ const PendingReviews = () => {
       }),
     [rows]
   );
-// ... existing play/audio logic ...
+  // ... existing play/audio logic ...
   async function handlePlay(audioId: string) {
     try {
       setPlayingAudioId(audioId);
@@ -190,23 +202,33 @@ const PendingReviews = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-6">
                   <div className="bg-slate-50/50 p-4 rounded-xl border border-slate-100">
-                    <span className="block text-[10px] font-black uppercase text-slate-400 mb-2 tracking-widest">IA Insight</span>
+                    <span className="block text-[10px] font-black uppercase text-slate-400 mb-2 tracking-widest">
+                      IA Insight
+                    </span>
                     <span className="font-bold text-slate-700 leading-tight">
-                      {candidate.item.analysis.summary || 'Triagem aguardando consolidação da análise.'}
+                      {candidate.item.analysis.summary ||
+                        'Triagem aguardando consolidação da análise.'}
                     </span>
                   </div>
                   <div className="bg-slate-50/50 p-4 rounded-xl border border-slate-100">
-                    <span className="block text-[10px] font-black uppercase text-slate-400 mb-2 tracking-widest">Interação</span>
+                    <span className="block text-[10px] font-black uppercase text-slate-400 mb-2 tracking-widest">
+                      Interação
+                    </span>
                     <span className="font-bold text-slate-700">
-                      {candidate.totalAudios} mensagens de voz • confiança {candidate.item.analysis.confidence.score}/100
+                      {candidate.totalAudios} mensagens de voz • confiança{' '}
+                      {candidate.item.analysis.confidence.score}/100
                     </span>
                   </div>
                 </div>
 
                 {candidate.transcription && (
                   <div className="mb-6 p-4 rounded-xl border border-slate-200 bg-slate-50/30 italic text-slate-600 relative group">
-                    <div className="absolute -top-3 left-3 px-2 bg-white border border-slate-200 rounded text-[10px] font-bold text-slate-400">Transcrição</div>
-                    <p className="text-sm leading-relaxed">&ldquo;{candidate.transcription}&rdquo;</p>
+                    <div className="absolute -top-3 left-3 px-2 bg-white border border-slate-200 rounded text-[10px] font-bold text-slate-400">
+                      Transcrição
+                    </div>
+                    <p className="text-sm leading-relaxed">
+                      &ldquo;{candidate.transcription}&rdquo;
+                    </p>
                   </div>
                 )}
 
@@ -266,7 +288,9 @@ const PendingReviews = () => {
               <Check className="text-emerald-500" size={32} />
             </div>
             <h3 className="text-xl font-black text-slate-900 mb-2">Tudo em dia!</h3>
-            <p className="text-slate-500 font-medium max-w-xs mx-auto">Não há áudios pendentes para revisão no momento.</p>
+            <p className="text-slate-500 font-medium max-w-xs mx-auto">
+              Não há áudios pendentes para revisão no momento.
+            </p>
           </div>
         )}
       </div>

@@ -46,7 +46,11 @@ const RecruiterAnalytics = () => {
   }
 
   const totalApplications = useMemo(
-    () => Object.values(jobApps || {}).reduce((sum, applications) => sum + (Array.isArray(applications) ? applications.length : 0), 0),
+    () =>
+      Object.values(jobApps || {}).reduce(
+        (sum, applications) => sum + (Array.isArray(applications) ? applications.length : 0),
+        0
+      ),
     [jobApps]
   );
   const avgMatchScore = useMemo(() => {
@@ -89,7 +93,9 @@ const RecruiterAnalytics = () => {
               <BriefcaseIcon size={18} className="text-blue-600" />
             </div>
           </div>
-          <p className="text-3xl font-black text-slate-900 dark:text-white">{(jobs || []).length}</p>
+          <p className="text-3xl font-black text-slate-900 dark:text-white">
+            {(jobs || []).length}
+          </p>
           <div className="flex items-center gap-1 mt-2 text-xs text-emerald-600 dark:text-emerald-400 font-bold">
             <ArrowUpRight size={12} />
             {jobs.filter((j) => j.is_active).length} publicadas
@@ -160,10 +166,13 @@ const RecruiterAnalytics = () => {
           {jobs.length === 0 ? (
             <p className="text-sm text-slate-500 text-center py-8">Nenhuma vaga ainda.</p>
           ) : (
-             <div className="space-y-3">
+            <div className="space-y-3">
               {(Array.isArray(jobs) ? jobs : []).map((job) => {
                 const count = (jobApps && jobApps[job.id])?.length || 0;
-                const maxCount = Math.max(...Object.values(jobApps || {}).map((a) => (Array.isArray(a) ? a.length : 0)), 1);
+                const maxCount = Math.max(
+                  ...Object.values(jobApps || {}).map((a) => (Array.isArray(a) ? a.length : 0)),
+                  1
+                );
                 const pct = Math.round((count / maxCount) * 100);
                 return (
                   <div key={job.id}>

@@ -20,11 +20,7 @@ interface ErrorStateProps {
   retryLabel?: string;
 }
 
-export function ErrorState({
-  message,
-  onRetry,
-  retryLabel = 'Tentar novamente',
-}: ErrorStateProps) {
+export function ErrorState({ message, onRetry, retryLabel = 'Tentar novamente' }: ErrorStateProps) {
   return (
     <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-red-700 dark:border-red-800 dark:bg-red-900/10 dark:text-red-300">
       <div className="flex items-start gap-3">

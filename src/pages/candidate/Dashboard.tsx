@@ -112,7 +112,7 @@ const CandidateDashboard = () => {
   return (
     <div className="max-w-7xl mx-auto space-y-12 pb-16 animate-fade-in-up px-4 md:px-0">
       <ApprovalWidget />
-      
+
       {/* Visual background decor - Advanced Gradient */}
       <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_20%_20%,rgba(99,102,241,0.08),transparent_40%),radial-gradient(circle_at_80%_80%,rgba(16,185,129,0.05),transparent_40%)]" />
 
@@ -159,16 +159,20 @@ const CandidateDashboard = () => {
             Sua carreira impulsionada por inteligência artificial soberana.
           </p>
         </div>
-        
+
         {/* Quick Stats for Candidate */}
         <div className="flex gap-4">
           <div className="s-glass p-5 min-w-[140px] text-center border-white/5">
             <p className="text-2xl font-black text-white">{appliedJobs.size}</p>
-            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">Candidaturas</p>
+            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">
+              Candidaturas
+            </p>
           </div>
           <div className="s-glass p-5 min-w-[140px] text-center border-white/5">
             <p className="text-2xl font-black text-emerald-400">{analysis?.score || '--'}</p>
-            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">IA Match Avg</p>
+            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">
+              IA Match Avg
+            </p>
           </div>
         </div>
       </div>
@@ -182,14 +186,18 @@ const CandidateDashboard = () => {
       {/* 1. CV Upload + Analysis */}
       <div className="s-glass p-8 relative overflow-hidden group">
         <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/10 rounded-full -mr-40 -mt-40 blur-[100px]" />
-        
+
         <div className="flex items-center gap-4 mb-8">
           <div className="p-4 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-xl shadow-indigo-500/20">
             <FileText size={24} className="text-white" />
           </div>
           <div>
-            <h2 className="text-2xl font-black text-slate-900 dark:text-white font-heading">Seu Currículo Master</h2>
-            <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest mt-1">Otimização AI-Driven</p>
+            <h2 className="text-2xl font-black text-slate-900 dark:text-white font-heading">
+              Seu Currículo Master
+            </h2>
+            <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest mt-1">
+              Otimização AI-Driven
+            </p>
           </div>
         </div>
 
@@ -207,7 +215,9 @@ const CandidateDashboard = () => {
 
         <div className="mt-8 flex flex-col md:flex-row gap-8 md:items-center">
           <div className="flex-1">
-            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Input de Voz</p>
+            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">
+              Input de Voz
+            </p>
             <div className="inline-block">
               <AudioInput maxDurationSec={120} onTranscribe={handleAudioTranscribe} />
             </div>
@@ -226,17 +236,23 @@ const CandidateDashboard = () => {
                 className="group relative flex flex-col items-center gap-1 px-10 py-5 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-white rounded-2xl font-black text-sm transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl shadow-emerald-500/20"
               >
                 <div className="flex items-center gap-3">
-                  {paying ? <Loader2 size={20} className="animate-spin" /> : <CreditCard size={20} />}
+                  {paying ? (
+                    <Loader2 size={20} className="animate-spin" />
+                  ) : (
+                    <CreditCard size={20} />
+                  )}
                   Desbloquear Diagnóstico IA
                 </div>
-                <span className="text-[10px] opacity-80 font-bold uppercase tracking-widest">Apenas R$ 29,90 (Elite Advisor)</span>
+                <span className="text-[10px] opacity-80 font-bold uppercase tracking-widest">
+                  Apenas R$ 29,90 (Elite Advisor)
+                </span>
               </button>
             ) : (
               <IntentButton
                 actionId="candidate.analyze_cv"
-                payload={{ 
-                  cv_id: profile?.id || 'default_profile', 
-                  target_role: profile?.target_role || 'Developer' 
+                payload={{
+                  cv_id: profile?.id || 'default_profile',
+                  target_role: profile?.target_role || 'Developer',
                 }}
                 onSuccess={() => refresh()}
                 className="s-btn-primary px-10 py-5 shadow-2xl shadow-indigo-500/20"
@@ -276,49 +292,99 @@ const CandidateDashboard = () => {
               <div className="flex flex-col items-center text-center p-8 s-glass border-white/5">
                 <div className="relative w-32 h-32">
                   <svg className="w-32 h-32 -rotate-90" viewBox="0 0 36 36">
-                    <circle cx="18" cy="18" r="16" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/5" />
-                    <circle 
-                      cx="18" cy="18" r="16" fill="none" stroke="currentColor" strokeWidth="2" 
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="16"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      className="text-white/5"
+                    />
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="16"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
                       strokeDasharray={`${analysis.score}, 100`}
                       strokeLinecap="round"
                       className={`transition-all duration-1000 ease-out ${
-                        analysis.score >= 70 ? 'text-emerald-500' : analysis.score >= 40 ? 'text-amber-500' : 'text-red-500'
+                        analysis.score >= 70
+                          ? 'text-emerald-500'
+                          : analysis.score >= 40
+                            ? 'text-amber-500'
+                            : 'text-red-500'
                       }`}
                     />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-4xl font-black text-white leading-none">{analysis.score}</span>
-                    <span className="text-[8px] font-black tracking-widest text-slate-500 uppercase mt-2">IA Index</span>
+                    <span className="text-4xl font-black text-white leading-none">
+                      {analysis.score}
+                    </span>
+                    <span className="text-[8px] font-black tracking-widest text-slate-500 uppercase mt-2">
+                      IA Index
+                    </span>
                   </div>
                 </div>
                 <div className="mt-6">
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2">Avaliação</p>
-                  <p className={`text-sm font-black uppercase tracking-wider ${analysis.score >= 70 ? 'text-emerald-400' : 'text-amber-400'}`}>
-                    {analysis.score >= 70 ? 'Elite Tier' : analysis.score >= 40 ? 'Mid Range' : 'Low Match'}
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2">
+                    Avaliação
+                  </p>
+                  <p
+                    className={`text-sm font-black uppercase tracking-wider ${analysis.score >= 70 ? 'text-emerald-400' : 'text-amber-400'}`}
+                  >
+                    {analysis.score >= 70
+                      ? 'Elite Tier'
+                      : analysis.score >= 40
+                        ? 'Mid Range'
+                        : 'Low Match'}
                   </p>
                 </div>
               </div>
 
               <div className="md:col-span-2 space-y-8">
                 <div>
-                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Análise por Pilares</p>
+                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">
+                    Análise por Pilares
+                  </p>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {[
-                      { label: 'Clareza', val: analysis.breakdown?.clarity, color: 'text-blue-400' },
-                      { label: 'Evidência', val: analysis.breakdown?.evidence, color: 'text-purple-400' },
+                      {
+                        label: 'Clareza',
+                        val: analysis.breakdown?.clarity,
+                        color: 'text-blue-400',
+                      },
+                      {
+                        label: 'Evidência',
+                        val: analysis.breakdown?.evidence,
+                        color: 'text-purple-400',
+                      },
                       { label: 'Foco', val: analysis.breakdown?.focus, color: 'text-emerald-400' },
-                      { label: 'Atualização', val: analysis.breakdown?.freshness, color: 'text-amber-400' },
+                      {
+                        label: 'Atualização',
+                        val: analysis.breakdown?.freshness,
+                        color: 'text-amber-400',
+                      },
                     ].map((p, i) => (
-                      <div key={i} className="s-glass p-4 border-white/5 flex flex-col items-center">
+                      <div
+                        key={i}
+                        className="s-glass p-4 border-white/5 flex flex-col items-center"
+                      >
                         <span className={`text-xl font-black ${p.color}`}>{p.val}%</span>
-                        <span className="text-[8px] font-black text-slate-500 uppercase tracking-wider mt-1">{p.label}</span>
+                        <span className="text-[8px] font-black text-slate-500 uppercase tracking-wider mt-1">
+                          {p.label}
+                        </span>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 <div>
-                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Estratégia de Rationale</p>
+                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">
+                    Estratégia de Rationale
+                  </p>
                   <div className="p-6 bg-white/5 rounded-3xl border-l-4 border-indigo-500 shadow-inner">
                     <p className="text-sm text-slate-300 leading-relaxed font-medium">
                       {analysis.reasoning}
@@ -328,10 +394,15 @@ const CandidateDashboard = () => {
 
                 {analysis.attention_points?.length > 0 && (
                   <div>
-                    <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-4">Pontos de Atenção</p>
+                    <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-4">
+                      Pontos de Atenção
+                    </p>
                     <div className="grid gap-3">
                       {analysis.attention_points.map((ap: string, i: number) => (
-                        <div key={i} className="flex items-center gap-3 p-3 bg-amber-500/5 border border-amber-500/10 rounded-xl">
+                        <div
+                          key={i}
+                          className="flex items-center gap-3 p-3 bg-amber-500/5 border border-amber-500/10 rounded-xl"
+                        >
                           <AlertTriangle size={14} className="text-amber-500 shrink-0" />
                           <p className="text-[11px] text-amber-200/70 font-bold">{ap}</p>
                         </div>
@@ -342,12 +413,17 @@ const CandidateDashboard = () => {
 
                 {analysis.suggestions?.length > 0 && (
                   <div>
-                    <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-4">Optimization Roadmap</p>
+                    <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-4">
+                      Optimization Roadmap
+                    </p>
                     <div className="grid gap-4">
                       {analysis.suggestions.map((s: string, i: number) => (
-                        <div key={i} className="flex items-center gap-4 p-4 s-glass border-white/5 s-glass-hover">
+                        <div
+                          key={i}
+                          className="flex items-center gap-4 p-4 s-glass border-white/5 s-glass-hover"
+                        >
                           <div className="w-6 h-6 rounded-lg bg-indigo-500/10 flex items-center justify-center shrink-0">
-                            <span className="text-[10px] font-black text-indigo-400">{i+1}</span>
+                            <span className="text-[10px] font-black text-indigo-400">{i + 1}</span>
                           </div>
                           <p className="text-xs text-slate-400 font-bold">{s}</p>
                         </div>
@@ -370,7 +446,9 @@ const CandidateDashboard = () => {
             </div>
             <div>
               <h2 className="text-2xl font-black text-white font-heading">Oportunidades Abertas</h2>
-              <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest mt-1">Soberania em Recrutamento</p>
+              <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest mt-1">
+                Soberania em Recrutamento
+              </p>
             </div>
           </div>
         </div>
@@ -396,15 +474,25 @@ const CandidateDashboard = () => {
                         <h3 className="text-xl font-black text-white group-hover/card:text-indigo-400 transition-colors leading-tight">
                           {job.title}
                         </h3>
-                        <span className={`s-badge ${isApplied ? 's-badge-success' : 's-badge-info'}`}>
+                        <span
+                          className={`s-badge ${isApplied ? 's-badge-success' : 's-badge-info'}`}
+                        >
                           {isApplied ? 'Aplicado' : 'Open'}
                         </span>
                       </div>
-                      
+
                       <div className="flex flex-wrap gap-4 text-[11px] font-black text-slate-500">
-                        <div className="flex items-center gap-1.5"><Building2 size={14} className="text-indigo-500" /> {job.company}</div>
-                        <div className="flex items-center gap-1.5"><MapPin size={14} className="text-emerald-500" /> {job.location}</div>
-                        {job.salary_range && <div className="flex items-center gap-1.5"><DollarSign size={14} className="text-amber-500" /> {job.salary_range}</div>}
+                        <div className="flex items-center gap-1.5">
+                          <Building2 size={14} className="text-indigo-500" /> {job.company}
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <MapPin size={14} className="text-emerald-500" /> {job.location}
+                        </div>
+                        {job.salary_range && (
+                          <div className="flex items-center gap-1.5">
+                            <DollarSign size={14} className="text-amber-500" /> {job.salary_range}
+                          </div>
+                        )}
                       </div>
 
                       <p className="text-sm text-slate-400 line-clamp-3 leading-relaxed">

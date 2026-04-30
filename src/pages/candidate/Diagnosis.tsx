@@ -76,20 +76,32 @@ const DiagnosisPage = () => {
             <Sparkles size={12} /> Strategic Analysis v2.0
           </div>
           <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white font-heading">
-            Diagnóstico de <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-indigo-500">Elite</span>
+            Diagnóstico de{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-indigo-500">
+              Elite
+            </span>
           </h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">
-            Relatório neural gerado em {new Date().toLocaleDateString('pt-BR')} às {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+            Relatório neural gerado em {new Date().toLocaleDateString('pt-BR')} às{' '}
+            {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
           </p>
         </div>
-        
+
         {hasScore && (
           <div className="s-glass p-6 border-purple-500/20 shadow-2xl shadow-purple-500/5 flex flex-col items-center min-w-[180px]">
-            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Score Global</span>
+            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">
+              Score Global
+            </span>
             <div className="flex items-baseline gap-1">
-              <span className={`text-5xl font-black ${
-                profile.scp_score >= 80 ? 'text-emerald-500' : profile.scp_score >= 50 ? 'text-amber-500' : 'text-red-500'
-              }`}>
+              <span
+                className={`text-5xl font-black ${
+                  profile.scp_score >= 80
+                    ? 'text-emerald-500'
+                    : profile.scp_score >= 50
+                      ? 'text-amber-500'
+                      : 'text-red-500'
+                }`}
+              >
                 {profile.scp_score}
               </span>
               <span className="text-sm font-black text-slate-600">/100</span>
@@ -101,22 +113,16 @@ const DiagnosisPage = () => {
       {!hasScore ? (
         <div className="s-glass p-20 text-center border-dashed border-white/10">
           <Zap size={48} className="mx-auto text-slate-700 mb-6" />
-          <h2 className="text-2xl font-black text-white mb-3 font-heading">
-            Diagnóstico Pendente
-          </h2>
+          <h2 className="text-2xl font-black text-white mb-3 font-heading">Diagnóstico Pendente</h2>
           <p className="text-slate-500 mb-10 max-w-sm mx-auto font-medium">
             Sua trilha de elite ainda não foi processada. Desbloqueie o poder da IA Soberana agora.
           </p>
-          <Link
-            to="/candidate"
-            className="s-btn-primary px-10 py-4 shadow-xl shadow-indigo-500/20"
-          >
+          <Link to="/candidate" className="s-btn-primary px-10 py-4 shadow-xl shadow-indigo-500/20">
             Iniciar Análise Estratégica
           </Link>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          
           {/* Main Column */}
           <div className="lg:col-span-2 space-y-10">
             {/* Executive Summary */}
@@ -133,18 +139,25 @@ const DiagnosisPage = () => {
             {/* Pillars Detail */}
             <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {pillars.map((pillar) => (
-                <div
-                  key={pillar.id}
-                  className="s-glass p-6 s-glass-hover group transition-all"
-                >
+                <div key={pillar.id} className="s-glass p-6 s-glass-hover group transition-all">
                   <div className="flex justify-between items-start mb-6">
                     <div>
-                      <h3 className="font-black text-white group-hover:text-indigo-400 transition-colors">{pillar.label}</h3>
-                      <p className="text-[10px] text-slate-500 font-bold uppercase mt-1 tracking-wider">{pillar.desc}</p>
+                      <h3 className="font-black text-white group-hover:text-indigo-400 transition-colors">
+                        {pillar.label}
+                      </h3>
+                      <p className="text-[10px] text-slate-500 font-bold uppercase mt-1 tracking-wider">
+                        {pillar.desc}
+                      </p>
                     </div>
-                    <span className={`text-2xl font-black ${
-                      pillar.score >= 80 ? 'text-emerald-500' : pillar.score >= 50 ? 'text-amber-500' : 'text-red-500'
-                    }`}>
+                    <span
+                      className={`text-2xl font-black ${
+                        pillar.score >= 80
+                          ? 'text-emerald-500'
+                          : pillar.score >= 50
+                            ? 'text-amber-500'
+                            : 'text-red-500'
+                      }`}
+                    >
                       {pillar.score}%
                     </span>
                   </div>
@@ -171,11 +184,11 @@ const DiagnosisPage = () => {
                   {profile.attention_points.map((pt: string, idx: number) => (
                     <li key={idx} className="flex items-start gap-4 group/item">
                       <div className="w-6 h-6 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0 group-hover/item:bg-amber-500 transition-colors">
-                        <span className="text-[10px] font-black text-amber-500 group-hover/item:text-white">{idx + 1}</span>
+                        <span className="text-[10px] font-black text-amber-500 group-hover/item:text-white">
+                          {idx + 1}
+                        </span>
                       </div>
-                      <span className="text-xs text-slate-300 leading-relaxed font-bold">
-                        {pt}
-                      </span>
+                      <span className="text-xs text-slate-300 leading-relaxed font-bold">{pt}</span>
                     </li>
                   ))}
                 </ul>
@@ -192,11 +205,11 @@ const DiagnosisPage = () => {
                   {profile.ai_suggestions.map((s: string, idx: number) => (
                     <li key={idx} className="flex items-start gap-4 group/item">
                       <div className="w-6 h-6 rounded-lg bg-indigo-500/10 flex items-center justify-center shrink-0 group-hover/item:bg-indigo-500 transition-colors">
-                        <span className="text-[10px] font-black text-indigo-400 group-hover/item:text-white">{idx + 1}</span>
+                        <span className="text-[10px] font-black text-indigo-400 group-hover/item:text-white">
+                          {idx + 1}
+                        </span>
                       </div>
-                      <span className="text-xs text-slate-300 leading-relaxed font-bold">
-                        {s}
-                      </span>
+                      <span className="text-xs text-slate-300 leading-relaxed font-bold">{s}</span>
                     </li>
                   ))}
                 </ul>
@@ -206,7 +219,9 @@ const DiagnosisPage = () => {
             {/* Premium CTA */}
             <section className="s-glass p-8 bg-indigo-600/10 border-indigo-500/20 text-center">
               <Zap size={32} className="mx-auto text-indigo-400 mb-4" />
-              <h3 className="text-sm font-black text-white uppercase tracking-widest mb-2">Relatório Completo</h3>
+              <h3 className="text-sm font-black text-white uppercase tracking-widest mb-2">
+                Relatório Completo
+              </h3>
               <p className="text-[10px] text-slate-500 font-bold mb-6">
                 Baixe o PDF estratégico para apresentar em entrevistas de elite.
               </p>
@@ -215,7 +230,6 @@ const DiagnosisPage = () => {
               </button>
             </section>
           </div>
-
         </div>
       )}
     </div>

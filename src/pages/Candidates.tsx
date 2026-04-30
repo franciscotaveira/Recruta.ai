@@ -25,22 +25,20 @@ const Candidates = () => {
     }
   };
 
-  const filtered = candidates.filter(
-    (c) => {
-      const candidate = resolveBlindCandidateDisplay({
-        candidateName: c.name,
-        candidatePhone: c.phone,
-        blindCandidate: c.blind_candidate,
-      });
-      const query = searchTerm.toLowerCase();
+  const filtered = candidates.filter((c) => {
+    const candidate = resolveBlindCandidateDisplay({
+      candidateName: c.name,
+      candidatePhone: c.phone,
+      blindCandidate: c.blind_candidate,
+    });
+    const query = searchTerm.toLowerCase();
 
-      return (
-        candidate.label.toLowerCase().includes(query) ||
-        c.target_role?.toLowerCase().includes(query) ||
-        c.location?.toLowerCase().includes(query)
-      );
-    }
-  );
+    return (
+      candidate.label.toLowerCase().includes(query) ||
+      c.target_role?.toLowerCase().includes(query) ||
+      c.location?.toLowerCase().includes(query)
+    );
+  });
 
   if (loading) {
     return (
@@ -170,24 +168,35 @@ const Candidates = () => {
                         <div className="space-y-2 max-h-40 overflow-y-auto pr-2">
                           {c.history && c.history.length > 0 ? (
                             c.history.map((h) => (
-                              <div key={h.id} className="flex justify-between items-center text-xs p-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700">
+                              <div
+                                key={h.id}
+                                className="flex justify-between items-center text-xs p-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700"
+                              >
                                 <div className="font-bold text-slate-700 dark:text-slate-200">
                                   {h.public_jobs?.title || 'Vaga desconhecida'}
                                 </div>
                                 <div className="flex gap-2 items-center">
-                                  <span className="text-emerald-600 font-black">{h.match_score}%</span>
-                                  <span className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase ${
-                                    h.status === 'approved' ? 'bg-green-100 text-green-700' :
-                                    h.status === 'rejected' ? 'bg-rose-100 text-rose-700' :
-                                    'bg-blue-100 text-blue-700'
-                                  }`}>
+                                  <span className="text-emerald-600 font-black">
+                                    {h.match_score}%
+                                  </span>
+                                  <span
+                                    className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase ${
+                                      h.status === 'approved'
+                                        ? 'bg-green-100 text-green-700'
+                                        : h.status === 'rejected'
+                                          ? 'bg-rose-100 text-rose-700'
+                                          : 'bg-blue-100 text-blue-700'
+                                    }`}
+                                  >
                                     {h.status || 'novo'}
                                   </span>
                                 </div>
                               </div>
                             ))
                           ) : (
-                            <p className="text-xs text-slate-400">Nenhuma candidatura registrada.</p>
+                            <p className="text-xs text-slate-400">
+                              Nenhuma candidatura registrada.
+                            </p>
                           )}
                         </div>
                       </div>
@@ -198,7 +207,9 @@ const Candidates = () => {
                         <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                           Currículo {c.blind_candidate?.enabled ? 'Anonimizado' : 'Completo'}
                         </p>
-                        <button className="text-[10px] font-black text-purple-600 uppercase">Copiar Texto</button>
+                        <button className="text-[10px] font-black text-purple-600 uppercase">
+                          Copiar Texto
+                        </button>
                       </div>
                       <pre className="text-xs text-slate-600 dark:text-slate-300 whitespace-pre-wrap font-sans max-h-40 overflow-y-auto">
                         {c.cv_master ? c.cv_master.substring(0, 5000) : 'Currículo não disponível.'}

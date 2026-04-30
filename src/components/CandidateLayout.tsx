@@ -90,15 +90,28 @@ const CandidateLayout: React.FC<LayoutProps> = ({ children }) => {
         {/* Logo */}
         <div className="p-6 flex items-center gap-3 border-b border-slate-100 dark:border-[#1F1F35]">
           <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center border border-indigo-500/20 shadow-lg shadow-indigo-900/10">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-6 h-6">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              className="w-6 h-6"
+            >
               <path d="M12 2L12 12L22 12" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12" strokeLinecap="round" />
+              <path
+                d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12"
+                strokeLinecap="round"
+              />
               <path d="M7 12H12" strokeLinecap="round" />
             </svg>
           </div>
           <div>
-            <h1 className="font-black text-slate-900 dark:text-white tracking-tighter font-heading text-lg">Recrutaria<span className="text-indigo-500">.</span></h1>
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Engenharia de Carreira</p>
+            <h1 className="font-black text-slate-900 dark:text-white tracking-tighter font-heading text-lg">
+              Recrutaria<span className="text-indigo-500">.</span>
+            </h1>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+              Engenharia de Carreira
+            </p>
           </div>
           <button onClick={toggleSidebar} className="lg:hidden ml-auto text-slate-400">
             <X size={24} />

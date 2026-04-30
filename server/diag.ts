@@ -16,7 +16,7 @@ async function diag() {
     'ABACATE_WEBHOOK_SECRET',
     'GEMINI_API_KEY',
     'SUPABASE_URL',
-    'SUPABASE_SERVICE_ROLE_KEY'
+    'SUPABASE_SERVICE_ROLE_KEY',
   ];
 
   console.log('📋 [1/4] Verificando Variáveis .env:');
@@ -46,7 +46,12 @@ async function diag() {
   // 3. IA (Inference path)
   console.log('\n🤖 [3/4] Verificando IA (Inference path):');
   try {
-    const response = await smartAI('diag', 'Você é um sistema de diagnóstico. Responda apenas "PONG".', 'PING', false);
+    const response = await smartAI(
+      'diag',
+      'Você é um sistema de diagnóstico. Responda apenas "PONG".',
+      'PING',
+      false
+    );
     if (response.trim().toUpperCase() === 'PONG') {
       console.log('   ✅ Inference path: OK');
     } else {
@@ -65,15 +70,17 @@ async function diag() {
     try {
       const url = `https://graph.facebook.com/v21.0/${phoneId}`;
       const res = await fetch(url, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await res.json() as any;
-      
+      const data = (await res.json()) as any;
+
       if (res.ok) {
         console.log(`   ✅ Meta API: OK (Nome: ${data.verified_name || 'Configurado'})`);
         console.log(`   📱 ID Telefone: ${data.id}`);
       } else {
-        console.log(`   ❌ Erro Meta API (${res.status}): ${data.error?.message || 'Token inválido'}`);
+        console.log(
+          `   ❌ Erro Meta API (${res.status}): ${data.error?.message || 'Token inválido'}`
+        );
       }
     } catch (err: any) {
       console.log(`   ❌ Erro Conexão Meta: ${err.message}`);
@@ -85,7 +92,7 @@ async function diag() {
   console.log('\n✨ Diagnóstico concluído.');
 }
 
-diag().catch(err => {
+diag().catch((err) => {
   console.error('\n💥 Erro Fatal no Diagnóstico:', err);
   process.exit(1);
 });

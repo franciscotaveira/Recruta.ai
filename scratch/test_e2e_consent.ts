@@ -21,27 +21,45 @@ global.fetch = async (url: any, options: any) => {
     return {
       ok: true,
       json: async () => ({ messages: [{ id: 'wa_mock_' + Math.random().toString(36).slice(2) }] }),
-      text: async () => '{"ok": true}'
+      text: async () => '{"ok": true}',
     } as any;
   }
   return originalFetch(url, options);
 };
 
 async function runTest() {
-  const TEST_PHONE = "554999999" + Math.floor(Math.random() * 1000);
+  const TEST_PHONE = '554999999' + Math.floor(Math.random() * 1000);
   const jobId = randomUUID();
   const recruiterId = randomUUID();
 
-  console.log("--- STARTING E2E TEST: CONSENT FLOW ---");
+  console.log('--- STARTING E2E TEST: CONSENT FLOW ---');
 
   try {
     // 1. Create Job
-    await dual.createJob(jobId, recruiterId, "Desenvolvedor Backend Teste", "MCT LTDA", "Remoto", "Vaga para testar o fluxo de consentimento.", "[]", "R$ 10k", "CLT", "Remoto");
+    await dual.createJob(
+      jobId,
+      recruiterId,
+      'Desenvolvedor Backend Teste',
+      'MCT LTDA',
+      'Remoto',
+      'Vaga para testar o fluxo de consentimento.',
+      '[]',
+      'R$ 10k',
+      'CLT',
+      'Remoto'
+    );
     console.log(`[DB] Job created: ${jobId}`);
 
     // 2. Create Session (simulating invite)
     const sessionId = randomUUID();
-    await wa.createSession(sessionId, TEST_PHONE, "Candidato Teste", jobId, recruiterId, JSON.stringify([]));
+    await wa.createSession(
+      sessionId,
+      TEST_PHONE,
+      'Candidato Teste',
+      jobId,
+      recruiterId,
+      JSON.stringify([])
+    );
     await wa.updateSessionState('invited', sessionId);
     console.log(`[DB] Session created: ${sessionId} (State: invited)`);
 
@@ -50,7 +68,7 @@ async function runTest() {
     const r1 = await processInboundMessage(TEST_PHONE, 'text', 'SIM');
     const s1 = await wa.getSession(sessionId);
     console.log(`[RESULT] Next State in DB: ${s1.state}`);
-    if (s1.state !== 'consent_pending') throw new Error("Expected state to be consent_pending");
+    if (s1.state !== 'consent_pending') throw new Error('Expected state to be consent_pending');
 
     // STEP 2: Candidate asks something else (should get reminder)
     console.log("\n>>> STEP 2: Candidate says 'Como funciona?'");
@@ -63,17 +81,17 @@ async function runTest() {
     await processInboundMessage(TEST_PHONE, 'text', 'CONCORDO');
     const s3 = await wa.getSession(sessionId);
     console.log(`[RESULT] Next State in DB: ${s3.state}`);
-    if (s3.state !== 'mic_check') throw new Error("Expected state to be mic_check");
+    if (s3.state !== 'mic_check') throw new Error('Expected state to be mic_check');
 
-    console.log("\n--- TEST COMPLETED SUCCESSFULLY ---");
+    console.log('\n--- TEST COMPLETED SUCCESSFULLY ---');
   } catch (err) {
-    console.error("\n--- TEST FAILED ---");
+    console.error('\n--- TEST FAILED ---');
     console.error(err);
   } finally {
     // Cleanup
     await supabase.from('whatsapp_sessions').delete().eq('candidate_phone', TEST_PHONE);
     await supabase.from('public_jobs').delete().eq('id', jobId);
-    console.log("\n[CLEANUP] Test data removed.");
+    console.log('\n[CLEANUP] Test data removed.');
   }
 }
 

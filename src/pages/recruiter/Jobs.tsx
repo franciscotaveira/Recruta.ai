@@ -33,14 +33,18 @@ const RecruiterJobs = () => {
   }, [deferredSearchTerm, jobs]);
 
   const totalApplications = useMemo(
-    () => Object.values(applicationsByJob).reduce((sum, applications) => sum + applications.length, 0),
+    () =>
+      Object.values(applicationsByJob).reduce((sum, applications) => sum + applications.length, 0),
     [applicationsByJob]
   );
 
   const averageMatchByJob = (applications: JobApplication[]) => {
     if (applications.length === 0) return null;
 
-    const total = applications.reduce((sum, application) => sum + (application.match_score || 0), 0);
+    const total = applications.reduce(
+      (sum, application) => sum + (application.match_score || 0),
+      0
+    );
     return Math.round(total / applications.length);
   };
 
@@ -77,7 +81,8 @@ const RecruiterJobs = () => {
           />
         </div>
         <div className="flex items-center rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-bold text-slate-600 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300">
-          {(jobs || []).length} vaga{(jobs || []).length !== 1 ? 's' : ''} • {totalApplications} candidatura
+          {(jobs || []).length} vaga{(jobs || []).length !== 1 ? 's' : ''} • {totalApplications}{' '}
+          candidatura
           {totalApplications !== 1 ? 's' : ''}
         </div>
       </div>
@@ -89,7 +94,9 @@ const RecruiterJobs = () => {
         <ErrorState message={error} onRetry={refresh} />
       ) : filteredJobs.length === 0 ? (
         <EmptyState
-          title={(jobs || []).length === 0 ? 'Nenhuma vaga criada ainda' : 'Nenhuma vaga encontrada'}
+          title={
+            (jobs || []).length === 0 ? 'Nenhuma vaga criada ainda' : 'Nenhuma vaga encontrada'
+          }
           description={
             (jobs || []).length === 0
               ? 'As vagas do recrutador ainda não foram carregadas. Crie a primeira vaga no dashboard para iniciar o funil.'

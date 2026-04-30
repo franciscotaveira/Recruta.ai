@@ -4,7 +4,13 @@ import { supabase } from './supabase';
 import { postJob, bulkAnalyzeCVs, sendWhatsAppInvite } from '../services/api';
 import { updateSessionStatus } from '../services/whatsappApi';
 
-export type JobStatus = 'pending_approval' | 'queued' | 'processing' | 'completed' | 'failed' | 'cancelled';
+export type JobStatus =
+  | 'pending_approval'
+  | 'queued'
+  | 'processing'
+  | 'completed'
+  | 'failed'
+  | 'cancelled';
 
 export interface Job<T = any> {
   id: string;
@@ -25,12 +31,12 @@ export class JobQueue {
   static subscribe(listener: (job: Job) => void) {
     this.listeners.push(listener);
     return () => {
-      this.listeners = this.listeners.filter(l => l !== listener);
+      this.listeners = this.listeners.filter((l) => l !== listener);
     };
   }
 
   private static notify(job: Job) {
-    this.listeners.forEach(l => l(job));
+    this.listeners.forEach((l) => l(job));
   }
 
   static initRealtime() {
@@ -38,33 +44,29 @@ export class JobQueue {
 
     supabase
       .channel('system_jobs_changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'system_jobs' },
-        (payload) => {
-          const row = payload.new as any || payload.old as any;
-          if (!row) return;
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'system_jobs' }, (payload) => {
+        const row = (payload.new as any) || (payload.old as any);
+        if (!row) return;
 
-          const job: Job = {
-            id: row.id,
-            actionId: row.action_id as ActionId,
-            payload: row.payload,
-            status: row.status as JobStatus,
-            createdAt: new Date(row.created_at),
-            updatedAt: new Date(row.updated_at),
-            result: row.result,
-            error: row.error,
-            userId: row.user_id
-          };
+        const job: Job = {
+          id: row.id,
+          actionId: row.action_id as ActionId,
+          payload: row.payload,
+          status: row.status as JobStatus,
+          createdAt: new Date(row.created_at),
+          updatedAt: new Date(row.updated_at),
+          result: row.result,
+          error: row.error,
+          userId: row.user_id,
+        };
 
-          this.notify(job);
+        this.notify(job);
 
-          // Worker logic: if status changed to queued, start processing
-          if (payload.eventType === 'UPDATE' && row.status === 'queued') {
-            this.executeJob(job.id);
-          }
+        // Worker logic: if status changed to queued, start processing
+        if (payload.eventType === 'UPDATE' && row.status === 'queued') {
+          this.executeJob(job.id);
         }
-      )
+      })
       .subscribe();
 
     this.isSubscribed = true;
@@ -81,7 +83,7 @@ export class JobQueue {
       return [];
     }
 
-    return data.map(row => ({
+    return data.map((row) => ({
       id: row.id,
       actionId: row.action_id as ActionId,
       payload: row.payload,
@@ -90,13 +92,17 @@ export class JobQueue {
       updatedAt: new Date(row.updated_at),
       result: row.result,
       error: row.error,
-      userId: row.user_id
+      userId: row.user_id,
     }));
   }
 
-  static async createJob<T extends ActionId>(actionId: T, payload: any, userId?: string): Promise<Job | null> {
+  static async createJob<T extends ActionId>(
+    actionId: T,
+    payload: any,
+    userId?: string
+  ): Promise<Job | null> {
     const validation = ActionManager.validateIntent(actionId, payload);
-    
+
     if (!validation.valid) {
       console.error(`Job validation failed for ${actionId}:`, validation.errors);
       return null;
@@ -112,7 +118,7 @@ export class JobQueue {
         action_id: actionId,
         payload: validation.payload,
         status: initialStatus,
-        risk_level: validation.metadata.risk_level
+        risk_level: validation.metadata.risk_level,
       })
       .select('*')
       .single();
@@ -129,7 +135,7 @@ export class JobQueue {
       status: data.status as JobStatus,
       createdAt: new Date(data.created_at),
       updatedAt: new Date(data.updated_at),
-      userId: data.user_id
+      userId: data.user_id,
     };
 
     this.notify(job);
@@ -161,28 +167,39 @@ export class JobQueue {
     return !error;
   }
 
-  static async logEvent(event: string, level: 'info' | 'warn' | 'error' = 'info', details: any = {}, userId?: string, correlationId?: string) {
+  static async logEvent(
+    event: string,
+    level: 'info' | 'warn' | 'error' = 'info',
+    details: any = {},
+    userId?: string,
+    correlationId?: string
+  ) {
     try {
       await supabase.from('system_logs').insert({
         event,
         level,
         details,
         user_id: userId,
-        correlation_id: correlationId
+        correlation_id: correlationId,
       });
     } catch (err) {
       console.error('Failed to log system event:', err);
     }
   }
 
-  private static async updateJobStatus(id: string, status: JobStatus, result?: any, error?: string) {
+  private static async updateJobStatus(
+    id: string,
+    status: JobStatus,
+    result?: any,
+    error?: string
+  ) {
     const { data: job } = await supabase
       .from('system_jobs')
-      .update({ 
-        status, 
-        result, 
+      .update({
+        status,
+        result,
         error,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
       .eq('id', id)
       .select()
@@ -191,7 +208,13 @@ export class JobQueue {
     if (job) {
       this.notify(job);
       // Log the transition
-      await this.logEvent(`job.${status}`, status === 'failed' ? 'error' : 'info', { jobId: id, actionId: job.action_id }, job.user_id, id);
+      await this.logEvent(
+        `job.${status}`,
+        status === 'failed' ? 'error' : 'info',
+        { jobId: id, actionId: job.action_id },
+        job.user_id,
+        id
+      );
     }
   }
 
@@ -203,7 +226,12 @@ export class JobQueue {
     return baseCost;
   }
 
-  private static async checkAndDeductCredits(userId: string, actionId: ActionId, payload: any, jobId: string): Promise<boolean> {
+  private static async checkAndDeductCredits(
+    userId: string,
+    actionId: ActionId,
+    payload: any,
+    jobId: string
+  ): Promise<boolean> {
     const metadata = ActionManager.getMetadata(actionId);
     if (!metadata || !metadata.estimated_cost) return true;
 
@@ -225,10 +253,17 @@ export class JobQueue {
     const newBalance = wallet.balance - cost;
     const { error: updateError } = await supabase
       .from('recruiter_wallet')
-      .update({ 
+      .update({
         balance: newBalance,
-        total_spent: (await supabase.from('recruiter_wallet').select('total_spent').eq('recruiter_id', userId).single()).data?.total_spent + cost,
-        updated_at: new Date().toISOString()
+        total_spent:
+          (
+            await supabase
+              .from('recruiter_wallet')
+              .select('total_spent')
+              .eq('recruiter_id', userId)
+              .single()
+          ).data?.total_spent + cost,
+        updated_at: new Date().toISOString(),
       })
       .eq('recruiter_id', userId);
 
@@ -240,7 +275,7 @@ export class JobQueue {
       type: 'spend',
       amount: cost,
       balance_after: newBalance,
-      description: `Job: ${actionId} (${jobId})`
+      description: `Job: ${actionId} (${jobId})`,
     });
 
     await this.logEvent('credits.deducted', 'info', { cost, actionId, jobId }, userId, jobId);
@@ -255,7 +290,7 @@ export class JobQueue {
       .eq('enabled', true)
       .limit(1)
       .maybeSingle();
-    
+
     return data;
   }
 
@@ -265,7 +300,12 @@ export class JobQueue {
 
     // Credit Check & Guard
     if (job.user_id) {
-      const hasCredits = await this.checkAndDeductCredits(job.user_id, job.action_id as ActionId, job.payload, id);
+      const hasCredits = await this.checkAndDeductCredits(
+        job.user_id,
+        job.action_id as ActionId,
+        job.payload,
+        id
+      );
       if (!hasCredits) {
         await this.updateJobStatus(id, 'failed', null, 'Saldo de créditos insuficiente');
         return;
@@ -274,26 +314,34 @@ export class JobQueue {
 
     await this.updateJobStatus(id, 'processing');
 
-
     try {
       // REAL INTEGRATION for analyze_cv
       if (job.action_id === 'candidate.analyze_cv') {
         const specialist = await this.getSpecialistConfig('triage');
         const model = specialist?.model_policy || 'auto';
 
-        await this.logEvent('ai.routing', 'info', { specialistId: specialist?.id, model }, job.user_id, id);
+        await this.logEvent(
+          'ai.routing',
+          'info',
+          { specialistId: specialist?.id, model },
+          job.user_id,
+          id
+        );
 
-        const response = await fetch('https://csuxlpodmqmycxfkmuxv.functions.supabase.co/analyze-cv', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-          },
-          body: JSON.stringify({ ...job.payload, model_policy: model })
-        });
+        const response = await fetch(
+          'https://csuxlpodmqmycxfkmuxv.functions.supabase.co/analyze-cv',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            },
+            body: JSON.stringify({ ...job.payload, model_policy: model }),
+          }
+        );
 
         if (!response.ok) throw new Error(`AI Function error: ${response.statusText}`);
-        
+
         const result = await response.json();
         await this.updateJobStatus(id, 'completed', result);
         return;
@@ -311,14 +359,16 @@ export class JobQueue {
         const { phone, name, jobId, jobTitle, companyName, scenario } = job.payload;
 
         // Get auth token from supabase session
-        const { data: { session } } = await supabase.auth.getSession();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
         const token = session?.access_token;
 
         const response = await fetch('/api/whatsapp/invite', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
           body: JSON.stringify({
             candidatePhone: phone,
@@ -357,12 +407,14 @@ export class JobQueue {
 
       // Default mock behavior for other actions
       setTimeout(async () => {
-        await this.updateJobStatus(id, 'completed', { message: `Executed ${job.action_id}`, t: new Date() });
+        await this.updateJobStatus(id, 'completed', {
+          message: `Executed ${job.action_id}`,
+          t: new Date(),
+        });
       }, 1000);
-
     } catch (err: any) {
       console.error(`Job execution failed for ${job.action_id}:`, err);
-      await this.updateJobStatus(id, 'failed', undefined, err.message || "Unknown error");
+      await this.updateJobStatus(id, 'failed', undefined, err.message || 'Unknown error');
     }
   }
 }

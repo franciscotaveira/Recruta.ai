@@ -27,7 +27,7 @@ export async function transcribeAudio(
     'google/gemini-3-flash-preview',
     'google/gemini-2.5-flash',
     'google/gemini-2.0-flash-001',
-    'google/gemini-flash-1.5'
+    'google/gemini-flash-1.5',
   ];
 
   let lastError = null;
@@ -37,10 +37,10 @@ export async function transcribeAudio(
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+          Authorization: `Bearer ${OPENROUTER_API_KEY}`,
           'Content-Type': 'application/json',
           'HTTP-Referer': 'https://recrutaria.com.br',
-          'X-Title': 'Recruta.AI'
+          'X-Title': 'Recruta.AI',
         },
         body: JSON.stringify({
           model: model,
@@ -50,23 +50,23 @@ export async function transcribeAudio(
               content: [
                 {
                   type: 'text',
-                  text: 'Transcreva exatamente o que está sendo dito neste áudio em português brasileiro. Não adicione comentários, apenas a transcrição.'
+                  text: 'Transcreva exatamente o que está sendo dito neste áudio em português brasileiro. Não adicione comentários, apenas a transcrição.',
                 },
                 {
                   type: 'input_audio',
                   input_audio: {
                     data: base64Audio,
-                    format: format === 'opus' ? 'ogg' : format
-                  }
-                }
-              ]
-            }
-          ]
-        })
+                    format: format === 'opus' ? 'ogg' : format,
+                  },
+                },
+              ],
+            },
+          ],
+        }),
       });
 
       const data = await response.json();
-      
+
       if (data.error) {
         lastError = data.error.message;
         continue;
@@ -81,5 +81,7 @@ export async function transcribeAudio(
     }
   }
 
-  throw new Error(`OpenRouter falhou em todos os modelos de transcrição. Último erro: ${lastError}`);
+  throw new Error(
+    `OpenRouter falhou em todos os modelos de transcrição. Último erro: ${lastError}`
+  );
 }

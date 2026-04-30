@@ -34,10 +34,7 @@ import {
   shouldThrottleForCapacity,
 } from './governance.js';
 import { buildBlindCandidateSnapshot } from '../skills/blind-screening.js';
-import {
-  applyConfidenceAbstention,
-  buildSessionConfidence,
-} from '../skills/confidence-engine.js';
+import { applyConfidenceAbstention, buildSessionConfidence } from '../skills/confidence-engine.js';
 import { buildRecruiterReviewSnapshot } from '../review/queue.js';
 import {
   buildStructuredQuestions,
@@ -201,7 +198,7 @@ async function buildSessionQuestionsForJob(
   const jobTitle = String(job?.title || 'Vaga');
   const jobContext = buildJobContext(job);
   const requirements = normalizeJobRequirements(job?.requirements);
-  
+
   const structured = buildStructuredQuestions(jobTitle, requirements, {
     maxBarsQuestions: 4,
     maxKnockoutQuestions: 4,
@@ -233,7 +230,7 @@ async function buildSessionQuestionsForJob(
   // Pede para a IA gerar o complemento (ou o total)
   const neededCount = Math.max(3, 4 - structured.length);
   const generated = await generateQuestions(jobTitle, jobContext, neededCount, { ragContext });
-  
+
   const finalQuestions: SessionQuestion[] = structured.map((q) => ({
     text: q.text,
     category: q.category,
@@ -245,7 +242,11 @@ async function buildSessionQuestionsForJob(
 
   generated.forEach((g: GeneratedQuestion) => {
     // Evita duplicar perguntas muito parecidas se já houver estruturadas
-    if (!finalQuestions.some(fq => fq.text.toLowerCase().includes(g.text.toLowerCase().slice(0, 20)))) {
+    if (
+      !finalQuestions.some((fq) =>
+        fq.text.toLowerCase().includes(g.text.toLowerCase().slice(0, 20))
+      )
+    ) {
       finalQuestions.push({
         text: g.text,
         category: g.category,
@@ -463,8 +464,11 @@ function isMoreInfoIntent(text: string): boolean {
 function buildInviteDetailsMessage(job: any): string {
   const title = String(job?.title || 'Vaga em aberto');
   const company = String(job?.company || 'Empresa contratante');
-  const descriptionRaw = String(job?.description || '').replace(/\s+/g, ' ').trim();
-  const description = descriptionRaw.length > 320 ? `${descriptionRaw.slice(0, 317)}...` : descriptionRaw;
+  const descriptionRaw = String(job?.description || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const description =
+    descriptionRaw.length > 320 ? `${descriptionRaw.slice(0, 317)}...` : descriptionRaw;
 
   const header = [`*Mais infos sobre a vaga*`, `Cargo: ${title}`, `Empresa: ${company}`];
   if (description) header.push(`Resumo: ${description}`);
@@ -511,7 +515,9 @@ async function sendDeclineReasonPrompt(
   }
 
   const fallbackText =
-    mode === 'initial' ? TEXT_MESSAGES.DECLINE_REASON_PROMPT : TEXT_MESSAGES.DECLINE_REASON_REMINDER;
+    mode === 'initial'
+      ? TEXT_MESSAGES.DECLINE_REASON_PROMPT
+      : TEXT_MESSAGES.DECLINE_REASON_REMINDER;
   await wa.logMessage(uid(), sessionId, 'outbound', 'text', fallbackText, '', 'sent');
   await sendTextMessage(to, fallbackText);
   return fallbackText;
@@ -655,10 +661,7 @@ async function finalizeSession(
 
   if (requiresHumanReview) {
     analysis.concerns = Array.from(
-      new Set([
-        ...analysis.concerns,
-        'Revisão humana obrigatória antes de qualquer decisão final.',
-      ])
+      new Set([...analysis.concerns, 'Revisão humana obrigatória antes de qualquer decisão final.'])
     );
   }
 
@@ -724,11 +727,14 @@ export async function createSession(
 
   const resolvedJobTitle = String(jobTitle || job?.title || 'Vaga');
   const resolvedCompanyName = String(companyName || job?.company || 'Empresa');
-  const questions = await buildSessionQuestionsForJob({
-    title: resolvedJobTitle,
-    description: job?.description,
-    requirements: job?.requirements,
-  }, { ragEnabled });
+  const questions = await buildSessionQuestionsForJob(
+    {
+      title: resolvedJobTitle,
+      description: job?.description,
+      requirements: job?.requirements,
+    },
+    { ragEnabled }
+  );
 
   await wa.createSession(
     sessionId,
@@ -741,9 +747,14 @@ export async function createSession(
 
   try {
     const template = scenario === 'talent_bank' ? TEMPLATES.TALENT_BANK_INVITE : TEMPLATES.INVITE;
-    const templateVars = scenario === 'talent_bank' 
-      ? TEMPLATES.TALENT_BANK_INVITE.buildVariables(candidateName, resolvedCompanyName, resolvedJobTitle)
-      : TEMPLATES.INVITE.buildVariables(candidateName, resolvedJobTitle, resolvedCompanyName);
+    const templateVars =
+      scenario === 'talent_bank'
+        ? TEMPLATES.TALENT_BANK_INVITE.buildVariables(
+            candidateName,
+            resolvedCompanyName,
+            resolvedJobTitle
+          )
+        : TEMPLATES.INVITE.buildVariables(candidateName, resolvedJobTitle, resolvedCompanyName);
 
     await sendTemplate(canonicalPhone || candidatePhone, template.name, 'pt_BR', [
       {
@@ -762,7 +773,10 @@ export async function createSession(
     );
     await sendTriageCodeMessage(canonicalPhone || candidatePhone, sessionId, sessionId);
   } catch (err: any) {
-    console.error(`[flow] Failed to send invite to ${canonicalPhone || candidatePhone}:`, err.message);
+    console.error(
+      `[flow] Failed to send invite to ${canonicalPhone || candidatePhone}:`,
+      err.message
+    );
     await wa.logMessage(
       uid(),
       sessionId,
@@ -815,9 +829,10 @@ export async function createSession(
 
     // Fallback: if template is unavailable (not approved/misconfigured), try plain text invite.
     try {
-      const fallbackInvite = scenario === 'talent_bank'
-        ? `Olá ${candidateName}! A empresa ${resolvedCompanyName} iniciou um processo de seleção para a vaga ${resolvedJobTitle}, a qual você demonstrou interesse anteriormente. Deseja fazer parte desse processo?\n\nResponda *SIM* para começar.\n\n${buildTriageCodeMessage(sessionId)}`
-        : `Olá ${candidateName}! Você foi pré-selecionado(a) para a vaga de ${resolvedJobTitle} na empresa ${resolvedCompanyName}.\n\nQuer participar de uma triagem rápida por áudio? Leva menos de 5 minutos.\n\nResponda *SIM* para começar ou *NÃO* para recusar.\n\n${buildTriageCodeMessage(sessionId)}`;
+      const fallbackInvite =
+        scenario === 'talent_bank'
+          ? `Olá ${candidateName}! A empresa ${resolvedCompanyName} iniciou um processo de seleção para a vaga ${resolvedJobTitle}, a qual você demonstrou interesse anteriormente. Deseja fazer parte desse processo?\n\nResponda *SIM* para começar.\n\n${buildTriageCodeMessage(sessionId)}`
+          : `Olá ${candidateName}! Você foi pré-selecionado(a) para a vaga de ${resolvedJobTitle} na empresa ${resolvedCompanyName}.\n\nQuer participar de uma triagem rápida por áudio? Leva menos de 5 minutos.\n\nResponda *SIM* para começar ou *NÃO* para recusar.\n\n${buildTriageCodeMessage(sessionId)}`;
       await sendTextMessage(canonicalPhone || candidatePhone, fallbackInvite);
       await wa.logMessage(uid(), sessionId, 'outbound', 'text', fallbackInvite, '', 'sent');
     } catch (fallbackErr: any) {
@@ -883,10 +898,7 @@ async function processInboundMessageUnlocked(
     if (!source) {
       const invalidCodeMsg =
         'Nao encontrei esse numero da triagem. Confira o codigo e envie novamente no formato: INICIAR <codigo>.';
-      await sendTextMessage(
-        canonicalFrom,
-        invalidCodeMsg
-      );
+      await sendTextMessage(canonicalFrom, invalidCodeMsg);
       return { sessionId: '', nextState: 'no_session', replyMessage: invalidCodeMsg };
     }
 
@@ -937,7 +949,9 @@ async function processInboundMessageUnlocked(
 
   let userMessage = content;
   if (!isAudio && activatedByCode && extractedCode) {
-    const stripped = String(content || '').replace(extractedCode, '').trim();
+    const stripped = String(content || '')
+      .replace(extractedCode, '')
+      .trim();
     userMessage = stripped || 'SIM';
   }
   if (isAudio) {

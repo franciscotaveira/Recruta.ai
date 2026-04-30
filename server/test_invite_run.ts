@@ -5,7 +5,7 @@ import { supabase } from './storage/supabase.js';
 async function testInvite() {
   const phone = '5549988447562';
   const name = 'Francisco (Teste)';
-  
+
   console.log('🔍 Buscando vaga ativa...');
   const { data: jobs, error: jobError } = await supabase
     .from('public_jobs')
@@ -20,7 +20,7 @@ async function testInvite() {
 
   const job = jobs[0];
   console.log(`✅ Usando vaga: ${job.title} (${job.company})`);
-  
+
   try {
     console.log(`🚀 Enviando convite para ${phone}...`);
     const sessionId = await createSession(

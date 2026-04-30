@@ -1,6 +1,6 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { GoogleGenerativeAI } from "https://esm.sh/@google/generative-ai@0.1.0";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { GoogleGenerativeAI } from 'https://esm.sh/@google/generative-ai@0.1.0';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,8 +15,8 @@ serve(async (req) => {
   try {
     const { cv_id, target_role, cv_text: provided_cv_text } = await req.json();
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     let cv_text = provided_cv_text;
@@ -35,11 +35,11 @@ serve(async (req) => {
     }
 
     if (!cv_text) {
-      throw new Error("CV text is empty or not found");
+      throw new Error('CV text is empty or not found');
     }
 
-    const genAI = new GoogleGenerativeAI(Deno.env.get("GEMINI_API_KEY") || "");
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const genAI = new GoogleGenerativeAI(Deno.env.get('GEMINI_API_KEY') || '');
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
     const prompt = `
       Você é um Especialista Sênior em Recrutamento Técnico da Recrutaria.AI.
@@ -61,32 +61,34 @@ serve(async (req) => {
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
-    
-    const jsonStr = text.replace(/`{3}json/g, '').replace(/`{3}/g, '').trim();
+
+    const jsonStr = text
+      .replace(/`{3}json/g, '')
+      .replace(/`{3}/g, '')
+      .trim();
     const analysis = JSON.parse(jsonStr);
 
     // Optional: Update the profile with the results
     if (cv_id) {
       await supabase
         .from('candidate_profiles')
-        .update({ 
+        .update({
           scp_score: analysis.score,
           diagnosis: analysis.reasoning,
           attention_points: [...(analysis.red_flags || []), ...(analysis.suggestions || [])],
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
         .eq('id', cv_id);
     }
 
-    return new Response(
-      JSON.stringify(analysis),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify(analysis), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   } catch (error) {
     console.error(error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 });

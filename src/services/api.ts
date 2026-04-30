@@ -639,10 +639,7 @@ export async function getCreditTransactions() {
   return fetchJson<CreditTransaction[]>('/recruiter/transactions');
 }
 
-export async function createCreditPayment(
-  packageId: string,
-  customer?: PaymentCustomer
-) {
+export async function createCreditPayment(packageId: string, customer?: PaymentCustomer) {
   return fetchJson<PaymentCheckoutResponse>('/payment/credits', {
     method: 'POST',
     body: JSON.stringify(customer ? { packageId, customer } : { packageId }),

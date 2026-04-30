@@ -5,7 +5,9 @@
  */
 
 const BASE_URL = 'https://graph.facebook.com/v21.0';
-const PROVIDER = String(process.env.WHATSAPP_PROVIDER || 'meta').trim().toLowerCase();
+const PROVIDER = String(process.env.WHATSAPP_PROVIDER || 'meta')
+  .trim()
+  .toLowerCase();
 const INVITE_TEMPLATE_ID = process.env.WHATSAPP_INVITE_TEMPLATE_ID || '';
 
 // Token is read dynamically on every call so it can be updated at runtime via /api/admin/whatsapp-token
@@ -30,7 +32,10 @@ if (PROVIDER === 'automatik' && !GATEWAY_API_KEY) {
 }
 
 async function waFetch(path: string, options: RequestInit = {}) {
-  const url = (path.length > 10 && path.indexOf("messages") === -1) ? `https://graph.facebook.com/${path}` : `${BASE_URL}/${PHONE_NUMBER_ID}/${path}`;
+  const url =
+    path.length > 10 && path.indexOf('messages') === -1
+      ? `https://graph.facebook.com/${path}`
+      : `${BASE_URL}/${PHONE_NUMBER_ID}/${path}`;
   const res = await fetch(url, {
     ...options,
     headers: {
@@ -103,13 +108,7 @@ export async function sendTextMessage(to: string, text: string): Promise<string>
       type: 'text',
       text,
     });
-    return (
-      data?.message_id ||
-      data?.id ||
-      data?.data?.message_id ||
-      data?.data?.id ||
-      ''
-    );
+    return data?.message_id || data?.id || data?.data?.message_id || data?.data?.id || '';
   }
 
   const data = await waFetch('messages', {
@@ -149,13 +148,7 @@ export async function sendTemplate(
       payload.template_components = components;
     }
     const data = await gatewayFetch(payload);
-    return (
-      data?.message_id ||
-      data?.id ||
-      data?.data?.message_id ||
-      data?.data?.id ||
-      ''
-    );
+    return data?.message_id || data?.id || data?.data?.message_id || data?.data?.id || '';
   }
 
   const templatePayload: Record<string, unknown> = {
@@ -255,13 +248,7 @@ export async function sendAudio(to: string, audioUrl: string): Promise<string> {
       type: 'audio',
       media_url: audioUrl,
     });
-    return (
-      data?.message_id ||
-      data?.id ||
-      data?.data?.message_id ||
-      data?.data?.id ||
-      ''
-    );
+    return data?.message_id || data?.id || data?.data?.message_id || data?.data?.id || '';
   }
 
   const data = await waFetch('messages', {

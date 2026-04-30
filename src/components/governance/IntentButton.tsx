@@ -14,13 +14,13 @@ interface IntentButtonProps {
 
 import { useAuth } from '../../contexts/AuthContext';
 
-export const IntentButton: React.FC<IntentButtonProps> = ({ 
-  actionId, 
-  payload, 
-  children, 
-  className = "",
+export const IntentButton: React.FC<IntentButtonProps> = ({
+  actionId,
+  payload,
+  children,
+  className = '',
   onCompleted,
-  onError
+  onError,
 }) => {
   const { user } = useAuth();
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
@@ -46,7 +46,10 @@ export const IntentButton: React.FC<IntentButtonProps> = ({
   }, [activeJobId, onCompleted, onError]);
 
   const handleClick = async () => {
-    if (activeJobId && (jobStatus === 'pending_approval' || jobStatus === 'processing' || jobStatus === 'queued')) {
+    if (
+      activeJobId &&
+      (jobStatus === 'pending_approval' || jobStatus === 'processing' || jobStatus === 'queued')
+    ) {
       return; // Prevent duplicate clicks while running
     }
     const job = await JobQueue.createJob(actionId, payload, user?.id);
@@ -54,24 +57,23 @@ export const IntentButton: React.FC<IntentButtonProps> = ({
       setActiveJobId(job.id);
       setJobStatus(job.status);
     } else {
-      console.error("Failed to create job - validation failed");
-      if (onError) onError("Validation failed for " + actionId);
+      console.error('Failed to create job - validation failed');
+      if (onError) onError('Validation failed for ' + actionId);
     }
   };
 
-  const isWorking = jobStatus === 'pending_approval' || jobStatus === 'queued' || jobStatus === 'processing';
+  const isWorking =
+    jobStatus === 'pending_approval' || jobStatus === 'queued' || jobStatus === 'processing';
   const isSuccess = jobStatus === 'completed';
   const isError = jobStatus === 'failed' || jobStatus === 'cancelled';
 
   return (
-    <button 
+    <button
       onClick={handleClick}
       disabled={isWorking}
       className={`relative overflow-hidden transition-all duration-300 ${className} ${
         isWorking ? 'opacity-80 cursor-not-allowed' : ''
-      } ${
-        isSuccess ? 'bg-green-600 hover:bg-green-700 text-white border-green-500' : ''
-      } ${
+      } ${isSuccess ? 'bg-green-600 hover:bg-green-700 text-white border-green-500' : ''} ${
         isError ? 'bg-red-600 hover:bg-red-700 text-white border-red-500' : ''
       }`}
     >
@@ -79,15 +81,21 @@ export const IntentButton: React.FC<IntentButtonProps> = ({
         {isWorking && <Loader2 className="w-4 h-4 animate-spin" />}
         {isSuccess && <CheckCircle2 className="w-4 h-4" />}
         {isError && <XCircle className="w-4 h-4" />}
-        
+
         <span>
-          {jobStatus === 'pending_approval' ? 'Aguardando Aprovação...' :
-           jobStatus === 'queued' ? 'Na Fila...' :
-           jobStatus === 'processing' ? 'Processando...' :
-           jobStatus === 'completed' ? 'Sucesso!' :
-           jobStatus === 'failed' ? 'Falhou' :
-           jobStatus === 'cancelled' ? 'Cancelado' :
-           children}
+          {jobStatus === 'pending_approval'
+            ? 'Aguardando Aprovação...'
+            : jobStatus === 'queued'
+              ? 'Na Fila...'
+              : jobStatus === 'processing'
+                ? 'Processando...'
+                : jobStatus === 'completed'
+                  ? 'Sucesso!'
+                  : jobStatus === 'failed'
+                    ? 'Falhou'
+                    : jobStatus === 'cancelled'
+                      ? 'Cancelado'
+                      : children}
         </span>
       </div>
     </button>

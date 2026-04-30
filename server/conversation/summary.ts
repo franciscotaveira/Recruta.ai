@@ -90,7 +90,9 @@ function sanitizeQuestionScores(value: unknown): number[] {
 function sanitizeRecommendation(value: unknown): CandidateAnalysis['recommendation'] | null {
   return value === 'entrevista' || value === 'rejeitar' || value === 'mais_info' ? value : null;
 }
-function sanitizeCommunicationPerformance(value: unknown): CandidateAnalysis['communicationPerformance'] | undefined {
+function sanitizeCommunicationPerformance(
+  value: unknown
+): CandidateAnalysis['communicationPerformance'] | undefined {
   if (!value || typeof value !== 'object') return undefined;
   const raw = value as any;
   return {
@@ -173,9 +175,7 @@ function sanitizeSessionConfidence(value: unknown): SessionConfidenceSnapshot | 
       ),
       substantiveAnswers: Math.max(
         0,
-        Math.round(
-          Number(signalsRaw.substantiveAnswers ?? signalsRaw.substantive_answers ?? 0)
-        )
+        Math.round(Number(signalsRaw.substantiveAnswers ?? signalsRaw.substantive_answers ?? 0))
       ),
       scoreCoveragePct: Math.max(
         0,

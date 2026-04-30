@@ -56,8 +56,5 @@ test('sanitizeCandidateDocumentText redacts name and contact data when blind scr
     enabled: true,
   });
 
-  assert.equal(
-    text,
-    '[nome_redigido]\nEmail: [email_redigido]\nTelefone: [telefone_redigido]'
-  );
+  assert.equal(text, '[nome_redigido]\nEmail: [email_redigido]\nTelefone: [telefone_redigido]');
 });

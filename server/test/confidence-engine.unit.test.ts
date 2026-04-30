@@ -1,10 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import {
-  applyConfidenceAbstention,
-  buildSessionConfidence,
-} from '../skills/confidence-engine.js';
+import { applyConfidenceAbstention, buildSessionConfidence } from '../skills/confidence-engine.js';
 
 test('buildSessionConfidence returns high confidence for complete substantive answers', () => {
   const confidence = buildSessionConfidence({
