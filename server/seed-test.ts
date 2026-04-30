@@ -9,23 +9,25 @@ async function seedTest() {
     // 1. Criar Recrutador (RH)
     const recruiterId = randomUUID();
     const recruiterEmail = 'recrutador@recrutaria.com.br';
-    const passwordHash = 'salt:hash_simulado'; // Na vida real usamos hashPassword, mas aqui é para teste rápido
+    const passwordHash = 'salt:hash_simulado'; 
     
     await users.create(recruiterId, recruiterEmail, passwordHash, 'recruiter', 'Francisco RH');
     await dual.initRecruiterProfile(recruiterId, 'Recrutaria Corp');
     console.log(`✅ Recrutador criado: ${recruiterEmail}`);
 
-    // 2. Criar Vaga
+    // 2. Criar Vaga (Corrigido com todos os argumentos)
     const jobId = randomUUID();
     await dual.createJob(
       jobId,
       recruiterId,
-      'Desenvolvedor Full Stack Sênior',
-      'Estamos em busca de um desenvolvedor experiente em React, Node.js e Supabase para liderar projetos inovadores.',
-      'Remoto',
-      'PJ',
-      'R$ 12.000 - R$ 18.000',
-      'Senior'
+      'Desenvolvedor Full Stack Sênior', // title
+      'Recrutaria Corp',                 // company
+      'Remoto (Chapecó/SC)',            // location
+      'Estamos em busca de um desenvolvedor experiente em React, Node.js e Supabase.', // description
+      '["React", "Node.js", "Supabase", "TypeScript"]', // requirements (JSON string)
+      'R$ 12.000 - R$ 18.000',          // salary_range
+      'PJ',                             // job_type
+      'Remoto'                          // modality
     );
     console.log('✅ Vaga publicada: Desenvolvedor Full Stack Sênior');
 
@@ -91,7 +93,7 @@ async function seedTest() {
       '["Falta experiência com liderança"]',
       ghost2Id
     );
-    console.log('✅ Candidato fantasma 2 (João Souza) criado');
+    console.log('✅ Candidata fantasma 2 (João Souza) criado');
 
     console.log('\n--- 🏁 SEED FINALIZADO COM SUCESSO ---');
     console.log('RH: recrutador@recrutaria.com.br / senha123');
