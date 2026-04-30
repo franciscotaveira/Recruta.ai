@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { api } from '../../services/api';
+import { getCandidateWallet, tailorCV, buyCandidateCredits } from '../../services/api';
 import { Sparkles, Loader2, Download, Briefcase, FileText, CreditCard } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
@@ -12,8 +12,8 @@ const PremiumTailor: React.FC = () => {
 
   const fetchWallet = async () => {
     try {
-      const res = await api.get('/api/candidate/wallet');
-      setBalance(res.data.balance);
+      const res = await getCandidateWallet();
+      setBalance(res.balance);
     } catch (err) {
       console.error('Error fetching wallet:', err);
     }
@@ -38,13 +38,11 @@ const PremiumTailor: React.FC = () => {
     setError('');
 
     try {
-      const res = await api.post('/api/candidate/tailor-cv', {
-        targetJobDescription: jobDescription
-      });
-      setTailoredCV(res.data.markdown);
-      setBalance(res.data.balanceAfter);
+      const res = await tailorCV(jobDescription);
+      setTailoredCV(res.markdown);
+      setBalance(res.balanceAfter);
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Erro ao gerar o currículo premium. Tente novamente.');
+      setError(err.message || 'Erro ao gerar o currículo premium. Tente novamente.');
     } finally {
       setIsProcessing(false);
     }
@@ -52,8 +50,8 @@ const PremiumTailor: React.FC = () => {
 
   const handleBuyCredits = async () => {
     try {
-      const res = await api.post('/api/candidate/buy-credits');
-      window.location.href = res.data.checkoutUrl;
+      const res = await buyCandidateCredits();
+      window.location.href = res.checkoutUrl;
     } catch (err) {
       console.error('Error buying credits', err);
     }

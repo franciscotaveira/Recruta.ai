@@ -426,6 +426,23 @@ export async function analyzeCV(cvText: string) {
   });
 }
 
+export async function getCandidateWallet() {
+  return fetchJson<{ balance: number }>('/api/candidate/wallet');
+}
+
+export async function tailorCV(targetJobDescription: string) {
+  return fetchJson<{ markdown: string; balanceAfter: number }>('/api/candidate/tailor-cv', {
+    method: 'POST',
+    body: JSON.stringify({ targetJobDescription }),
+  });
+}
+
+export async function buyCandidateCredits() {
+  return fetchJson<{ checkoutUrl: string }>('/api/candidate/buy-credits', {
+    method: 'POST'
+  });
+}
+
 export async function getCVVersions() {
   const response = await fetchJson<unknown>('/candidate/cv/versions');
   if (Array.isArray(response)) return response;
