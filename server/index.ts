@@ -1705,105 +1705,53 @@ app.post('/api/payment/credits', requireAuth('recruiter'), async (req, res) => {
     fail(res, 500, 'Erro ao comprar créditos no Asaas', 'PAYMENT_CREDITS_FAILED');
   }
 });
-      'recruiter',
-      'credits',
-      pkg.credits,
-      pkg.priceCents,
-      `${frontendUrl}/recruiter/billing`,
-      billing.url,
-      JSON.stringify({ packageId, phone: cleanPhone, taxId: resolvedCustomer.taxId })
-    );
-
-    res.json({ paymentId, checkoutUrl: billing.url, amount: pkg.priceCents, credits: pkg.credits });
-  } catch (err: any) {
-    logEvent('error', 'payment.credits.create_failed', {
-      error: err?.message,
-      correlationId: (req as any).correlationId || null,
-    });
-    fail(res, 500, 'Erro ao criar pagamento', 'PAYMENT_CREATE_FAILED');
-  }
-});
 
 app.post('/api/payment/diagnostic', requireAuth('candidate'), async (req, res) => {
   try {
     const { customer } = req.body as any;
     const authUser = (await users.findById(req.user!.id)) as any;
     const profile = (await dual.getProfileByUser(req.user!.id)) as any;
-    const resolvedCustomer =
-      customer ||
-      (IS_PROD
-        ? null
-        : {
-            name: profile?.name || authUser?.name || 'Candidate',
-            email: profile?.email || authUser?.email || `${req.user!.id}@recruta.ai`,
-            phone: profile?.phone || '11999990000',
-            taxId: '00000000000',
-          });
-
-    if (
-      !resolvedCustomer?.name ||
-      !resolvedCustomer?.email ||
-      !resolvedCustomer?.phone ||
-      !resolvedCustomer?.taxId
-    ) {
-      return fail(
-        res,
-        400,
-        'customer.name, customer.email, customer.phone, customer.taxId são obrigatórios',
-        'PAYMENT_CUSTOMER_REQUIRED'
-      );
-    }
+    
+    const resolvedCustomer = customer || {
+      name: profile?.name || authUser?.name || 'Candidate',
+      email: profile?.email || authUser?.email || `${req.user!.id}@recruta.ai`,
+      phone: profile?.phone || '11999990000',
+      taxId: '00000000000',
+    };
 
     const cleanPhone = normalizePhone(resolvedCustomer.phone);
-    if (cleanPhone.length < 10) return fail(res, 400, 'Telefone inválido', 'PAYMENT_INVALID_PHONE');
-    if (!isValidTaxId(resolvedCustomer.taxId))
-      return fail(res, 400, 'CPF/CNPJ inválido', 'PAYMENT_INVALID_TAXID');
+    const asaasCust = await getOrCreateAsaasCustomer(
+      resolvedCustomer.name,
+      resolvedCustomer.email,
+      resolvedCustomer.taxId,
+      cleanPhone
+    );
 
-    const paymentId = `pay_diag_${Date.now()}`;
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:4050';
-
-    const billing = await createBilling({
-      frequency: 'ONE_TIME',
-      methods: ['PIX', 'CARD'],
-      products: [
-        {
-          externalId: DIAGNOSTIC_PRODUCT.externalId,
-          name: DIAGNOSTIC_PRODUCT.name,
-          description: DIAGNOSTIC_PRODUCT.description,
-          quantity: 1,
-          price: DIAGNOSTIC_PRODUCT.priceCents,
-        },
-      ],
-      returnUrl: `${frontendUrl}/candidate`,
-      completionUrl: `${frontendUrl}/candidate?payment=success`,
-      customer: {
-        name: resolvedCustomer.name,
-        cellphone: cleanPhone,
-        email: resolvedCustomer.email,
-        taxId: resolvedCustomer.taxId,
-      },
+    const asaasPayment = await createAsaasPayment({
+      customer: asaasCust.id,
+      billingType: 'UNDEFINED',
+      value: 29.90, // R$ 29,90
+      description: 'Análise Elite Recruta.AI - Diagnóstico Premium',
+      externalReference: `b2c_credits_${req.user!.id}`,
     });
 
     await dual.createPayment(
-      paymentId,
-      billing.id,
+      `diag_${Date.now()}`,
+      asaasPayment.id,
       req.user!.id,
       'candidate',
-      'diagnostic',
-      0,
-      DIAGNOSTIC_PRODUCT.priceCents,
-      `${frontendUrl}/candidate`,
-      billing.url,
-      JSON.stringify({ phone: cleanPhone, taxId: resolvedCustomer.taxId })
+      'credits',
+      10, 
+      2990,
+      '/candidate/dashboard',
+      asaasPayment.invoiceUrl,
+      JSON.stringify({ asaasId: asaasPayment.id })
     );
 
-    res.json({ paymentId, checkoutUrl: billing.url, amount: DIAGNOSTIC_PRODUCT.priceCents });
+    res.json({ checkoutUrl: asaasPayment.invoiceUrl, amount: 2990 });
   } catch (err: any) {
-    logEvent('error', 'payment.diagnostic.create_failed', {
-      error: err?.message,
-      correlationId: (req as any).correlationId || null,
-    });
-    fail(res, 500, 'Erro ao criar pagamento', 'PAYMENT_CREATE_FAILED');
+    console.error('[payment-diagnostic] Error:', err);
+    fail(res, 500, 'Erro ao criar pagamento de diagnóstico no Asaas', 'PAYMENT_DIAGNOSTIC_FAILED');
   }
 });
 
