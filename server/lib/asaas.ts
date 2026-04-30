@@ -11,17 +11,21 @@ const asaas = axios.create({
   }
 });
 
-export async function createAsaasCustomer(data: {
-  name: string;
-  email: string;
-  cpfCnpj: string;
-  phone?: string;
-}) {
+export async function getOrCreateAsaasCustomer(name: string, email: string, cpfCnpj: string, phone?: string) {
   try {
-    const res = await asaas.post('/customers', data);
+    // Try to find existing customer by email
+    const searchRes = await asaas.get(`/customers?email=${encodeURIComponent(email)}`);
+    if (searchRes.data?.data?.length > 0) {
+      console.log(`[asaas] Found existing customer: ${email}`);
+      return searchRes.data.data[0];
+    }
+
+    // Create new if not found
+    console.log(`[asaas] Creating new customer: ${email}`);
+    const res = await asaas.post('/customers', { name, email, cpfCnpj, phone });
     return res.data;
   } catch (err: any) {
-    console.error('Error creating Asaas customer:', err.response?.data || err.message);
+    console.error('Error in getOrCreateAsaasCustomer:', err.response?.data || err.message);
     throw err;
   }
 }
@@ -30,12 +34,18 @@ export async function createAsaasPayment(data: {
   customer: string;
   billingType: 'PIX' | 'BOLETO' | 'CREDIT_CARD' | 'UNDEFINED';
   value: number;
-  dueDate: string;
+  dueDate?: string;
   description: string;
   externalReference?: string;
 }) {
   try {
-    const res = await asaas.post('/payments', data);
+    // If dueDate is not provided, set to tomorrow
+    const dueDate = data.dueDate || new Date(Date.now() + 86400000).toISOString().split('T')[0];
+    
+    const res = await asaas.post('/payments', {
+      ...data,
+      dueDate
+    });
     return res.data;
   } catch (err: any) {
     console.error('Error creating Asaas payment:', err.response?.data || err.message);

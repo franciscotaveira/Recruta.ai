@@ -24,7 +24,7 @@ import { getRAGDiagnostics } from './ai/rag';
 import { createBilling, CREDIT_PACKAGES, DIAGNOSTIC_PRODUCT } from './payment/abacate';
 import { handlePaymentWebhook } from './payment/webhook';
 import { handleAsaasWebhook } from './payment/asaas_webhook';
-import { createAsaasCustomer, createAsaasPayment } from './lib/asaas';
+import { getOrCreateAsaasCustomer, createAsaasPayment } from './lib/asaas';
 import { aiCache } from './ai/cache';
 import { autoSeed } from './seed-auto';
 import { downloadMediaWithMeta } from './whatsapp/client';
@@ -1518,33 +1518,25 @@ app.post('/api/candidate/buy-credits', requireAuth('candidate'), async (req, res
     const profile = await dual.getProfileByUser(userId);
     
     if (!profile || !profile.email) {
-      return res.status(400).json({ error: 'Perfil incompleto' });
+      return res.status(400).json({ error: 'Perfil incompleto: e-mail obrigatório' });
     }
 
-    // Pack: 10 credits for R$ 10
-    const amount = 10;
+    // Pack: 10 credits for R$ 10.00
+    const value = 10.00;
     
-    // 1. Create or use customer in Asaas (Simplified for MVP, assuming name/email/phone exist)
-    // In a real scenario, we'd store asaas_id in profile.
-    let asaasCustomerId = (profile as any).asaas_id;
-    
-    if (!asaasCustomerId) {
-      const customer = await createAsaasCustomer({
-        name: profile.name || 'Candidato Recrutaria',
-        email: profile.email,
-        cpfCnpj: '', // Asaas might require this for some payment methods, but PIX usually works with empty if configured
-        phone: profile.phone
-      });
-      asaasCustomerId = customer.id;
-      await dual.updateAsaasId(userId, asaasCustomerId);
-    }
+    // 1. Get or Create Customer
+    const customer = await getOrCreateAsaasCustomer(
+      profile.name || 'Candidato Recrutaria',
+      profile.email,
+      '', // taxId empty for PIX-only or if configured in Asaas
+      profile.phone
+    );
 
     // 2. Create Payment
     const payment = await createAsaasPayment({
-      customer: asaasCustomerId,
-      billingType: 'UNDEFINED', // Let user choose
-      value: amount,
-      dueDate: new Date(Date.now() + 86400000).toISOString().split('T')[0], // Tomorrow
+      customer: customer.id,
+      billingType: 'UNDEFINED',
+      value,
       description: 'Compra de 10 créditos - Recruta.AI',
       externalReference: `b2c_credits_${userId}`
     });
@@ -1552,7 +1544,7 @@ app.post('/api/candidate/buy-credits', requireAuth('candidate'), async (req, res
     res.json({ checkoutUrl: payment.invoiceUrl });
   } catch (err: any) {
     console.error('Error in buy-credits:', err.message);
-    res.status(500).json({ error: 'Erro ao gerar cobrança' });
+    res.status(500).json({ error: 'Erro ao gerar cobrança no Asaas' });
   }
 });
 // --------------------------------------------------------
@@ -1613,141 +1605,106 @@ app.post('/api/payment/subscription', requireAuth('recruiter'), async (req, res)
 
     const authUser = (await users.findById(req.user!.id)) as any;
     const resolvedCustomer =
-      customer ||
-      (IS_PROD
-        ? null
-        : {
-            name: authUser?.name || 'Recruiter',
-            email: authUser?.email || `${req.user!.id}@recruta.ai`,
-            phone: authUser?.phone || '11999990000',
-            taxId: '00000000000',
-          });
-
-    if (
-      !resolvedCustomer?.name ||
-      !resolvedCustomer?.email ||
-      !resolvedCustomer?.phone ||
-      !resolvedCustomer?.taxId
-    ) {
-      return fail(
-        res,
-        400,
-        'customer.name, customer.email, customer.phone, customer.taxId são obrigatórios',
-        'PAYMENT_CUSTOMER_REQUIRED'
-      );
-    }
+      customer || {
+        name: authUser?.name || 'Recruiter',
+        email: authUser?.email || `${req.user!.id}@recruta.ai`,
+        phone: authUser?.phone || '11999990000',
+        taxId: '00000000000',
+      };
 
     const cleanPhone = normalizePhone(resolvedCustomer.phone);
-    const paymentId = `sub_${Date.now()}`;
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:4050';
+    const asaasCust = await getOrCreateAsaasCustomer(
+      resolvedCustomer.name,
+      resolvedCustomer.email,
+      resolvedCustomer.taxId,
+      cleanPhone
+    );
 
-    const billing = await createBilling({
-      frequency: 'ONE_TIME', // Simple MVP subscription (re-billing handled manually or via Abacate recurrency later)
-      methods: ['PIX', 'CARD'],
-      products: [
-        {
-          externalId: plan.externalId,
-          name: plan.name,
-          description: `Assinatura Recruta.AI - Plano ${planId}`,
-          quantity: 1,
-          price: plan.priceCents,
-        },
-      ],
-      returnUrl: `${frontendUrl}/recruiter/billing`,
-      completionUrl: `${frontendUrl}/recruiter/billing?payment=success`,
-      customer: {
-        name: resolvedCustomer.name,
-        cellphone: cleanPhone,
-        email: resolvedCustomer.email,
-        taxId: resolvedCustomer.taxId,
-      },
+    const externalReference = `sub_${req.user!.id}_${planId}`;
+    const frontendUrl = process.env.FRONTEND_URL || 'https://app.recruta.ai';
+
+    const asaasPayment = await createAsaasPayment({
+      customer: asaasCust.id,
+      billingType: 'UNDEFINED', // Let user choose
+      value: plan.priceCents / 100,
+      description: `Assinatura Recruta.AI - Plano ${plan.name}`,
+      externalReference,
     });
 
     await dual.createPayment(
-      paymentId,
-      billing.id,
+      `sub_${Date.now()}`,
+      asaasPayment.id,
       req.user!.id,
       'recruiter',
       'subscription',
       0,
       plan.priceCents,
       `${frontendUrl}/recruiter/billing`,
-      billing.url,
-      JSON.stringify({ planId, phone: cleanPhone, taxId: resolvedCustomer.taxId })
+      asaasPayment.invoiceUrl,
+      JSON.stringify({ planId, asaasId: asaasPayment.id })
     );
 
-    res.json({ paymentId, checkoutUrl: billing.url, amount: plan.priceCents });
+    res.json({ checkoutUrl: asaasPayment.invoiceUrl, amount: plan.priceCents });
   } catch (err: any) {
-    fail(res, 500, 'Erro ao criar assinatura', 'PAYMENT_SUBSCRIPTION_FAILED');
+    console.error('[payment-subscription] Error:', err);
+    fail(res, 500, 'Erro ao criar assinatura no Asaas', 'PAYMENT_SUBSCRIPTION_FAILED');
   }
 });
 
 app.post('/api/payment/credits', requireAuth('recruiter'), async (req, res) => {
   try {
     const { packageId, customer } = req.body as any;
+    const { CREDIT_PACKAGES } = await import('./payment/abacate.js');
     const pkg = (CREDIT_PACKAGES as any)[packageId];
     if (!pkg) return fail(res, 400, 'Pacote inválido', 'PAYMENT_INVALID_PACKAGE');
 
     const authUser = (await users.findById(req.user!.id)) as any;
     const resolvedCustomer =
-      customer ||
-      (IS_PROD
-        ? null
-        : {
-            name: authUser?.name || 'Recruiter',
-            email: authUser?.email || `${req.user!.id}@recruta.ai`,
-            phone: authUser?.phone || '11999990000',
-            taxId: '00000000000',
-          });
-
-    if (
-      !resolvedCustomer?.name ||
-      !resolvedCustomer?.email ||
-      !resolvedCustomer?.phone ||
-      !resolvedCustomer?.taxId
-    ) {
-      return fail(
-        res,
-        400,
-        'customer.name, customer.email, customer.phone, customer.taxId são obrigatórios',
-        'PAYMENT_CUSTOMER_REQUIRED'
-      );
-    }
+      customer || {
+        name: authUser?.name || 'Recruiter',
+        email: authUser?.email || `${req.user!.id}@recruta.ai`,
+        phone: authUser?.phone || '11999990000',
+        taxId: '00000000000',
+      };
 
     const cleanPhone = normalizePhone(resolvedCustomer.phone);
-    if (cleanPhone.length < 10) return fail(res, 400, 'Telefone inválido', 'PAYMENT_INVALID_PHONE');
-    if (!isValidTaxId(resolvedCustomer.taxId))
-      return fail(res, 400, 'CPF/CNPJ inválido', 'PAYMENT_INVALID_TAXID');
+    const asaasCust = await getOrCreateAsaasCustomer(
+      resolvedCustomer.name,
+      resolvedCustomer.email,
+      resolvedCustomer.taxId,
+      cleanPhone
+    );
 
-    const paymentId = `pay_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:4050';
+    const externalReference = `pay_credits_${req.user!.id}_${pkg.credits}`;
+    const frontendUrl = process.env.FRONTEND_URL || 'https://app.recruta.ai';
 
-    const billing = await createBilling({
-      frequency: 'ONE_TIME',
-      methods: ['PIX', 'CARD'],
-      products: [
-        {
-          externalId: pkg.externalId,
-          name: pkg.name,
-          description: `${pkg.credits} créditos de triagem`,
-          quantity: 1,
-          price: pkg.priceCents,
-        },
-      ],
-      returnUrl: `${frontendUrl}/recruiter/billing`,
-      completionUrl: `${frontendUrl}/recruiter/billing?payment=success`,
-      customer: {
-        name: resolvedCustomer.name,
-        cellphone: cleanPhone,
-        email: resolvedCustomer.email,
-        taxId: resolvedCustomer.taxId,
-      },
+    const asaasPayment = await createAsaasPayment({
+      customer: asaasCust.id,
+      billingType: 'UNDEFINED',
+      value: pkg.priceCents / 100,
+      description: `Créditos Recruta.AI - ${pkg.name}`,
+      externalReference,
     });
 
     await dual.createPayment(
-      paymentId,
-      billing.id,
+      `pay_${Date.now()}`,
+      asaasPayment.id,
       req.user!.id,
+      'recruiter',
+      'credits',
+      pkg.credits,
+      pkg.priceCents,
+      `${frontendUrl}/recruiter/billing`,
+      asaasPayment.invoiceUrl,
+      JSON.stringify({ packageId, asaasId: asaasPayment.id })
+    );
+
+    res.json({ checkoutUrl: asaasPayment.invoiceUrl, amount: pkg.priceCents });
+  } catch (err: any) {
+    console.error('[payment-credits] Error:', err);
+    fail(res, 500, 'Erro ao comprar créditos no Asaas', 'PAYMENT_CREDITS_FAILED');
+  }
+});
       'recruiter',
       'credits',
       pkg.credits,
