@@ -93,24 +93,48 @@ const LoginPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm overflow-hidden relative">
+          {/* Role Selection Toggle */}
+          <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl mb-6">
+            <button
+              onClick={() => navigate('/login?role=recruiter')}
+              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                segment === 'recruiter'
+                  ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              Recrutador / Empresa
+            </button>
+            <button
+              onClick={() => navigate('/login?role=candidate')}
+              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                segment === 'candidate'
+                  ? 'bg-white dark:bg-slate-700 text-purple-600 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              Candidato
+            </button>
+          </div>
+
           <div
             className={`mb-6 rounded-xl border px-4 py-3 text-xs leading-6 ${
               segment === 'recruiter'
-                ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300'
+                ? 'border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-900/60 dark:bg-indigo-950/40 dark:text-indigo-300'
                 : 'border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-900/60 dark:bg-purple-950/40 dark:text-purple-300'
             }`}
           >
             {segment === 'recruiter'
-              ? 'Use este acesso para publicar vagas, disparar convites por WhatsApp e revisar diagnósticos.'
-              : 'Use este acesso para acompanhar seu diagnóstico, editar currículo e participar das próximas etapas.'}
+              ? 'Acesse o Painel de Controle para gerir vagas, triagens e IA Squad.'
+              : 'Acesse o portal para acompanhar seu diagnóstico e refatorar seu currículo.'}
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Email / Phone */}
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                E-mail ou WhatsApp
+                {segment === 'recruiter' ? 'E-mail Corporativo' : 'E-mail ou WhatsApp'}
               </label>
               <div className="relative">
                 <Mail
@@ -122,9 +146,11 @@ const LoginPage: React.FC = () => {
                   type="text"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder={segment === 'candidate' ? 'voce@email.com ou (11) 99999-9999' : 'voce@email.com'}
+                  placeholder={segment === 'candidate' ? 'voce@email.com ou (11) 99999-9999' : 'voce@empresa.com'}
                   autoComplete="email"
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-purple-500 outline-none"
+                  className={`w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-sm outline-none focus:ring-2 ${
+                    segment === 'recruiter' ? 'focus:ring-indigo-500' : 'focus:ring-purple-500'
+                  }`}
                 />
               </div>
             </div>
@@ -146,7 +172,9 @@ const LoginPage: React.FC = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   autoComplete="current-password"
-                  className="w-full pl-10 pr-10 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-purple-500 outline-none"
+                  className={`w-full pl-10 pr-10 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-sm outline-none focus:ring-2 ${
+                    segment === 'recruiter' ? 'focus:ring-indigo-500' : 'focus:ring-purple-500'
+                  }`}
                 />
                 <button
                   type="button"
@@ -168,14 +196,16 @@ const LoginPage: React.FC = () => {
               id="login-submit"
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 bg-slate-900 dark:bg-purple-600 text-white rounded-xl font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg"
+              className={`w-full py-3 text-white rounded-xl font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg ${
+                segment === 'recruiter' ? 'bg-indigo-600 shadow-indigo-200 dark:shadow-none' : 'bg-slate-900 dark:bg-purple-600'
+              }`}
             >
               {isLoading ? (
                 <>
                   <Loader2 size={18} className="animate-spin" /> Entrando...
                 </>
               ) : (
-                'Entrar'
+                `Entrar como ${segment === 'recruiter' ? 'Recrutador' : 'Candidato'}`
               )}
             </button>
           </form>
@@ -186,14 +216,11 @@ const LoginPage: React.FC = () => {
             Não tem conta?{' '}
             <Link
               to={`/registro?role=${segment}`}
-              className="text-purple-600 dark:text-purple-400 font-bold hover:underline"
+              className={`${segment === 'recruiter' ? 'text-indigo-600' : 'text-purple-600'} dark:text-purple-400 font-bold hover:underline`}
             >
               {segment === 'recruiter' ? 'Criar conta empresa' : 'Criar conta grátis'}
             </Link>
           </p>
-          <Link to="/admin/login" className="text-xs text-slate-500 hover:text-slate-700 underline">
-            Acesso administrativo
-          </Link>
         </div>
       </div>
     </div>
