@@ -26,6 +26,8 @@ services:
       - evolution_instances:/evolution/instances
     environment:
       - DATABASE_ENABLED=false
+      - DATABASE_CONNECTION_TYPE=postgres
+      - DATABASE_PROVIDER=postgres
       - REDIS_ENABLED=true
       - REDIS_HOST=command-tower-redis
       - REDIS_PORT=6379
