@@ -1,6 +1,6 @@
 # CODEBASE — Recrutaria 🛡️
 
-> **Stack:** React (Vite) + Node.js (Express) + Supabase + Evolution API
+> **Stack:** React (Vite) + Node.js (Express) + Supabase + Evolution API + Asaas
 > **Filosofia:** Truth in Data — Dado real ou estado vazio.
 
 ---
@@ -17,9 +17,10 @@
   - `CandidateComparison.tsx`: Inteligência de análise de talentos.
 
 ### ⚙️ Backend (`/server`)
-- **`index.ts`**: Orquestração de APIs, webhooks de pagamento (AbacatePay) e integração WhatsApp.
-- **`storage/db.ts`**: Camada de persistência com RLS (Row Level Security) hardcore.
-- **`payment/abacate.ts`**: Gestão de faturamento e pacotes de créditos (10 a 500 disparos).
+- **`index.ts`**: Orquestração de APIs, observabilidade neural e integração WhatsApp.
+- **`storage/db.ts`**: Camada de persistência com RLS (Row Level Security) e logging de eventos (`system_logs`).
+- **`payment/asaas_webhook.ts`**: Gestão de faturamento B2B/B2C via Asaas com suporte a assinaturas e créditos.
+- **`lib/asaas.ts`**: Biblioteca de integração soberana com a API do Asaas.
 
 ---
 
@@ -33,6 +34,8 @@
 - **Naming:** Recrutaria (Finalizado).
 - **Branding:** 3D Neural Crystal (Finalizado).
 - **Pricing:** R$ 29,90 (Elite Advisor) / R$ 397 (Pro Mensal).
+- **Security:** Hardened (v2) - RLS + Revoked Public Functions.
+- **Observability:** Mothership Dashboard Active.
 
 ---
 _MCT OS v2.0 | CODEBASE.md_

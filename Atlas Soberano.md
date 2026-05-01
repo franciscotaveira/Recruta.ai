@@ -27,6 +27,9 @@
 - [2026-04-30] B2C Pivot (Elite Advisor): Precificação do diagnóstico de carreira para R$ 29,90, focando em volume e acessibilidade para candidatos, mantendo o ticket alto no B2B.
 - [2026-04-30] Live Control Command Center: Implementação de monitoramento neural em tempo real com KPI global, logging de eventos sistêmicos e intervenção ativa.
 - [2026-04-30] RLS Security Hardening: Implementação de Row Level Security em todas as tabelas (Jobs, Sessions, Billing, Logs) garantindo isolamento multi-tenant absoluto e proteção de PII.
+- [2026-05-01] Migração Definitiva Asaas: Substituição total do AbacatePay pela Asaas API para pagamentos B2C/B2B, incluindo Webhooks resilientes e idempotência.
+- [2026-05-01] Mothership Command Center: Implementação de observabilidade neural em tempo real com logging de erros críticos (system_logs) e visibilidade financeira global centralizada.
+- [2026-05-01] Security Definer Revocation: Bloqueio de execução pública de funções de banco de dados (process_successful_payment), fechando o perímetro contra ataques de escalada de privilégios.
 
 ## 🎯 Próximos Passos (Sprint Atual)
 1.  [OK] Validar o fluxo de "Role Play" na triagem.
@@ -134,6 +137,8 @@ infra:
   platform: Hostinger VPS
   orchestrator: Docker Compose
   deploy: rsync + build automation
+  payments: Asaas API (v3)
+  monitoring: Custom System Logs + Mothership Dashboard
 ```
 
 ---
