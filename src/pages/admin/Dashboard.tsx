@@ -349,6 +349,28 @@ const AdminDashboard: React.FC = () => {
         ))}
       </div>
 
+      {/* Critical Alerts - Mothership Style */}
+      {(overview as any)?.recentErrors?.length > 0 && (
+        <div className="s-glass border-red-500/30 bg-red-500/5 p-6 animate-pulse-slow">
+          <div className="flex items-center gap-3 mb-4 text-red-400">
+            <AlertTriangle size={20} />
+            <h3 className="text-sm font-black uppercase tracking-widest">Alertas Críticos do Sistema</h3>
+          </div>
+          <div className="space-y-2">
+            {(overview as any).recentErrors.map((err: any, i: number) => (
+              <div key={i} className="flex items-center justify-between py-2 border-b border-red-500/10 last:border-0 text-xs">
+                <div className="flex items-center gap-3">
+                  <span className="font-mono text-red-500/50">[{new Date(err.created_at).toLocaleTimeString()}]</span>
+                  <span className="text-slate-300 font-bold">{err.event}</span>
+                  <span className="text-slate-500 italic truncate max-w-md">{err.details?.message || JSON.stringify(err.details)}</span>
+                </div>
+                <Link to="/admin/ai-observability" className="text-[10px] font-black text-red-400 uppercase hover:underline">Investigar</Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {(showAnalytics || showControl) && (
         <div
           className={`grid gap-6 ${showAnalytics && showControl ? 'xl:grid-cols-3' : 'grid-cols-1'}`}

@@ -966,6 +966,26 @@ export const dual = {
       },
     ]);
   },
+
+  recordPayment: async (
+    user_id: string,
+    provider_id: string,
+    amount: number,
+    status: string,
+    type: string,
+    metadata: any = {}
+  ) => {
+    await supabase.from('payments').insert([
+      {
+        user_id,
+        provider_id,
+        amount,
+        status,
+        type,
+        metadata,
+      },
+    ]);
+  },
 };
 
 export default { users, wa, dual };

@@ -792,16 +792,30 @@ app.post('/api/simulator/evaluate', requireAuth(), simulatorLimiter, async (req,
 // Admin
 app.get('/api/admin/overview', requireAuth('admin'), async (req, res) => {
   try {
-    const [usersResp, jobsResp, sessionsResp, paymentsResp, aiControl, aiSquad, ragDiagnostics] =
-      await Promise.all([
-        supabase.from('users').select('id, role, created_at'),
-        supabase.from('public_jobs').select('id, is_active, created_at'),
-        supabase.from('whatsapp_sessions').select('id, state, match_score, created_at, summary'),
-        supabase.from('payments').select('id, amount, status, created_at'),
-        getAIControl(),
-        getAISquad(),
-        getRAGDiagnostics(),
-      ]);
+    const [
+      usersResp,
+      jobsResp,
+      sessionsResp,
+      paymentsResp,
+      aiControl,
+      aiSquad,
+      ragDiagnostics,
+      errorsResp,
+    ] = await Promise.all([
+      supabase.from('users').select('id, role, created_at'),
+      supabase.from('public_jobs').select('id, is_active, created_at'),
+      supabase.from('whatsapp_sessions').select('id, state, match_score, created_at, summary'),
+      supabase.from('payments').select('id, amount, status, created_at'),
+      getAIControl(),
+      getAISquad(),
+      getRAGDiagnostics(),
+      supabase
+        .from('system_logs')
+        .select('*')
+        .eq('level', 'error')
+        .order('created_at', { ascending: false })
+        .limit(10),
+    ]);
 
     const usersData: Array<{ role?: string | null }> = Array.isArray(usersResp.data)
       ? usersResp.data
@@ -810,6 +824,7 @@ app.get('/api/admin/overview', requireAuth('admin'), async (req, res) => {
     const sessionsData: Array<{ state?: string | null; match_score?: number | null }> =
       Array.isArray(sessionsResp.data) ? sessionsResp.data : [];
     const paymentsData = Array.isArray(paymentsResp.data) ? paymentsResp.data : [];
+    const recentErrors = Array.isArray(errorsResp.data) ? errorsResp.data : [];
 
     const usersByRole = usersData.reduce((acc: Record<string, number>, row) => {
       const role = String(row.role || 'unknown');
@@ -871,6 +886,7 @@ app.get('/api/admin/overview', requireAuth('admin'), async (req, res) => {
       aiControl,
       aiSquadSummary: summarizeAISquad(aiSquad),
       aiRag: ragDiagnostics,
+      recentErrors,
       viewer: {
         adminCanReviewRecruiterAndCandidateViews: true,
       },
@@ -952,6 +968,33 @@ app.put('/api/admin/ai-squad', requireAuth('admin'), async (req, res) => {
       userId: req.user?.id || null,
     });
     fail(res, 500, 'Erro ao atualizar squad de IA', 'ADMIN_AI_SQUAD_UPDATE_FAILED');
+  }
+});
+
+app.get('/api/admin/system-logs', requireAuth('admin'), async (req, res) => {
+  try {
+    const limit = Math.min(Number(req.query.limit || 50), 200);
+    const level = req.query.level as string | undefined;
+    
+    let query = supabase
+      .from('system_logs')
+      .select('*, users(email)')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+    
+    if (level) {
+      query = query.eq('level', level);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    
+    res.json(data);
+  } catch (err: any) {
+    logEvent('error', 'admin.logs.fetch_failed', {
+      error: err?.message,
+    });
+    fail(res, 500, 'Erro ao carregar logs do sistema', 'ADMIN_LOGS_FETCH_FAILED');
   }
 });
 

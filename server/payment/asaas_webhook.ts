@@ -28,6 +28,15 @@ export async function handleAsaasWebhook(req: Request, res: Response) {
         await dual.initCandidateWallet(userId);
         await dual.addCandidateCredit(userId, 10);
         
+        await dual.recordPayment(
+          userId,
+          payment.id,
+          payment.value * 100, // convert to cents
+          'paid',
+          'b2c_credits',
+          `Asaas: ${payment.billingType}`
+        );
+
         console.log(`[asaas-webhook] ✅ 10 credits added to candidate ${userId}`);
 
         const profile = await dual.getProfileByUser(userId);
@@ -57,6 +66,15 @@ export async function handleAsaasWebhook(req: Request, res: Response) {
         await dual.initRecruiterProfile(userId, 'Empresa');
         await dual.updateSubscription(userId, planId, 'active', expiresAt.toISOString());
         
+        await dual.recordPayment(
+          userId,
+          payment.id,
+          payment.value * 100,
+          'paid',
+          'b2b_subscription',
+          `Asaas: ${planId}`
+        );
+
         console.log(`[asaas-webhook] ✅ Subscription ${planId} activated for recruiter ${userId}`);
 
         const profile = await dual.getRecruiterProfile(userId);
@@ -80,6 +98,15 @@ export async function handleAsaasWebhook(req: Request, res: Response) {
         await dual.initWallet(userId);
         await dual.addTriggerCredits(amount, userId);
         
+        await dual.recordPayment(
+          userId,
+          payment.id,
+          payment.value * 100,
+          'paid',
+          'b2b_credits',
+          `Asaas: ${amount} credits`
+        );
+
         console.log(`[asaas-webhook] ✅ ${amount} trigger credits added to recruiter ${userId}`);
 
         const profile = await dual.getRecruiterProfile(userId);
