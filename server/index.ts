@@ -398,8 +398,8 @@ if (IS_PROD) {
   mustHave('JWT_SECRET');
   mustHave('SUPABASE_URL');
   mustHave('SUPABASE_SERVICE_ROLE_KEY');
-  mustHave('ABACATE_PAY_TOKEN');
-  mustHave('ABACATE_WEBHOOK_SECRET');
+  mustHave('ASAAS_API_KEY');
+  mustHave('ASAAS_WEBHOOK_SECRET');
 
   if (WHATSAPP_PROVIDER === 'automatik') {
     mustHave('WHATSAPP_GATEWAY_API_KEY');
