@@ -5,16 +5,25 @@
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
 
+export interface TranscriptionResult {
+  text: string;
+  metadata?: {
+    clarity: number; // 1-5
+    confidence: number; // 1-5
+    tone: string;
+  };
+}
+
 /**
  * Transcribes an audio buffer using OpenRouter.
  * @param audioBuffer - Raw audio bytes (OGG/OPUS from WhatsApp)
  * @param mimeType - Audio mime type
- * @returns Transcribed text
+ * @returns Transcribed text and metadata
  */
 export async function transcribeAudio(
   audioBuffer: ArrayBuffer,
   mimeType = 'audio/ogg'
-): Promise<string> {
+): Promise<TranscriptionResult> {
   if (!OPENROUTER_API_KEY) {
     throw new Error('OPENROUTER_API_KEY não configurada no .env');
   }
@@ -22,7 +31,7 @@ export async function transcribeAudio(
   const base64Audio = Buffer.from(audioBuffer).toString('base64');
   const format = mimeType.split('/')[1] || 'ogg';
 
-  // Tentaremos modelos em ordem de prioridade (usando dados reais do seu painel OpenRouter 2026)
+  // Tentaremos modelos em ordem de prioridade
   const models = [
     'google/gemini-3-flash-preview',
     'google/gemini-2.5-flash',
@@ -50,7 +59,7 @@ export async function transcribeAudio(
               content: [
                 {
                   type: 'text',
-                  text: 'Transcreva exatamente o que está sendo dito neste áudio em português brasileiro. Não adicione comentários, apenas a transcrição.',
+                  text: 'Transcreva este áudio em português brasileiro. Além da transcrição, avalie a performance de comunicação do falante. Retorne APENAS um JSON com estas chaves: "text" (string), "clarity" (número 1-5), "confidence" (número 1-5), "tone" (string descrevendo o tom de voz).',
                 },
                 {
                   type: 'input_audio',
@@ -62,6 +71,7 @@ export async function transcribeAudio(
               ],
             },
           ],
+          response_format: { type: 'json_object' }
         }),
       });
 
@@ -72,9 +82,22 @@ export async function transcribeAudio(
         continue;
       }
 
-      const text = data.choices?.[0]?.message?.content;
-      if (text) {
-        return text.trim();
+      const content = data.choices?.[0]?.message?.content;
+      if (content) {
+        try {
+          const parsed = JSON.parse(content);
+          return {
+            text: String(parsed.text || '').trim(),
+            metadata: {
+              clarity: Number(parsed.clarity) || 3,
+              confidence: Number(parsed.confidence) || 3,
+              tone: String(parsed.tone || 'neutro')
+            }
+          };
+        } catch (e) {
+          // Fallback se o JSON falhar mas houver texto
+          return { text: content.trim() };
+        }
       }
     } catch (err: any) {
       lastError = err.message;

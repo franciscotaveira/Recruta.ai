@@ -275,6 +275,12 @@ type AnsweredQuestion = {
   requirementText?: string;
   weight?: number;
   category: string;
+  isAudio?: boolean;
+  audioMetadata?: {
+    clarity: number;
+    confidence: number;
+    tone: string;
+  };
 };
 
 function extractAnsweredQuestions(
@@ -317,6 +323,8 @@ function extractAnsweredQuestions(
           ? Math.round(Number(response.weight))
           : questionMeta?.weight,
         category: String(response?.category || questionMeta?.category || 'experience'),
+        isAudio: Boolean(response?.isAudio),
+        audioMetadata: response?.audioMetadata,
       };
     })
     .filter((qa) => qa.transcription.length > 0);
@@ -586,6 +594,8 @@ async function finalizeSession(
     .map((item) => ({
       question: sanitizeForBlindScreening(item.question, blindScreeningEnabled),
       transcription: sanitizeForBlindScreening(item.transcription, blindScreeningEnabled),
+      isAudio: item.isAudio,
+      audioMetadata: item.audioMetadata,
     }));
 
   let analysis: CandidateAnalysis;
@@ -909,6 +919,7 @@ async function processInboundMessageUnlocked(
   const extractedCode = !isAudio ? extractTriageCode(content) : null;
   let activatedByCode = false;
   let codeRotated = false;
+  let audioMetadata: any = null;
 
   if (!session && extractedCode) {
     const source = (await wa.getSession(extractedCode)) as any;
@@ -984,8 +995,24 @@ async function processInboundMessageUnlocked(
         return { sessionId: session.id, nextState: session.state };
       }
       await wa.createAudioRecord(audioRecordId, session.id, content, `wa://${content}`);
-      userMessage = await transcribeAudio(audio.buffer, audio.mimeType || 'audio/ogg');
+      const transcriptionResult = await transcribeAudio(audio.buffer, audio.mimeType || 'audio/ogg');
+      userMessage = transcriptionResult.text;
+      audioMetadata = transcriptionResult.metadata;
       await wa.updateAudioTranscription(userMessage, audioRecordId);
+      
+      // Armazenamos metadados de áudio se disponíveis
+      if (transcriptionResult.metadata) {
+        await wa.addResponse(
+          {
+            system: 'audio_metadata',
+            audioRecordId,
+            metadata: transcriptionResult.metadata,
+            createdAt: new Date().toISOString(),
+          },
+          session.id,
+          { advanceQuestion: false }
+        );
+      }
     } catch (err) {
       console.error('[flow] audio processing failed:', err);
       await sendTextMessage(
@@ -1332,6 +1359,8 @@ async function processInboundMessageUnlocked(
       {
         system: 'mic_check_completed',
         answerType: isAudio ? 'audio' : 'text',
+        isAudio: Boolean(isAudio),
+        audioMetadata,
         text: sanitizeForModelInput(userMessage),
         createdAt: new Date().toISOString(),
       },
@@ -1492,9 +1521,11 @@ async function processInboundMessageUnlocked(
       weight: currentQuestion.weight,
       text: sanitizeForModelInput(userMessage),
       type: messageType,
+      isAudio: Boolean(isAudio),
+      audioMetadata,
       answeredAt: new Date().toISOString(),
       sentiment: sentimentData.sentiment,
-      clarity: sentimentData.clarity,
+      clarity: audioMetadata?.clarity || sentimentData.clarity,
       keyInsight: sentimentData.keyInsights,
     },
     session.id

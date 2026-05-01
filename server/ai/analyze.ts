@@ -65,14 +65,29 @@ export async function analyzeCandidate(
   jobTitle: string,
   jobDescription: string,
   companyName: string,
-  questionsAndAnswers: { question: string; transcription: string }[],
+  questionsAndAnswers: { 
+    question: string; 
+    transcription: string;
+    isAudio?: boolean;
+    audioMetadata?: {
+      clarity: number;
+      confidence: number;
+      tone: string;
+    };
+  }[],
   options?: {
     ragContext?: string;
     governanceNotes?: string[];
   }
 ): Promise<CandidateAnalysis> {
   const qaText = questionsAndAnswers
-    .map((qa, i) => `P${i + 1}: ${qa.question}\nR: ${qa.transcription}`)
+    .map((qa, i) => {
+      const typeLabel = qa.isAudio ? '[ÁUDIO]' : '[TEXTO]';
+      const voiceStats = qa.audioMetadata 
+        ? ` (Clareza de Voz: ${qa.audioMetadata.clarity}/5, Confiança: ${qa.audioMetadata.confidence}/5, Tom: ${qa.audioMetadata.tone})`
+        : '';
+      return `P${i + 1} ${typeLabel}: ${qa.question}\nR: ${qa.transcription}${voiceStats}`;
+    })
     .join('\n\n---\n\n');
   const ragContext = String(options?.ragContext || '').trim();
   const governanceNotes = Array.isArray(options?.governanceNotes)
